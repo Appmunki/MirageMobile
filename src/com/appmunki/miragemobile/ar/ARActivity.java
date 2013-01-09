@@ -16,6 +16,19 @@ public class ARActivity extends Activity {
 		disableScreenTurnOff();
 		setOrientation();
 		setupLayout();
+		loadMatcher();
+	}
+
+	private void loadMatcher() {
+		Matcher.fetch();
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				Matcher.fetch();
+			}
+		}).start();
 	}
 
 	/**

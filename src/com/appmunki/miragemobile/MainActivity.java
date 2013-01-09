@@ -1,7 +1,5 @@
 package com.appmunki.miragemobile;
 
-import org.opencv.android.OpenCVLoader;
-
 import android.os.Bundle;
 import android.view.Menu;
 
@@ -16,12 +14,9 @@ public class MainActivity extends ARActivity {
 	}
 
 	static {
-		if (!OpenCVLoader.initDebug()) {
-			System.loadLibrary("MirageMobile");
-		} else {
-			// Toast.makeText(this, "Error Opencv Broken", Toast.LENGTH_SHORT)
-			// .show();
-		}
+		System.loadLibrary("opencv_java");
+		System.loadLibrary("MirageMobile");
+
 	}
 
 	@Override

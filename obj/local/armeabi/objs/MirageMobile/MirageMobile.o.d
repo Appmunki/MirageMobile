@@ -1,5 +1,6 @@
 obj/local/armeabi/objs/MirageMobile/MirageMobile.o: jni/MirageMobile.cpp \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/jni.h \
+ /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/android/log.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/stdio.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/sys/cdefs.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/sys/cdefs_elf.h \
@@ -16,13 +17,13 @@ obj/local/armeabi/objs/MirageMobile/MirageMobile.o: jni/MirageMobile.cpp \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/linux/types.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/machine/kernel.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/sys/sysmacros.h \
+ /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/string.h \
+ /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/malloc.h \
+ /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/assert.h \
  /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/opencv.hpp \
  /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h \
  /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/core/types_c.h \
- /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/assert.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/stdlib.h \
- /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/string.h \
- /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/malloc.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/alloca.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/strings.h \
  /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/memory.h \
@@ -73,6 +74,8 @@ obj/local/armeabi/objs/MirageMobile/MirageMobile.o: jni/MirageMobile.cpp \
 
 /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/jni.h:
 
+/host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/android/log.h:
+
 /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/stdio.h:
 
 /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/sys/cdefs.h:
@@ -105,19 +108,19 @@ obj/local/armeabi/objs/MirageMobile/MirageMobile.o: jni/MirageMobile.cpp \
 
 /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/sys/sysmacros.h:
 
+/host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/string.h:
+
+/host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/malloc.h:
+
+/host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/assert.h:
+
 /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/opencv.hpp:
 
 /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h:
 
 /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/core/types_c.h:
 
-/host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/assert.h:
-
 /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/stdlib.h:
-
-/host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/string.h:
-
-/host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/malloc.h:
 
 /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/alloca.h:
 
