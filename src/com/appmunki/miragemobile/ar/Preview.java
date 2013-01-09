@@ -114,7 +114,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 			Mat mRGB = new Mat();
 			Mat mGray = new Mat();
 			Imgproc.cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
-			Imgproc.cvtColor(mYuv, mGray, Imgproc.COLOR_YUV2GRAY_NV21, 4);
+			// Imgproc.cvtColor(mYuv, mGray, Imgproc.COLOR_YUV2GRAY_NV21, 4);
 
 			Bitmap bmp = Bitmap.createBitmap(mYuv.cols(), mYuv.rows(),
 					Bitmap.Config.ARGB_8888);

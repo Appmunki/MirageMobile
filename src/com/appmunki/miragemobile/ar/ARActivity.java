@@ -19,8 +19,13 @@ public class ARActivity extends Activity {
 		loadMatcher();
 	}
 
+	static {
+		System.loadLibrary("opencv_java");
+		System.loadLibrary("MirageMobile");
+
+	}
+
 	private void loadMatcher() {
-		Matcher.fetch();
 
 		new Thread(new Runnable() {
 

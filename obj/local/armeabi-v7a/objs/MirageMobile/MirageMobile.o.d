@@ -71,7 +71,8 @@ obj/local/armeabi-v7a/objs/MirageMobile/MirageMobile.o: \
  /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp \
  /host/Development/android-ndk-r8d/sources/cxx-stl/gnu-libstdc++/4.6/include/valarray \
  /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp \
- /host/Development/android-ndk-r8d/sources/cxx-stl/gnu-libstdc++/4.6/include/set
+ /host/Development/android-ndk-r8d/sources/cxx-stl/gnu-libstdc++/4.6/include/set \
+ jni/Utils.h
 
 /host/Development/android-ndk-r8d/platforms/android-9/arch-arm/usr/include/jni.h:
 
@@ -216,3 +217,5 @@ obj/local/armeabi-v7a/objs/MirageMobile/MirageMobile.o: \
 /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp:
 
 /host/Development/android-ndk-r8d/sources/cxx-stl/gnu-libstdc++/4.6/include/set:
+
+jni/Utils.h:

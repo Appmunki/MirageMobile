@@ -13,12 +13,6 @@ public class MainActivity extends ARActivity {
 
 	}
 
-	static {
-		System.loadLibrary("opencv_java");
-		System.loadLibrary("MirageMobile");
-
-	}
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
