@@ -1,15 +1,15 @@
 package com.appmunki.miragemobile.client;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,15 +20,15 @@ import android.util.Log;
 public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	private static final String TAG = "DataClient";
 	/** Server Host */
-	private String HOST = "129.161.219.61";
+	private String HOST = "192.168.1.3";
 	/** Server port */
-	private int PORT = 44693;
+	private int PORT = 3302;
 	/** Socket object */
 	private Socket _socket = null;
 	/** Output stream to socket communication. */
 	private DataOutputStream _out = null;
 	/** Input stream to socket communication. */
-	private ObjectInputStream _in = null;
+	private InputStream _in = null;
 	private Context _context;
 
 	/**
@@ -62,11 +62,14 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 			_socket = new Socket(HOST, PORT);
 			if (_socket.isConnected()) {
 				long start = System.currentTimeMillis();
-
+			
+	              
 				Log.i(TAG, "Client connected");
 				// Open streams
 				_out = new DataOutputStream(_socket.getOutputStream());
-				_in = new ObjectInputStream(_socket.getInputStream());
+				Log.v(TAG, "OUT");
+				_in =_socket.getInputStream();; 
+				
 				Log.i(TAG, "Streams created");
 
 				// Get bitmap from assets
@@ -84,18 +87,28 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 				}
 				_socket.shutdownOutput();
 				Log.i(TAG, "Done send");
-
-				Scanner input = new Scanner(_in);
-				String response = null;
-
-				while (input.hasNext()) {
-					response = input.nextLine();
-					Log.i(TAG, "Response " + response);
-					response = "<bb>" + response + "</bb>";
-				}
+		
+				
+				
+				//read it with BufferedReader
+		    	BufferedReader br
+		        	= new BufferedReader(
+		        		new InputStreamReader(_in));
+		 
+		    	StringBuilder sb = new StringBuilder();
+		 
+		    	String line;
+		    	while ((line = br.readLine()) != null) {
+		    		sb.append(line);
+		    	} 
+		 
+		    	Log.i(TAG,"Message "+sb.toString());
+		 
+		    	br.close();
+				
 				Log.i(TAG, "Response time: "
 						+ (System.currentTimeMillis() - start) + "ms");
-				_in.close();
+				//_in.close();
 				_out.close();
 			} else {
 				Log.e(TAG, "Socket not open");
