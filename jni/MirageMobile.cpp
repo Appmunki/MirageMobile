@@ -16,6 +16,10 @@ extern "C" {
   Java_com_appmunki_miragemobile_ar_Matcher_fetch(JNIEnv *, jobject){
     LOG("Fetch");
   }
+  JNIEXPORT void JNICALL
+  Java_com_appmunki_miragemobile_ar_Matcher_match(JNIEnv *, jobject){
+     // LOG("Match");
+  }
 
 
 

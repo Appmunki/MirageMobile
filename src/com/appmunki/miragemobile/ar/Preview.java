@@ -3,13 +3,11 @@ package com.appmunki.miragemobile.ar;
 import java.io.IOException;
 import java.util.List;
 
-import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
@@ -93,8 +91,8 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		if (mCamera != null) {
 			mCamera.stopPreview();
-			mCamera.release();
-			mCamera = null;
+			// mCamera.release();
+			// mCamera = null;
 		}
 	}
 
@@ -114,11 +112,8 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 			Mat mRGB = new Mat();
 			Mat mGray = new Mat();
 			Imgproc.cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
-			// Imgproc.cvtColor(mYuv, mGray, Imgproc.COLOR_YUV2GRAY_NV21, 4);
+			Imgproc.cvtColor(mRGB, mGray, Imgproc.COLOR_RGB2GRAY, 0);
 
-			Bitmap bmp = Bitmap.createBitmap(mYuv.cols(), mYuv.rows(),
-					Bitmap.Config.ARGB_8888);
-			Utils.matToBitmap(mYuv, bmp);
 			Matcher.match(mGray);
 		}
 	};
