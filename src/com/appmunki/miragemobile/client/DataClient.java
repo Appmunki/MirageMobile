@@ -2,6 +2,7 @@ package com.appmunki.miragemobile.client;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,6 +107,7 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 					sb.append(line);
 				}
 
+				
 				try {
 					JSONArray response = new JSONArray(sb.toString());
 					for (int i = 0; i < response.length(); i++) {
@@ -119,6 +121,14 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 								.set(object.getString("description"));
 						target._name.set(object.getString("name"));
 						target._image.set(object.getString("image"));
+						
+						JSONArray dess = object.getJSONArray("dessbt");						
+						byte[] dessbt =  Util.bytefromJSONArray(dess);
+						target._dess.set(dessbt);
+						
+						JSONArray keys = object.getJSONArray("keysbt");						
+						byte[] keysbt =  Util.bytefromJSONArray(keys);
+						target._keys.set(keysbt);
 						target.save(_context, target._ID.get());
 					}
 
@@ -127,7 +137,6 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 					e.printStackTrace();
 				}
 
-				Util.getInstance(_context).getAllTargets();
 
 				br.close();
 

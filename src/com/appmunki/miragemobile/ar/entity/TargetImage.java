@@ -18,8 +18,6 @@ public class TargetImage extends Model{
 	public DoubleField _rating;
 	public BlobField _keys, _dess;
 
-	public Vector<KeyPoint> keys;
-	public Mat dess;
 	
 	public TargetImage() {
 		super(true);
@@ -37,8 +35,10 @@ public class TargetImage extends Model{
 		
 		_rating = new DoubleField();
 		
-		keys = new Vector<KeyPoint>();
-		dess = new Mat();
+		_keys = new BlobField();
+		_dess = new BlobField();
+		
+		
 	}
 
 }
