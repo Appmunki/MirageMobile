@@ -11,6 +11,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.appmunki.miragemobile.Util;
+import com.appmunki.miragemobile.ar.entity.TargetImage;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -62,14 +69,14 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 			_socket = new Socket(HOST, PORT);
 			if (_socket.isConnected()) {
 				long start = System.currentTimeMillis();
-			
-	              
+
 				Log.i(TAG, "Client connected");
 				// Open streams
 				_out = new DataOutputStream(_socket.getOutputStream());
 				Log.v(TAG, "OUT");
-				_in =_socket.getInputStream();; 
-				
+				_in = _socket.getInputStream();
+				;
+
 				Log.i(TAG, "Streams created");
 
 				// Get bitmap from assets
@@ -87,28 +94,46 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 				}
 				_socket.shutdownOutput();
 				Log.i(TAG, "Done send");
-		
-				
-				
-				//read it with BufferedReader
-		    	BufferedReader br
-		        	= new BufferedReader(
-		        		new InputStreamReader(_in));
-		 
-		    	StringBuilder sb = new StringBuilder();
-		 
-		    	String line;
-		    	while ((line = br.readLine()) != null) {
-		    		sb.append(line);
-		    	} 
-		 
-		    	Log.i(TAG,"Message "+sb.toString());
-		 
-		    	br.close();
-				
+
+				// read it with BufferedReader
+				BufferedReader br = new BufferedReader(new InputStreamReader(
+						_in));
+
+				StringBuilder sb = new StringBuilder();
+
+				String line;
+				while ((line = br.readLine()) != null) {
+					sb.append(line);
+				}
+
+				try {
+					JSONArray response = new JSONArray(sb.toString());
+					for (int i = 0; i < response.length(); i++) {
+						JSONObject object = response.getJSONObject(i);
+						TargetImage target = new TargetImage();
+						target._ID.set(object.getInt("ID"));
+						target._author.set(object.getString("author"));
+						target._height.set(object.getInt("height"));
+						target._width.set(object.getInt("width"));
+						target._description
+								.set(object.getString("description"));
+						target._name.set(object.getString("name"));
+						target._image.set(object.getString("image"));
+						target.save(_context, target._ID.get());
+					}
+
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				Util.getInstance(_context).getAllTargets();
+
+				br.close();
+
 				Log.i(TAG, "Response time: "
 						+ (System.currentTimeMillis() - start) + "ms");
-				//_in.close();
+				_in.close();
 				_out.close();
 			} else {
 				Log.e(TAG, "Socket not open");
