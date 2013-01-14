@@ -10,6 +10,6 @@ include /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/OpenCV.mk
 
 LOCAL_MODULE    := MirageMobile
 LOCAL_SRC_FILES := MirageMobile.cpp
-LOCAL_LDLIBS    += -landroid -llog -ldl
+LOCAL_LDLIBS    += -landroid -llog -ldl  -lz
 
 include $(BUILD_SHARED_LIBRARY)

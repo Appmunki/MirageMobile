@@ -15,6 +15,7 @@
 #define LOG_TAG    "MIRAGE_NATIVE"
 #define LOG_TAG_QR    "QRCODE"
 #define LOG(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define LOGQR(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG_QR, __VA_ARGS__)
 class Utils
 {

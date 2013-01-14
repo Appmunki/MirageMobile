@@ -28,6 +28,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	public Camera mCamera;
 	private int mFrameWidth;
 	private int mFrameHeight;
+	private int mFrameCount = 0;
 
 	/**
 	 * Class constructor
@@ -91,8 +92,8 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		if (mCamera != null) {
 			mCamera.stopPreview();
-			// mCamera.release();
-			// mCamera = null;
+			mCamera.release();
+			mCamera = null;
 		}
 	}
 
@@ -100,7 +101,11 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
 		@Override
 		public void onPreviewFrame(byte[] data, Camera camera) {
-			processFrame(data);
+			if (mFrameCount == 10) {
+				processFrame(data);
+				mFrameCount = 0;
+			}
+			mFrameCount++;
 		}
 
 		protected void processFrame(byte[] data) {
@@ -114,7 +119,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 			Imgproc.cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
 			Imgproc.cvtColor(mRGB, mGray, Imgproc.COLOR_RGB2GRAY, 0);
 
-			Matcher.match(mGray);
+			Matcher.match(mGray.getNativeObjAddr());
 		}
 	};
 
