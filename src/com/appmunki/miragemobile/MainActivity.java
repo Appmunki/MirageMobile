@@ -3,6 +3,13 @@ package com.appmunki.miragemobile;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.view.Menu;
 
@@ -12,7 +19,6 @@ import com.appmunki.miragemobile.client.DataClient;
 import com.orm.androrm.DatabaseAdapter;
 import com.orm.androrm.Model;
 
-
 public class MainActivity extends ARActivity {
 
 	@Override
@@ -20,23 +26,22 @@ public class MainActivity extends ARActivity {
 		super.onCreate(savedInstanceState);
 		DataClient dc = new DataClient(this);
 		dc.execute(new ArrayList<String>());
-		
+
 		createDatabase();
-		
-		
+
 	}
-	
-	
-	private void createDatabase(){
+
+	private void createDatabase() {
 		DatabaseAdapter.setDatabaseName("miragedb");
-	    List<Class<? extends Model>> models = new ArrayList<Class<? extends Model>>();
-	    models.add(TargetImage.class);
-	     
-	    DatabaseAdapter adapter = DatabaseAdapter.getInstance(getApplicationContext());
-	    adapter.setModels(models);
-	   
-		
+		List<Class<? extends Model>> models = new ArrayList<Class<? extends Model>>();
+		models.add(TargetImage.class);
+
+		DatabaseAdapter adapter = DatabaseAdapter
+				.getInstance(getApplicationContext());
+		adapter.setModels(models);
 	}
+
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

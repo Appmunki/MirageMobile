@@ -16,10 +16,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.appmunki.miragemobile.MainActivity;
 import com.appmunki.miragemobile.Util;
 import com.appmunki.miragemobile.ar.entity.TargetImage;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -28,7 +33,7 @@ import android.util.Log;
 public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	private static final String TAG = "DataClient";
 	/** Server Host */
-	private String HOST = "192.168.1.3";
+	private String HOST = "184.106.134.110";
 	/** Server port */
 	private int PORT = 3302;
 	/** Socket object */
@@ -38,6 +43,8 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	/** Input stream to socket communication. */
 	private InputStream _in = null;
 	private Context _context;
+
+	private JSONObject json;
 
 	/**
 	 * Constructor
@@ -76,7 +83,6 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 				_out = new DataOutputStream(_socket.getOutputStream());
 				Log.v(TAG, "OUT");
 				_in = _socket.getInputStream();
-				;
 
 				Log.i(TAG, "Streams created");
 
@@ -107,7 +113,8 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 					sb.append(line);
 				}
 
-				
+				Log.i(TAG, "Received: " + sb.toString());
+
 				try {
 					JSONArray response = new JSONArray(sb.toString());
 					for (int i = 0; i < response.length(); i++) {
@@ -121,22 +128,23 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 								.set(object.getString("description"));
 						target._name.set(object.getString("name"));
 						target._image.set(object.getString("image"));
-						
-						JSONArray dess = object.getJSONArray("dessbt");						
-						byte[] dessbt =  Util.bytefromJSONArray(dess);
+
+						JSONArray dess = object.getJSONArray("dessbt");
+						byte[] dessbt = Util.bytefromJSONArray(dess);
 						target._dess.set(dessbt);
-						
-						JSONArray keys = object.getJSONArray("keysbt");						
-						byte[] keysbt =  Util.bytefromJSONArray(keys);
+
+						JSONArray keys = object.getJSONArray("keysbt");
+						byte[] keysbt = Util.bytefromJSONArray(keys);
 						target._keys.set(keysbt);
 						target.save(_context, target._ID.get());
+
+						json = object;
 					}
 
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 
 				br.close();
 
@@ -159,9 +167,37 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	}
 
 	@Override
+	protected void onPostExecute(Boolean result) {
+		showAlertDialog(json);
+		super.onPostExecute(result);
+	}
+
+	@Override
 	protected void onCancelled() {
 		// TODO Auto-generated method stub
 		super.onCancelled();
+	}
+
+	public void showAlertDialog(JSONObject object) {
+
+		try {
+			AlertDialog.Builder builder = new AlertDialog.Builder(_context);
+
+			builder.setTitle("Information");
+			builder.setMessage("ID:" + object.getInt("ID") + " name:"
+					+ object.getString("name"));
+			builder.setPositiveButton("OK", new OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			});
+
+			builder.create().show();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 }
