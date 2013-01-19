@@ -1,6 +1,7 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
@@ -19,9 +20,11 @@ public class Matcher {
 
 	public static void fetch(Context context) {
 		List<TargetImage> bs = TargetImage.objects(context).all().toList();
-		writeData(bs, context);
-		// fetch();
 
+		if (!(new File(context.getFilesDir().toString() + "/Data.txt").exists())) {
+			writeData(bs, context);
+		}
+		fetch();
 	}
 
 	/**
