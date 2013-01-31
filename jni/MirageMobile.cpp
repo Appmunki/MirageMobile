@@ -43,8 +43,6 @@ extern "C" {
           float x, y, angle, size, response;
           keyNum = mdata[count++];
           for(int i = 0; i < keyNum; ++i) {
-                  //scanf("%f%d%d%f%f%f%f", &angle, &classId, &octave, &x, &y, &response, &size);
-                  //ss >> angle >> classId >> octave >> x >> y >> response >> size;
                   angle = mdata[count++];
                   classId = mdata[count++];
                   octave = mdata[count++];
@@ -160,7 +158,7 @@ extern "C" {
     sde.compute(img, keys, des);
   }
   inline bool refineMatchesWithHomography
-      (
+      (int it,float &confidence,
       const std::vector<cv::KeyPoint>& queryKeypoints,
       const std::vector<cv::KeyPoint>& trainKeypoints,
       float reprojectionThreshold,
@@ -198,46 +196,30 @@ extern "C" {
               inliers.push_back(matches[i]);
       }
 
-
+      confidence = (inliers.size() / (8 + 0.3*matches.size()))*100;
+      LOG("Confidence %d %f",it,confidence);
       matches.swap(inliers);
-      return matches.size() > minNumberMatchesAllowed;
+      return matches.size() > minNumberMatchesAllowed&&(confidence>55);
   }
-  inline void ratiotest(vector<DMatch> &matches,const Mat& queryDes,int j){
-      double max_dist = 0; double min_dist = 100;
 
-       //-- Quick calculation of max and min distances between keypoints
-       for( int i = 0; i < queryDes.rows; i++ )
-       { double dist = matches[i].distance;
-         if( dist < min_dist ) min_dist = dist;
-         if( dist > max_dist ) max_dist = dist;
-       }
-
-       //printf("-- Max dist %d: %f \n", j,max_dist );
-       //printf("-- Min dist %d: %f \n", j,min_dist );
-
-       //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
-       std::vector< DMatch > good_matches;
-
-       for( int i = 0; i < queryDes.rows; i++ )
-       { if( matches[i].distance < 4*min_dist )
-          { good_matches.push_back( matches[i]); }
-       }
-       matches.swap(good_matches);
-  }
   /**
    * Match the query image to images in database. The best matches are returned
    */
   inline void match(const Mat& m_grayImg, const vector<KeyPoint> &trainKeys, const Mat &trainDes, vector<pair<float, int> > &result) {
           int runs = 0;
           // use Flann based matcher to match images
-          cv::FlannBasedMatcher bf(new flann::LshIndexParams(30,8,2));
-          // train the query image
+         // cv::FlannBasedMatcher bf(new flann::LshIndexParams(30,8,2));
+         cv::BFMatcher bf(NORM_HAMMING);
+         float confidence=0;
+         // train the query image
           int size = queryDes.size();
           for(int i = 0; i < size; ++i) {
 
                   // compute match score for each image in the database
                   vector<DMatch> matches;
                   vector<DMatch> refinedmatches;
+
+
                   bf.match(queryDes[i],trainDes, matches);
 //
 
@@ -245,10 +227,10 @@ extern "C" {
                   cv::Mat m_roughHomography;
                   cv::Mat m_refinedHomography;
 
-                  bool homographyFound = refineMatchesWithHomography(
+                  bool homographyFound = refineMatchesWithHomography(i,confidence,
                                           queryKeys[i],trainKeys,
 
-                                         1,
+                                         4,
                                           matches,
                                           m_roughHomography);
                   LOG("Matching %d Step 1: %d",i,matches.size());
@@ -270,10 +252,10 @@ extern "C" {
               //Match
              bf.match(queryDes[i],warpDes, refinedmatches);
 
-              homographyFound = refineMatchesWithHomography(
+              homographyFound = refineMatchesWithHomography(i,confidence,
                                                   queryKeys[i],warpKeys,
 
-                                                  1,
+                                                  4,
                                                   refinedmatches,
                                                   m_refinedHomography);
                     if(homographyFound){

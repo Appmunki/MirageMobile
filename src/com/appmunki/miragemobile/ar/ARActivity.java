@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.os.AsyncTask;
@@ -189,8 +190,8 @@ public abstract class ARActivity extends Activity {
 	protected synchronized void processFrame(byte[] org) {
 		// Log.i(TAG, "data: " + org.length);
 		byte[] data = org.clone();
-		org.opencv.core.Mat mYuv = new org.opencv.core.Mat(mFrameHeight,
-				mFrameWidth, CvType.CV_8UC1);
+		org.opencv.core.Mat mYuv = new org.opencv.core.Mat(mFrameWidth,
+				mFrameHeight, CvType.CV_8U);
 		mYuv.put(0, 0, data);
 
 		org.opencv.core.Mat mRGB = new org.opencv.core.Mat();
@@ -202,12 +203,15 @@ public abstract class ARActivity extends Activity {
 
 	}
 
-	class Preview extends SurfaceView implements SurfaceHolder.Callback {
+	class Preview extends SurfaceView implements SurfaceHolder.Callback,
+			Camera.PreviewCallback {
 		private static final String TAG = "Preview";
 		private SurfaceHolder mHolder;
 		public Camera mCamera;
 
 		private int mFrameCount = 0;
+		private int preview_width;
+		private int preview_height;
 
 		/**
 		 * Class constructor
@@ -219,6 +223,8 @@ public abstract class ARActivity extends Activity {
 			mHolder = getHolder();
 			mHolder.addCallback(this);
 			mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+			this.preview_width = 640;
+			this.preview_height = 480;
 		}
 
 		/**
@@ -327,19 +333,120 @@ public abstract class ARActivity extends Activity {
 		@Override
 		public void surfaceChanged(SurfaceHolder holder, int format, int w,
 				int h) {
-			/*
-			 * try { mCamera.stopPreview(); } catch (Exception e) { Log.d(TAG,
-			 * "Error stopping camera preview: " + e.getMessage()); }
-			 */
+			try {
+				initCamera(mHolder);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+			// Now that the size is known, set up the camera parameters and
+			// begin
+			// the preview.
 
-			Camera.Parameters parameters = mCamera.getParameters(); // set
+			Camera.Parameters parameters = mCamera.getParameters();
+			List<Camera.Size> pvsizes = mCamera.getParameters()
+					.getSupportedPreviewSizes();
+			int best_width = 1000000;
+			int best_height = 1000000;
+			int bdist = 100000;
+			for (Size x : pvsizes) {
+				if (Math.abs(x.width - preview_width) < bdist) {
+					bdist = Math.abs(x.width - preview_width);
+					best_width = x.width;
+					best_height = x.height;
+				}
+			}
+			preview_width = best_width;
+			preview_height = best_height;
 
-			parameters.setPreviewSize(mFrameWidth, mFrameHeight);
+			Log.d("NativePreviewer", "Determined compatible preview size is: ("
+					+ preview_width + "," + preview_height + ")");
 
-			// start preview with new settings
+			Log.d("NativePreviewer", "Supported params: "
+					+ mCamera.getParameters().flatten());
+
+			// this is available in 8+
+			// parameters.setExposureCompensation(0);
+			if (parameters.getSupportedWhiteBalance().contains("auto")) {
+				parameters.setWhiteBalance("auto");
+			}
+			// if (parameters.getSupportedAntibanding().contains(
+			// Camera.Parameters.ANTIBANDING_OFF)) {
+			// parameters.setAntibanding(Camera.Parameters.ANTIBANDING_OFF);
+			// }
+
+			List<String> fmodes = mCamera.getParameters()
+					.getSupportedFocusModes();
+			// for(String x: fmodes){
+
+			// }
+
+			if (parameters.get("meter-mode") != null)
+				parameters.set("meter-mode", "meter-average");
+			int idx = fmodes.indexOf(Camera.Parameters.FOCUS_MODE_INFINITY);
+			if (idx != -1) {
+				parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
+			} else if (fmodes.indexOf(Camera.Parameters.FOCUS_MODE_FIXED) != -1) {
+				parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
+			}
+
+			// if (fmodes.indexOf(Camera.Parameters.FOCUS_MODE_AUTO) != -1) {
+			// hasAutoFocus = true;
+			// }
+
+			List<String> scenemodes = mCamera.getParameters()
+					.getSupportedSceneModes();
+			if (scenemodes != null)
+				if (scenemodes.indexOf(Camera.Parameters.SCENE_MODE_ACTION) != -1) {
+					parameters
+							.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION);
+					Log.d("NativePreviewer", "set scenemode to action");
+				}
+
+			parameters.setPreviewSize(preview_width, preview_height);
+
 			mCamera.setParameters(parameters);
+
+			PixelFormat pixelinfo = new PixelFormat();
+			int pixelformat = mCamera.getParameters().getPreviewFormat();
+			PixelFormat.getPixelFormatInfo(pixelformat, pixelinfo);
+
+			Size preview_size = mCamera.getParameters().getPreviewSize();
+			preview_width = preview_size.width;
+			preview_height = preview_size.height;
+			int bufSize = preview_width * preview_height
+					* pixelinfo.bitsPerPixel;
+
 			mCamera.startPreview();
 
+		}
+
+		private void initCamera(SurfaceHolder holder)
+				throws InterruptedException {
+			if (mCamera == null) {
+				// The Surface has been created, acquire the camera and tell it
+				// where
+				// to draw.
+				int i = 0;
+				while (i++ < 5) {
+					try {
+						mCamera = Camera.open();
+						break;
+					} catch (RuntimeException e) {
+						Thread.sleep(200);
+					}
+				}
+				try {
+					mCamera.setPreviewDisplay(holder);
+				} catch (IOException exception) {
+					mCamera.release();
+					mCamera = null;
+
+				} catch (RuntimeException e) {
+					Log.e("camera", "stacktrace", e);
+				}
+			}
 		}
 
 		private Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {
@@ -384,16 +491,12 @@ public abstract class ARActivity extends Activity {
 				mCamera = null;
 			}
 		}
-	}
-
-	class ImageProcess extends AsyncTask<byte[], Void, Void> {
 
 		@Override
-		protected Void doInBackground(byte[]... arg0) {
+		public void onPreviewFrame(byte[] data, Camera camera) {
 			// TODO Auto-generated method stub
-			processFrame(arg0[0]);
-			return null;
-		}
 
+		}
 	}
+
 }
