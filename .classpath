@@ -6,5 +6,7 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="lib" path="libs/androrm.jar"/>
 	<classpathentry kind="lib" path="libs/flexjson-2.1.jar"/>
+	<classpathentry kind="lib" path="libs/protobuf.jar"/>
+	<classpathentry kind="lib" path="libs/async-json-library-0.1.4.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

@@ -3,13 +3,6 @@ package com.appmunki.miragemobile;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.view.Menu;
 
@@ -21,13 +14,17 @@ import com.orm.androrm.Model;
 
 public class MainActivity extends ARActivity {
 
+	static int countOnCreate = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		DataClient dc = new DataClient(this);
-		dc.execute(new ArrayList<String>());
-
-		createDatabase();
+		if (countOnCreate == 0) {
+			DataClient dc = new DataClient(this);
+			dc.execute(new ArrayList<String>());
+			createDatabase();
+		}
+		countOnCreate++;
 
 	}
 
@@ -40,8 +37,6 @@ public class MainActivity extends ARActivity {
 				.getInstance(getApplicationContext());
 		adapter.setModels(models);
 	}
-
-	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
