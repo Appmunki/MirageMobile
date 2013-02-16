@@ -217,7 +217,7 @@ obj/local/armeabi-v7a/objs-debug/MirageMobile/MirageMobile.o: \
  /host/Development/android-ndk-r8d/sources/cxx-stl/stlport/stlport/stl/_set.h \
  /host/Development/android-ndk-r8d/sources/cxx-stl/stlport/stlport/cstdio \
  /host/Development/android-ndk-r8d/sources/cxx-stl/stlport/stlport/cstdlib \
- jni/Utils.h \
+ jni/Utils.h jni/TargetImage.h \
  /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/legacy/legacy.hpp \
  /host/Development/android-ndk-r8d/sources/cxx-stl/stlport/stlport/iosfwd
 
@@ -656,6 +656,8 @@ obj/local/armeabi-v7a/objs-debug/MirageMobile/MirageMobile.o: \
 /host/Development/android-ndk-r8d/sources/cxx-stl/stlport/stlport/cstdlib:
 
 jni/Utils.h:
+
+jni/TargetImage.h:
 
 /host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include/opencv2/legacy/legacy.hpp:
 

@@ -17,6 +17,8 @@ import java.nio.IntBuffer;
  * 
  */
 public class Util {
+
+	public static boolean DEBUG = true;
 	public static final int mask[] = { 0x000000ff, 0x0000ff00, 0x00ff0000,
 			0xff000000 };
 

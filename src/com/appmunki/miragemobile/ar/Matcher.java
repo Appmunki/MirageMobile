@@ -24,7 +24,7 @@ public class Matcher {
 		if (!(new File(context.getFilesDir().toString() + "/Data.txt").exists())) {
 			writeData(bs, context);
 		}
-		fetch();
+		load();
 	}
 
 	/**
@@ -109,8 +109,14 @@ public class Matcher {
 		}
 	}
 
-	public static native void fetch();
+	public static native void load();
 
-	public static native void match(long mGray);
+	public static native int[] match(long mGray);
+
+	public static native int[] matchDebug(int width, int height, byte yuv[],
+			int[] rgba);
+
+	public static native void FindFeatures(int width, int height, byte yuv[],
+			int[] rgba, int[] gray);
 
 }

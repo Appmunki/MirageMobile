@@ -49,6 +49,7 @@ containing a value of this type.
     }
     public static final class drawable {
         public static final int ic_launcher=0x7f020000;
+        public static final int miragelogo=0x7f020001;
     }
     public static final class id {
         public static final int activity_surface_view=0x7f040003;
@@ -59,6 +60,7 @@ containing a value of this type.
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
+        public static final int ar_loading_screen=0x7f030001;
     }
     public static final class menu {
         public static final int activity_ar=0x7f080000;
@@ -71,6 +73,7 @@ containing a value of this type.
         public static final int hello_world=0x7f060001;
         public static final int menu_settings=0x7f060002;
         public static final int title_activity_ar=0x7f060005;
+        public static final int title_activity_loading_screen=0x7f060006;
     }
     public static final class style {
         /** 

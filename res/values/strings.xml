@@ -7,5 +7,6 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="title_activity_ar">ARActivity</string>
+    <string name="title_activity_loading_screen">LoadingScreenActivity</string>
 
 </resources>

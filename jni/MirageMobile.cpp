@@ -8,11 +8,15 @@
 #include <cstdlib>
 #include <Utils.h>
 
+#include "TargetImage.h"
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/legacy/legacy.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <vector>
 
 
 using namespace std;
@@ -32,7 +36,7 @@ extern "C" {
   static vector<Mat> queryDes;
   static vector<Size> queryDims;
   static bool loaded = false;
-
+  static vector<TargetImage> targetImages;
 
   /**
    * Convert data stored in an array into keypoints and descriptor
@@ -86,14 +90,40 @@ extern "C" {
         qS.height=mdata[count++];
 
         readKeyAndDesc(qK, qD, mdata, count);
+
         queryKeys.push_back(qK);
         queryDes.push_back(qD);
         queryDims.push_back(qS);
     }
   }
+  /**
+   * Read database from an array
+   */
+  inline void readDB(float *mdata, int &count) {
+
+    int querySize;
+    querySize = mdata[count++];
+    for(int i = 0; i < querySize; ++i) {
+        vector<KeyPoint> qK;
+        Mat qD;
+        Size qS;
+
+        qS.width=mdata[count++];
+        qS.height=mdata[count++];
+
+        readKeyAndDesc(qK, qD, mdata, count);
+
+        TargetImage t;
+        t.setId(i);
+        t.setDescriptor(qD);
+        t.setKeypoints(qK);
+        t.setSize(qS);
+        targetImages.push_back(t);
+    }
+  }
 
   JNIEXPORT void JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_fetch(JNIEnv *, jobject){
+  Java_com_appmunki_miragemobile_ar_Matcher_load(JNIEnv *, jobject){
     LOG("Fetch");
     FILE* pFile = fopen("/data/data/com.appmunki.miragemobile/files/Data.txt","rb");
 
@@ -129,9 +159,9 @@ extern "C" {
             mdata[i] = strtod(endPtr, &endPtr);
             //LOGE("data: %f",mdata[i]);
     }
-    readDatabase(mdata, count);
+    readDB(mdata, count);
     loaded=true;
-    LOG("Done");
+    LOG("Done %d",targetImages.size());
 
   }
   inline void extractFeatures(const Mat& img, Mat& des, vector<KeyPoint>& keys)
@@ -166,7 +196,7 @@ extern "C" {
       cv::Mat& homography
       )
   {
-      const unsigned int minNumberMatchesAllowed = 8;
+      const unsigned int minNumberMatchesAllowed = 15;
 
       if (matches.size() < minNumberMatchesAllowed)
           return false;
@@ -206,13 +236,12 @@ extern "C" {
    * Match the query image to images in database. The best matches are returned
    */
   inline void match(const Mat& m_grayImg, const vector<KeyPoint> &trainKeys, const Mat &trainDes, vector<pair<float, int> > &result) {
-          int runs = 0;
           // use Flann based matcher to match images
-         // cv::FlannBasedMatcher bf(new flann::LshIndexParams(30,8,2));
-         cv::BFMatcher bf(NORM_HAMMING);
+         cv::FlannBasedMatcher bf(new flann::LshIndexParams(30,8,2));
+         //cv::BFMatcher bf(NORM_HAMMING);
          float confidence=0;
          // train the query image
-          int size = queryDes.size();
+          int size = targetImages.size();
           for(int i = 0; i < size; ++i) {
 
                   // compute match score for each image in the database
@@ -220,7 +249,7 @@ extern "C" {
                   vector<DMatch> refinedmatches;
 
 
-                  bf.match(queryDes[i],trainDes, matches);
+                  bf.match(targetImages[i].getDescriptor(),trainDes, matches);
 //
 
                   //Find homography transformation and detect good matches
@@ -228,7 +257,7 @@ extern "C" {
                   cv::Mat m_refinedHomography;
 
                   bool homographyFound = refineMatchesWithHomography(i,confidence,
-                                          queryKeys[i],trainKeys,
+                      targetImages[i].getKeypoints(),trainKeys,
 
                                          4,
                                           matches,
@@ -236,40 +265,151 @@ extern "C" {
                   LOG("Matching %d Step 1: %d",i,matches.size());
 
                   if(homographyFound){
-                          LOG("Matching %d Step 1: %d",i,matches.size());
+                      LOG("Matching %d Step 1: %d",i,matches.size());
 
-                          Mat m_warpedImg;
-                          Size size= queryDims[i];
-                          //cerr<<"Size"<<m_grayImg.cols<<" : "<<m_grayImg.rows<<endl;
-                          cv::warpPerspective(m_grayImg, m_warpedImg, m_roughHomography, size, cv::INTER_LINEAR);
+                      Mat m_warpedImg;
+
+                      Size size= targetImages[i].getSize();
+                      cv::warpPerspective(m_grayImg, m_warpedImg, m_roughHomography, size, cv::INTER_LINEAR);
 
 
-              //Extract Warped Image Keys
-              Mat warpDes;
-              vector<KeyPoint> warpKeys;
-              extractFeatures(m_grayImg,warpDes,warpKeys);
+                      //Extract Warped Image Keys
+                      Mat warpDes;
+                      vector<KeyPoint> warpKeys;
+                      extractFeatures(m_grayImg,warpDes,warpKeys);
 
-              //Match
-             bf.match(queryDes[i],warpDes, refinedmatches);
+                      //Match
+                      bf.match(queryDes[i],warpDes, refinedmatches);
 
-              homographyFound = refineMatchesWithHomography(i,confidence,
-                                                  queryKeys[i],warpKeys,
+                      homographyFound = refineMatchesWithHomography(i,confidence,
+                                                          queryKeys[i],warpKeys,
 
-                                                  4,
-                                                  refinedmatches,
-                                                  m_refinedHomography);
-                    if(homographyFound){
-                        LOG("Matching %d Step 1: %d",i,matches.size());
-                        pair <float, int> p(matches.size(), i);
-                        result.push_back(p);
-                        runs++;
-                    }
+                                                          4,
+                                                          refinedmatches,
+                                                          m_refinedHomography);
+                      if(homographyFound){
+                                LOG("Matching %d Step 1: %d",i,matches.size());
+                                pair <float, int> p(matches.size(), i);
+                                result.push_back(p);
+                      }
                   }
           }
 
           // sort in descending
           std::sort(result.begin(), result.end(), compare<float, int>);
   }
+  inline void drawHomography(Mat& img,
+                  const std::vector<KeyPoint>& keypoints_object,
+                  const std::vector<KeyPoint>& keypoints_scene, const Size& dim,
+                  const vector<DMatch>& good_matches) {
+
+          Mat img_scene = img.clone();
+
+          //-- Localize the object
+          std::vector<Point2f> obj;
+          std::vector<Point2f> scene;
+
+          for (size_t i = 0; i < good_matches.size(); i++) {
+                  //-- Get the keypoints from the good matches
+                  obj.push_back(keypoints_object[good_matches[i].queryIdx].pt);
+                  scene.push_back(keypoints_scene[good_matches[i].trainIdx].pt);
+          }
+
+          Mat H = findHomography(obj, scene, CV_RANSAC, 5);
+  //
+  //    //-- Get the corners from the image_1 ( the object to be "detected" )
+          std::vector<Point2f> obj_corners(4);
+          obj_corners[0] = cvPoint(0, 0);
+          obj_corners[1] = cvPoint(dim.width, 0);
+          obj_corners[2] = cvPoint(dim.width, dim.height);
+          obj_corners[3] = cvPoint(0, dim.height);
+          std::vector<Point2f> scene_corners(4);
+  //
+  //
+  //
+          perspectiveTransform(obj_corners, scene_corners, H);
+  //
+  //    //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+  //
+          line(img_scene, scene_corners[0], scene_corners[1], Scalar(0, 255, 0), 10);
+          line(img_scene, scene_corners[1], scene_corners[2], Scalar(0, 255, 0), 10);
+          line(img_scene, scene_corners[2], scene_corners[3], Scalar(0, 255, 0), 10);
+          line(img_scene, scene_corners[3], scene_corners[0], Scalar(0, 255, 0), 10);
+
+          //-- Show detected matches
+
+          //showimage( "Good Matches & Object detection", img_scene );
+
+  }
+    /**
+     * Match the query image to images in database. The best matches are returned
+     */
+    inline void matchTest(const Mat& m_grayImg,Mat& m_rgbImg, const vector<KeyPoint> &trainKeys, const Mat &trainDes, vector<pair<float, int> > &result) {
+            // use Flann based matcher to match images
+           cv::FlannBasedMatcher bf(new flann::LshIndexParams(30,8,2));
+           //cv::BFMatcher bf(NORM_HAMMING);
+           float confidence=0;
+           // train the query image
+            int size = targetImages.size();
+            for(int i = 0; i < size; ++i) {
+
+                    // compute match score for each image in the database
+                    vector<DMatch> matches;
+                    vector<DMatch> refinedmatches;
+
+
+                    bf.match(targetImages[i].getDescriptor(),trainDes, matches);
+  //
+
+                    //Find homography transformation and detect good matches
+                    cv::Mat m_roughHomography;
+                    cv::Mat m_refinedHomography;
+
+                    bool homographyFound = refineMatchesWithHomography(i,confidence,
+                        targetImages[i].getKeypoints(),trainKeys,
+
+                                           4,
+                                            matches,
+                                            m_roughHomography);
+                    LOG("Matching %d Step 1: %d",i,matches.size());
+
+                    if(homographyFound){
+                        LOG("Matching %d Step 1: %d",i,matches.size());
+
+                        Mat m_warpedImg;
+
+                        Size size= targetImages[i].getSize();
+                        cv::warpPerspective(m_grayImg, m_warpedImg, m_roughHomography, size, cv::INTER_LINEAR);
+
+
+                        //Extract Warped Image Keys
+                        Mat warpDes;
+                        vector<KeyPoint> warpKeys;
+                        extractFeatures(m_grayImg,warpDes,warpKeys);
+
+                        //Match
+                        bf.match(queryDes[i],warpDes, refinedmatches);
+
+                        //Finds the homography of the refind match
+                        homographyFound = refineMatchesWithHomography(i,confidence,
+                                                            queryKeys[i],warpKeys,
+
+                                                            4,
+                                                            refinedmatches,
+                                                            m_refinedHomography);
+                        if(homographyFound){
+                                  LOG("Matching %d Step 1: %d",i,matches.size());
+                                  //Display the homography
+                                  drawHomography(m_rgbImg,targetImages[i].getKeypoints(),trainKeys,targetImages[i].getSize(),matches);
+                                  pair <float, int> p(matches.size(), i);
+                                  result.push_back(p);
+                        }
+                    }
+            }
+
+            // sort in descending
+            std::sort(result.begin(), result.end(), compare<float, int>);
+    }
 
   /**
    * Get min value of two number
@@ -278,7 +418,7 @@ extern "C" {
           return a > b ? b:a;
   }
 
-  JNIEXPORT void JNICALL
+  JNIEXPORT jintArray JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_match(JNIEnv* env, jobject obj, long addrGray){
     if(loaded){
         Mat& img  = *(Mat*)addrGray;
@@ -293,28 +433,128 @@ extern "C" {
         if(!trainKeys.size()){
           trainDes.release();
           trainKeys.clear();
-          return ;
+          return NULL ;
         }
         LOG("Matching begin");
         match(img,trainKeys, trainDes, result);
         int size = min(result.size(), MAX_ITEM);
 
-        // print out the best result
-        if(result.size()){
-          LOG("Size: %d\n", result.size());
-
-          for(int i = 0; i < size; ++i) {
-              LOG("%f  %d",result[i].first,result[i].second);
-          }
+        jintArray resultArray;
+        resultArray = (*env).NewIntArray(size);
+        if (resultArray == NULL) {
+                return NULL; /* out of memory error thrown */
         }
+
+        jint fill[size];
+
+        // print out the best result
+        LOG("Size: %d\n", result.size());
+
+        for(int i = 0; i < size; ++i) {
+            fill[i] = result[i].second;
+            LOG("%f  %d",result[i].first,result[i].second);
+        }
+
         trainDes.release();
         trainKeys.clear();
         LOG("Matching end");
-        return ;
+        (*env).SetIntArrayRegion(resultArray, 0, size, fill);
+        return resultArray;
     }
+    return NULL;
   }
+  JNIEXPORT jintArray JNICALL
+  Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv, jintArray rgba){
+      jbyte* _yuv  = env->GetByteArrayElements(yuv, 0);
+      jint*  _rgba = env->GetIntArrayElements(rgba, 0);
+
+      Mat myuv(height + height/2, width, CV_8UC1, (unsigned char *)_yuv);
+      Mat mrgba(height, width, CV_8UC4, (unsigned char *)_rgba);
+      Mat mgray(height, width, CV_8UC1, (unsigned char *)_yuv);
+
+      cvtColor(myuv, mrgba, CV_YUV420sp2BGR, 4);
+
+      vector<KeyPoint> v;
+
+      ORB detector(1000);
+      detector.detect(mgray, v);
+      for( size_t i = 0; i < v.size(); i++ ){
+          circle(mrgba, Point(v[i].pt.x, v[i].pt.y), 10, Scalar(0,0,255,255));
+      }
+
+      /**
+       * Do the matching
+       */
+
+      // read image from file
+      vector<KeyPoint> trainKeys;
+      Mat trainDes;
+      vector<pair<float, int> > result;
+      // detect image keypoints
+      extractFeatures(mgray,trainDes,trainKeys);
+
+      if(!trainKeys.size()){
+        trainDes.release();
+        trainKeys.clear();
+        return NULL ;
+      }
+      LOG("Matching begin");
+      matchTest(mgray,mrgba,trainKeys, trainDes, result);
+      int size = min(result.size(), MAX_ITEM);
+
+      jintArray resultArray;
+      resultArray = (*env).NewIntArray(size);
+      if (resultArray == NULL) {
+              return NULL; /* out of memory error thrown */
+      }
+
+      jint fill[size];
+
+      // print out the best result
+      LOG("Size: %d\n", result.size());
+
+      for(int i = 0; i < size; ++i) {
+          fill[i] = result[i].second;
+          LOG("%f  %d",result[i].first,result[i].second);
+      }
+
+      trainDes.release();
+      trainKeys.clear();
+      LOG("Matching end");
+      (*env).SetIntArrayRegion(resultArray, 0, size, fill);
 
 
+      env->ReleaseIntArrayElements(rgba, _rgba, 0);
+      env->ReleaseByteArrayElements(yuv, _yuv, 0);
+
+      return resultArray;
+  }
+  JNIEXPORT void JNICALL Java_com_appmunki_miragemobile_ar_Matcher_FindFeatures(JNIEnv* env, jobject thiz, jint width, jint height, jbyteArray yuv, jintArray rgba,jintArray gray)
+  {
+      jbyte* _yuv  = env->GetByteArrayElements(yuv, 0);
+      jint*  _rgba = env->GetIntArrayElements(rgba, 0);
+      jint*  _gray = env->GetIntArrayElements(gray, 0);
+
+      Mat myuv(height + height/2, width, CV_8UC1, (unsigned char *)_yuv);
+      Mat mrgba(height, width, CV_8UC4, (unsigned char *)_rgba);
+      Mat mgray(height, width, CV_8UC1, (unsigned char *)_gray);
+
+      cvtColor(myuv, mrgba, CV_YUV420sp2BGR, 4);
+      cvtColor(mrgba, mgray, CV_RGB2GRAY, 0);
+
+      vector<KeyPoint> v;
+
+      ORB detector(1000);
+      detector.detect(mgray, v);
+      for( size_t i = 0; i < v.size(); i++ ){
+          circle(mrgba, Point(v[i].pt.x, v[i].pt.y), 10, Scalar(0,0,255,255));
+      }
+
+
+      env->ReleaseIntArrayElements(rgba, _rgba, 0);
+      env->ReleaseIntArrayElements(gray, _gray, 0);
+      env->ReleaseByteArrayElements(yuv, _yuv, 0);
+  }
 
 
 

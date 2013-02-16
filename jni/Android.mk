@@ -19,7 +19,7 @@ endif
 
 
 LOCAL_MODULE    := MirageMobile
-LOCAL_SRC_FILES := MirageMobile.cpp
+LOCAL_SRC_FILES := MirageMobile.cpp TargetImage.cpp
 LOCAL_LDLIBS    += -landroid -llog -ldl  -lz
 
 include $(BUILD_SHARED_LIBRARY)
