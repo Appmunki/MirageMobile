@@ -224,11 +224,11 @@ public class CameraViewBase extends SurfaceView implements
 
 		// Testing of the keypoint features. Also works as the test of finding
 		// the rgba and gray
-		// Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
-		// gray);
+		Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
+				gray);
 
 		// Testing of the matching
-		Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
+		// Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
 
 		Log.i(TAG, "Converted");
 
