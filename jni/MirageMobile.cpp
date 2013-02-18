@@ -490,6 +490,8 @@ extern "C" {
       vector<KeyPoint> trainKeys;
       Mat trainDes;
       vector<pair<float, int> > result;
+
+
       // detect image keypoints
       extractFeatures(mgray,trainDes,trainKeys);
 
@@ -498,10 +500,13 @@ extern "C" {
         trainKeys.clear();
         return NULL ;
       }
+
+      //Does the matching
       LOG("Matching begin");
       matchTest(mgray,mrgba,trainKeys, trainDes, result);
       int size = min(result.size(), MAX_ITEM);
 
+      //Write the resultArray
       jintArray resultArray;
       resultArray = (*env).NewIntArray(size);
       if (resultArray == NULL) {
@@ -518,6 +523,7 @@ extern "C" {
           LOG("%f  %d",result[i].first,result[i].second);
       }
 
+      //Clean up
       trainDes.release();
       trainKeys.clear();
       LOG("Matching end");
@@ -539,8 +545,8 @@ extern "C" {
       Mat mrgba(height, width, CV_8UC4, (unsigned char *)_rgba);
       Mat mgray(height, width, CV_8UC1, (unsigned char *)_gray);
 
-      cvtColor(myuv, mrgba, CV_YUV420sp2BGR, 4);
-      cvtColor(mrgba, mgray, CV_RGB2GRAY, 0);
+      cvtColor(myuv, mrgba, CV_YUV420sp2RGBA, 4);
+      cvtColor(myuv, mgray, CV_YUV420sp2GRAY, 1);
 
       vector<KeyPoint> v;
 
@@ -549,7 +555,6 @@ extern "C" {
       for( size_t i = 0; i < v.size(); i++ ){
           circle(mrgba, Point(v[i].pt.x, v[i].pt.y), 10, Scalar(0,0,255,255));
       }
-
 
       env->ReleaseIntArrayElements(rgba, _rgba, 0);
       env->ReleaseIntArrayElements(gray, _gray, 0);

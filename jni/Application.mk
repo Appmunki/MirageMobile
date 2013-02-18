@@ -27,4 +27,4 @@ APP_PLATFORM := android-9
 # can't be inspected, code re-ordering can make stepping through
 # the code difficult, stack traces may not be reliable, etc... 
 
-# APP_OPTIM := release OR debug
+APP_OPTIM := debug

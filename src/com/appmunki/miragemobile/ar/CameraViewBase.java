@@ -1,6 +1,9 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.List;
 
 import android.annotation.TargetApi;
@@ -221,18 +224,37 @@ public class CameraViewBase extends SurfaceView implements
 
 		// Testing of the keypoint features. Also works as the test of finding
 		// the rgba and gray
-		Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
-				gray);
+		// Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
+		// gray);
 
 		// Testing of the matching
-		// Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
+		Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
 
 		Log.i(TAG, "Converted");
-		mBitmap.setPixels(gray, 0/* offset */, getFrameWidth() /* stride */, 0, 0,
+
+		mBitmap.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0,
 				getFrameWidth(), getFrameHeight());
 		Log.i(TAG, "Pixel Sets");
 
 		return mBitmap;
+	}
+
+	/**
+	 * Convert the byte array to an int starting from the given offset.
+	 * 
+	 * @param b
+	 *            The byte array
+	 * @param offset
+	 *            The array offset
+	 * @return The integer
+	 */
+	public static int byteArrayToInt(byte[] b, int offset) {
+		int value = 0;
+		for (int i = 0; i < 4; i++) {
+			int shift = (4 - 1 - i) * 8;
+			value += (b[i + offset] & 0x000000FF) << shift;
+		}
+		return value;
 	}
 
 	/**
