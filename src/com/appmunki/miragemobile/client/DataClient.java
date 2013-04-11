@@ -1,13 +1,14 @@
 package com.appmunki.miragemobile.client;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
@@ -16,31 +17,21 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.appmunki.miragemobile.Util;
-import com.appmunki.miragemobile.ar.entity.TargetImage;
+import com.appmunki.miragemobile.ar.ARActivity;
+import com.appmunki.miragemobile.util.Util;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
 public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	private static final String TAG = "DataClient";
 	/** Server Host */
-	//private String HOST = "184.106.134.110";
-	 private String HOST = "192.168.0.100";
+	// private String HOST = "192.168.0.100";
+	private String HOST = "184.106.134.110";
 	/** Server port */
 	private int PORT = 3302;
 	/** Socket object */
@@ -48,12 +39,19 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	/** Output stream to socket communication. */
 	private DataOutputStream _out = null;
 	/** Input stream to socket communication. */
-	private InputStream _in = null;
+	private DataInputStream _in = null;
 	private Context _context;
 
-	private JSONObject json;
+	private String path;
+	private String filename;
 
-	ProgressDialog mProgressDialog;
+	private ARActivity arActivity;
+
+	private String response;
+
+	private String fileToDownload;
+
+	String URL;
 
 	/**
 	 * Constructor
@@ -77,18 +75,24 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	 *            Server port
 	 */
 	public DataClient(Context context) {
-		_context = context;
-		mProgressDialog = new ProgressDialog(_context);
-		mProgressDialog.setMessage("data proto");
-		mProgressDialog.setIndeterminate(false);
-		mProgressDialog.setMax(100);
-		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
+	}
+
+	public DataClient(String path, String filename, ARActivity arActivity) {
+		this.path = path;
+		this.filename = filename;
+		this.arActivity = arActivity;
 	}
 
 	@Override
 	protected Boolean doInBackground(ArrayList... arg0) {
+
+		// DownloadFromUrl("http://192.168.0.100/posters/",
+		// "Movie Poster 1.jpg");
+		// dialogTest("Movie Poster 1.jpg");
+
 		try {
+			uploadFile(path, filename);
 			_socket = new Socket(HOST, PORT);
 			if (_socket.isConnected()) {
 				long start = System.currentTimeMillis();
@@ -96,101 +100,35 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 				Log.i(TAG, "Client connected");
 				// Open streams
 				_out = new DataOutputStream(_socket.getOutputStream());
-				Log.v(TAG, "OUT");
-				_in = _socket.getInputStream();
-
+				_in = new DataInputStream(_socket.getInputStream());
 				Log.i(TAG, "Streams created");
 
-				// Get bitmap from assets
-				InputStream bitmap = _context.getAssets().open("query.jpg");
-				Bitmap bit = BitmapFactory.decodeStream(bitmap);
-				// Send bitmap
-				try {
-					BufferedWriter bw = new BufferedWriter(
-							new OutputStreamWriter(_out));
-					bw.write("MATCH " + ConvertValue.bitmapToBase64String(bit)
-							+ "\n");
-					bw.flush();
-				} catch (Exception exc) {
-					exc.printStackTrace();
-				}
+				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(_out));
+				bw.write("MATCH " + filename + "\n");
+				bw.flush();
 				_socket.shutdownOutput();
 				Log.i(TAG, "Done send");
 
-				Log.i(TAG,
-						"Response time: Uploading image "
-								+ (System.currentTimeMillis() - start) + "ms");
+				response = _in.readLine();
 
-				// read it with BufferedReader
-				BufferedReader br = new BufferedReader(new InputStreamReader(
-						_in));
-
-				Log.v(TAG, "Receive Response");
-
-				StringBuilder sb = new StringBuilder();
-
-				long startResponse = System.currentTimeMillis();
-				
-				String line;
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
-				}
-				
-				Log.i(TAG,"Response time: Response "+ (System.currentTimeMillis() - startResponse)+ "ms");
-
-				String response = sb.toString();
-				int index = response.lastIndexOf("||");
-
-				String fileName = response.substring(index + 2);
-
-				long startDownload = System.currentTimeMillis();
-
-				dialogTest(fileName);
-
-				Log.i(TAG,"Response time: Download proto file "+ (System.currentTimeMillis() - startDownload)
-								+ "ms");
-				
-				
-
-				try{
-
-					JSONArray responseArray = new JSONArray(response.substring(0, index));
-					for (int i = 0; i < responseArray.length(); i++) {
-						JSONObject object = responseArray.getJSONObject(i);
-						TargetImage target = new TargetImage();
-						target._ID.set(object.getInt("ID"));
-						target._author.set(object.getString("author"));
-						target._height.set(object.getInt("height"));
-						target._width.set(object.getInt("width"));
-						target._description
-								.set(object.getString("description"));
-						target._name.set(object.getString("name"));
-						target._image.set(object.getString("image"));
-
-						JSONArray dess = object.getJSONArray("dessbt");
-						byte[] dessbt = Util.bytefromJSONArray(dess);
-						target._dess.set(dessbt);
-
-						JSONArray keys = object.getJSONArray("keysbt");
-						byte[] keysbt = Util.bytefromJSONArray(keys);
-						target._keys.set(keysbt);
-						target.save(_context, target._ID.get());
-
-						json = object;
-						
+				JSONObject object;
+				try {
+					object = new JSONObject(response);
+					JSONObject responseObject = object.getJSONObject("response");
+					int code = responseObject.getInt("code");
+					if (code == 0) {
+						fileToDownload = object.getString("URL");
+						Log.e(TAG, object.toString());
+						downloadFile(fileToDownload);
+					}else{
+						fileToDownload = responseObject.getString("message");
 					}
-
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
-				br.close();
-
-				Log.i(TAG,
-						"Response time downloading file: "
-								+ (System.currentTimeMillis() - start) + "ms");
-
+				Log.i(TAG, "Response time: " + (System.currentTimeMillis() - start) + "ms");
 				_in.close();
 				_out.close();
 			} else {
@@ -202,49 +140,45 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 			e.printStackTrace();
 		}
 
-		return true;
+		return null;
 	}
 
-	public String getAppFolder() {
-		PackageManager m = _context.getPackageManager();
-		String s = _context.getPackageName();
+	@Override
+	protected void onPostExecute(Boolean result) {
+
+		arActivity.setMessage(fileToDownload);
+		super.onPostExecute(result);
+	}
+
+	@Override
+	protected void onCancelled() {
+		// TODO Auto-generated method stub
+		super.onCancelled();
+	}
+
+	public void uploadFile(String path, String filename) {
 		try {
-			PackageInfo p = m.getPackageInfo(s, 0);
-			s = p.applicationInfo.dataDir;
-		} catch (NameNotFoundException e) {
-			Log.w("DataClient", "Error Package name not found ", e);
-			return null;
+			String fullPath = path + "/" + filename;
+			Log.v(TAG, "FULLPATH " + fullPath);
+			FileInputStream fstrm = new FileInputStream(fullPath);
+
+			// Set your server page url (and the file title/description)
+			HttpFileUpload hfu = new HttpFileUpload("http://184.106.134.110/index.php", "TEST MIRAGE", "UPLOADING IMAGE");
+
+			hfu.send_now(fstrm, filename);
+
+		} catch (FileNotFoundException e) {
+			Log.e(TAG, "FILE DOESN'T EXIST");
 		}
-
-		return s;
 	}
 
-	
-
-	public void showAlertDialog(JSONObject object) {
-		try {
-			AlertDialog.Builder builder = new AlertDialog.Builder(_context);
-			builder.setTitle("Information");
-			builder.setMessage("ID:" + object.getInt("ID") + " name:"
-					+ object.getString("name"));
-			builder.setPositiveButton("OK", new OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.cancel();
-				}
-			});
-			builder.create().show();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void dialogTest(String fileName) {
+	public void downloadFile(String fileName) {
 
 		try {
+			fileName = fileName.replace(" ", "%20");
+
 			Log.v(TAG, "Start downloading file");
-			URL url = new URL("http://192.168.0.100/" + fileName);
+			URL url = new URL("http://184.106.134.110/posters/" + fileName);
 			URLConnection connection = url.openConnection();
 			connection.connect();
 			// this will be useful so that you can show a typical 0-100%
@@ -253,7 +187,7 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 
 			// download the file
 			InputStream input = new BufferedInputStream(url.openStream());
-			String path = getAppFolder() + "/" + fileName + ".mirage";
+			String path = Util.getPathPictures()+"/Mirage" + "/" + fileName;
 			OutputStream output = new FileOutputStream(path);
 
 			Log.v(TAG, "PATH " + path);
@@ -266,7 +200,7 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 				// publishing the progress....
 				int progress = (int) (total * 100 / fileLength);
 				if ((progress % 10) == 0) {
-					//Log.v(TAG, "" + progress);
+					Log.v(TAG, "" + progress);
 				}
 				// publishProgress((int) (total * 100 / fileLength));
 				output.write(data, 0, count);
@@ -282,11 +216,4 @@ public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 		}
 
 	}
-	
-	@Override
-	protected void onPostExecute(Boolean result) {
-		Log.v(TAG,"TERMINA LA EJECUCION");
-		super.onPostExecute(result);
-	}
-
 }
