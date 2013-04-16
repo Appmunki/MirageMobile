@@ -115,6 +115,7 @@ public class Matcher {
 	public static native void match(long mGray);
 	
 	public static native float[] getMatrix();
+	public static native float[] getProjectionMatrix();
 	
 	public static native void loadImage(long mGray);
 

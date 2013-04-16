@@ -36,6 +36,7 @@ PatternTrackingInfo::computePose(const Pattern& pattern, const CameraCalibration
 
   // Since solvePnP finds camera location, w.r.t to marker pose, to get marker pose w.r.t to the camera we invert it.
   pose3d = pose3d.getInverted();
+
 }
 
 void

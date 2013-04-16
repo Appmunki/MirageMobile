@@ -58,7 +58,8 @@ void PatternDetector::train(const Pattern& pattern)
 void PatternDetector::buildPatternFromImage(const cv::Mat& image, Pattern& pattern) const
 {
     int numImages = 4;
-    float step = sqrtf(2.0f);
+    float step = sqrt(2.0f);
+
 
     // Store original image in pattern structure
     pattern.size = cv::Size(image.cols, image.rows);

@@ -31,12 +31,15 @@ public:
   const Transformation& getPatternLocation() const;
 
   PatternDetector     m_patternDetector;
+  Pattern             m_pattern;
+  PatternTrackingInfo m_patternInfo;
+
 private:
 
 private:
   CameraCalibration   m_calibration;
-  Pattern             m_pattern;
-  PatternTrackingInfo m_patternInfo;
+  //Pattern             m_pattern;
+  //PatternTrackingInfo m_patternInfo;
   //PatternDetector     m_patternDetector;
 };
 

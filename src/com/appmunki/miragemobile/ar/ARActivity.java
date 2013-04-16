@@ -507,7 +507,7 @@ public abstract class ARActivity extends Activity {
 
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
-				//if(counter!=0){
+//				if(counter==20){
 				Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U,
 						new Scalar(255));
 				src.put(0, 0, data);
@@ -521,9 +521,10 @@ public abstract class ARActivity extends Activity {
 				Matcher.loadImage(dst.getNativeObjAddr());
 				//counter++;
 				//}
-				
-				//Highgui.imwrite("/mnt/sdcard/MirageTest/"+counter+".jpg", dst);
-				//counter++;
+//				counter=0;
+//				//Highgui.imwrite("/mnt/sdcard/MirageTest/"+counter+".jpg", dst);
+//				}
+//				counter++;
 			}
 
 		};

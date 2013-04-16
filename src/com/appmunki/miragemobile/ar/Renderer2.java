@@ -20,15 +20,17 @@ public class Renderer2 implements Renderer {
 	// 0.637644f, 0.764497f, 0.000000f, -0.382671f, 0.451842f, -3.304434f,
 	// 1.000000f };
 
-	private float[] modelViewMatrix = { 1.000000f, -0.000000f, 0.000000f,
-			0.000000f, 0.000000f, 1.000000f, 0.000000f, 0.000000f, -0.000000f,
-			-0.000000f, 1.000000f, 0.000000f, -0.276621f, 0.087513f,
-			-2.621431f, 1.000000f };
+	private float[] modelViewMatrix = { 
+			1.000000f, 0.000000f, 0.000000f,	0.000000f, 
+			0.000000f, 1.000000f, 0.000000f, 0.000000f, 
+			-0.000000f,	-0.000000f, 1.000000f, 0.000000f, 
+			-0.276621f, 0.087513f,	-2.621431f, 1.000000f };
 
 	private float[] mProjectionMatrix = {
-			1.000200f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.000000f,
-			0.000000f, 0.000000f, 0.0f, 0.0f, 0.000000f, -1.000000f, 0.000000f,
-			0.0000000f, -0.020002f, 0.000000f };
+			2.000000f, 	0.000000f, 	0.000000f, 	0.000000f, 
+			0.000000f, 	2.000000f, 	0.000000f, 	0.000000f, 
+			0.000000f,	0.000000f, 	-1.220000f, -2.220000f, 
+			0.000000f,	0.0000000f, -1.000000f, 0.000000f };
 
 	public Renderer2() {
 
@@ -39,6 +41,9 @@ public class Renderer2 implements Renderer {
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
+		
+		mProjectionMatrix = Matcher.getProjectionMatrix();
+		
 
 	}
 
@@ -62,7 +67,7 @@ public class Renderer2 implements Renderer {
 		gl.glLoadMatrixf(mProjectionMatrix, 0);
 
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
-		gl.glLoadIdentity();
+		//gl.glLoadIdentity();
 		
 		modelViewMatrix = Matcher.getMatrix();
 		

@@ -60,10 +60,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private float[] projectionMatrix = {
 			// X, Y, Z,
 			// R, G, B, A
-			1f, 	0.0f, 	0.0f, 		0.0f, 
-			0.0f, 	1f, 	0.0f, 		0.0f,
-			0f,		0f, 	1f, 		0.0f,
-			0.0f,	0.0f, 	0f, 		0.0f };
+    		1.000200f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.000000f,
+			0.000000f, 0.000000f, 0.0f, 0.0f, 0.000000f, -1.000000f, 0.000000f,
+			0.0000000f, -0.020002f, 0.000000f };
 
     
 
@@ -89,7 +88,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     	
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         
-
+        
         // Draw triangle
         mTriangle.draw();
     }
