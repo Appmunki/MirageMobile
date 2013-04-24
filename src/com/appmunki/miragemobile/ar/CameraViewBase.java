@@ -1,9 +1,11 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 import android.annotation.TargetApi;
@@ -21,7 +23,7 @@ import android.view.SurfaceView;
 
 public class CameraViewBase extends SurfaceView implements
 		SurfaceHolder.Callback, Runnable {
-	private static final String TAG = "OCVSample::BaseView";
+	private static final String TAG = "Mirage::CameraViewBase";
 
 	private Camera mCamera;
 	private SurfaceHolder mHolder;
@@ -40,6 +42,8 @@ public class CameraViewBase extends SurfaceView implements
 
 	private Bitmap mBitmap;
 	private int mViewMode;
+
+	private MarkerFoundListener m_markerfoundListener;
 
 	public CameraViewBase(Context context) {
 		super(context);
@@ -63,8 +67,11 @@ public class CameraViewBase extends SurfaceView implements
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			mSf = new SurfaceTexture(10);
 			mCamera.setPreviewTexture(mSf);
-		} else
-			mCamera.setPreviewDisplay(null);
+			// mCamera.setPreviewDisplay(null);
+			mCamera.setPreviewDisplay(getHolder());
+		} else {
+			mCamera.setPreviewDisplay(getHolder());
+		}
 	}
 
 	public boolean openCamera() {
@@ -146,9 +153,8 @@ public class CameraViewBase extends SurfaceView implements
 			params.setPreviewSize(getFrameWidth(), getFrameHeight());
 
 			List<String> FocusModes = params.getSupportedFocusModes();
-			if (FocusModes
-					.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-				params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+			if (FocusModes.contains(Camera.Parameters.FOCUS_MODE_FIXED)) {
+				params.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
 			}
 
 			mCamera.setParameters(params);
@@ -218,17 +224,21 @@ public class CameraViewBase extends SurfaceView implements
 	protected Bitmap processFrame(byte[] data) {
 		Log.i(TAG, "processFrame " + mViewMode);
 		int frameSize = getFrameWidth() * getFrameHeight();
-
+		Arrays.fill(mRGBA, 0);
 		int[] rgba = mRGBA;
 		int[] gray = mGRAY;
 
 		// Testing of the keypoint features. Also works as the test of finding
 		// the rgba and gray
-		Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
-				gray);
+		// Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
+		// gray);
+
+		// Convert frame
+		// Matcher.convertFrame(getFrameWidth(), getFrameHeight(), data, rgba);
 
 		// Testing of the matching
-		// Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
+
+		Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
 
 		Log.i(TAG, "Converted");
 
@@ -237,6 +247,13 @@ public class CameraViewBase extends SurfaceView implements
 		Log.i(TAG, "Pixel Sets");
 
 		return mBitmap;
+	}
+
+	/**
+	 * Adding Listener
+	 */
+	public void addMarkerFoundListener(MarkerFoundListener markerfoundListener) {
+		this.m_markerfoundListener = markerfoundListener;
 	}
 
 	/**
@@ -317,24 +334,33 @@ public class CameraViewBase extends SurfaceView implements
 					this.wait();
 					if (!mThreadRun)
 						break;
-					Log.i(TAG, "Checkpoint 1");
+					// Log.i(TAG, "Checkpoint 1");
+
+					// Take the frame and return just the overlay
 					bmp = processFrame(mFrame);
-					Log.i(TAG, "Checkpoint 2");
+					// Log.i(TAG, "Checkpoint 2");
 
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-			Log.i(TAG, "Checkpoint 3");
+			// Log.i(TAG, "Checkpoint 3");
 			if (bmp != null) {
-				Canvas canvas = mHolder.lockCanvas();
-				if (canvas != null) {
-					canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-					canvas.drawBitmap(bmp,
-							(canvas.getWidth() - getFrameWidth()) / 2,
-							(canvas.getHeight() - getFrameHeight()) / 2, null);
-					mHolder.unlockCanvasAndPost(canvas);
-				}
+				// Log.i(TAG, "Checkpoint 4");
+				this.m_markerfoundListener.found(bmp);
+				// Canvas canvas = mHolder.lockCanvas();
+				// if (canvas != null) {
+				// Log.i(TAG,
+				// "Canvas:" + canvas.getWidth() + "x"
+				// + canvas.getHeight());
+				// Log.i(TAG, "Frame:" + getFrameWidth() + "x"
+				// + getFrameHeight());
+				// canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
+				// canvas.drawBitmap(bmp,
+				// (canvas.getWidth() - getFrameWidth()) / 2,
+				// (canvas.getHeight() - getFrameHeight()) / 2, null);
+				// mHolder.unlockCanvasAndPost(canvas);
+				// }
 			}
 		}
 		Log.i(TAG, "Finished processing thread");
