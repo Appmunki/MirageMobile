@@ -15,11 +15,10 @@
 					<folderInfo id="com.android.toolchain.gcc.454249426.1813830995" name="/" resourcePath="">
 						<toolChain id="com.android.toolchain.gcc.691929624" name="Android GCC" superClass="com.android.toolchain.gcc">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="com.android.targetPlatform.1132636462" isAbstract="false" superClass="com.android.targetPlatform"/>
-							<builder command="${NDKROOT}/ndk-build" id="cdt.managedbuild.target.gnu.builder.base.326109382" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder arguments="NDK_DEBUG=1" command="${NDKROOT}/ndk-build" id="cdt.managedbuild.target.gnu.builder.base.326109382" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="com.android.gcc.compiler.957636258" name="Android GCC Compiler" superClass="com.android.gcc.compiler">
 								<option id="com.android.gcc.option.includePath.714529754" superClass="com.android.gcc.option.includePath" valueType="includePath">
 									<listOptionValue builtIn="false" value="/host/Development/android-ndk-r8d/sources/cxx-stl/stlport/stlport"/>
-									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/host/Development/OpenCV-2.4.3.2-android-sdk/sdk/native/jni/include"/>
 								</option>
 								<inputType id="com.android.gcc.inputType.1203732497" superClass="com.android.gcc.inputType"/>
@@ -51,4 +50,5 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
