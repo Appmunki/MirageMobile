@@ -21,16 +21,25 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.hardware.Camera;
 import android.media.MediaScannerConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.RelativeLayout.LayoutParams;
 
 import com.appmunki.miragemobile.R;
 import com.entity.KeyPoint;
@@ -45,9 +54,11 @@ import flexjson.JSONDeserializer;
 public abstract class ARActivity extends Activity {
 
 	protected static final String TAG = "Aractivity";
-	private static int runs = 0;
+	static int countOnCreate = 0;
 
-	private CameraViewBase mTestView;
+	private CameraViewBase mCameraViewBase;
+	private RelativeLayout splashmain;
+	private CameraOverlayView mCameraOverlayView;
 
 	// private Preview mPreview;
 
@@ -57,32 +68,35 @@ public abstract class ARActivity extends Activity {
 		disableScreenTurnOff();
 		setOrientation();
 		super.onCreate(savedInstanceState);
+		if (countOnCreate == 1) {
+			// Check if test data is loaded or not
+			checkTestData();
 
-		setupLayout();
-
-		// Testing Matcher
-		// loadMatcher();
+		}
+		countOnCreate++;
 
 	}
 
-	/**
-	 * Eventually remove
-	 */
-	private void loadMatcher() {
+	private void checkTestData() {
+		Log.d(TAG, "checkTestData");
+		// Load the splashscreen
 
-		new Thread(new Runnable() {
+		loadSplashScreen();
+		new AsyncTask<Void, Void, Void>() {
 
 			@Override
-			public void run() {
-				if (runs == 0) {
-					runs++;
-					Log.e(TAG, "Error redo");
-					syncDB();
+			protected Void doInBackground(Void... params) {
+				// Create the db
+				syncDB();
+
+				// Check the data.txt
+				if (!(new File(getApplicationContext().getFilesDir().toString()
+						+ "/Data.txt").exists())) {
+					Log.d(TAG, "Data.txt doesn't exist");
 					if (TargetImage.objects(getBaseContext()).isEmpty()) {
 						Log.i(TAG, "Loading Test Data");
 						testJson();
 					}
-					Log.i(TAG, "Displaying Data");
 					List<TargetImage> bs = TargetImage
 							.objects(getApplicationContext()).all().toList();
 					for (TargetImage b : bs) {
@@ -93,10 +107,69 @@ public abstract class ARActivity extends Activity {
 										+ b.getdess().cols + ":"
 										+ b.getdess().rows * b.getdess().cols);
 					}
-					Matcher.load();
+
+					// Turns the list of targetimages to a data.txt file
+					Matcher.fetch(getApplicationContext());
+				} else {
+					Log.d(TAG, "Data.txt exist");
 				}
+				Matcher.load();
+				return null;
 			}
-		}).start();
+
+			@Override
+			protected void onPostExecute(Void result) {
+				// Remove splash
+				splashmain.setVisibility(RelativeLayout.GONE);
+				// Set up Camera
+				setupCameraLayout();
+
+				// Start the camera
+				mCameraViewBase.openCamera();
+			};
+
+		}.execute();
+
+	}
+
+	private void loadSplashScreen() {
+		splashmain = new RelativeLayout(this);
+		LinearLayout content = new LinearLayout(this);
+		content.setOrientation(LinearLayout.VERTICAL);
+
+		// Adding Logo
+		ImageView logoLayout = new ImageView(this);
+		logoLayout.setImageResource(R.drawable.miragelogo);
+		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.WRAP_CONTENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+
+		content.addView(logoLayout, lp1);
+
+		// Adding Text
+		TextView loadingText = new TextView(this);
+
+		loadingText.setText("Loading AR ...");
+		loadingText.setTypeface(null, Typeface.BOLD);
+		loadingText.setGravity(Gravity.CENTER);
+		lp1 = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+		content.addView(loadingText, lp1);
+
+		// Adding progress bar
+		ProgressBar progressBar = new ProgressBar(this, null,
+				android.R.attr.progressBarStyleLarge);
+
+		content.addView(progressBar);
+
+		LayoutParams lp = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		lp.addRule(RelativeLayout.CENTER_IN_PARENT, content.getId());
+		splashmain.addView(content, lp);
+
+		setContentView(splashmain);
 	}
 
 	/**
@@ -127,14 +200,15 @@ public abstract class ARActivity extends Activity {
 	protected void onPause() {
 		Log.i(TAG, "called onPause");
 		super.onPause();
-		mTestView.releaseCamera();
+		if (mCameraViewBase != null)
+			mCameraViewBase.releaseCamera();
 	}
 
 	@Override
 	protected void onResume() {
 		Log.i(TAG, "called onResume");
 		super.onResume();
-		if (!mTestView.openCamera()) {
+		if (mCameraViewBase != null && !mCameraViewBase.openCamera()) {
 			AlertDialog ad = new AlertDialog.Builder(this).create();
 			ad.setCancelable(false); // This blocks the 'BACK' button
 			ad.setMessage("Fatal error: can't open camera!");
@@ -150,7 +224,7 @@ public abstract class ARActivity extends Activity {
 		}
 	}
 
-	private void setupLayout() {
+	private void setupCameraLayout() {
 		// Add a Parent
 		RelativeLayout main = new RelativeLayout(this);
 
@@ -161,13 +235,16 @@ public abstract class ARActivity extends Activity {
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 
 		// Add preview
-		// mPreview = new Preview(this);
-		mTestView = new CameraViewBase(this);
-		main.addView(mTestView);
-		mTestView.setVisibility(SurfaceView.VISIBLE);
-		Log.i(TAG, "Vis: " + mTestView.getVisibility());
-		// main.addView(mPreview);
+		mCameraViewBase = new CameraViewBase(this);
+		main.addView(mCameraViewBase);
+		mCameraViewBase.setVisibility(SurfaceView.VISIBLE);
 
+		// Add canvas overlay
+		mCameraOverlayView = new CameraOverlayView(this);
+		mCameraOverlayView.setVisibility(View.VISIBLE);
+		mCameraViewBase.addMarkerFoundListener(mCameraOverlayView);
+
+		main.addView(mCameraOverlayView);
 		// Add relative layout as main
 		setContentView(main, rlp);
 	}
@@ -211,6 +288,11 @@ public abstract class ARActivity extends Activity {
 
 		DatabaseAdapter adapter = DatabaseAdapter.getInstance(this);
 		adapter.setModels(models);
+	}
+
+	static {
+		System.loadLibrary("opencv_java");
+		System.loadLibrary("MirageMobile");
 	}
 
 }
