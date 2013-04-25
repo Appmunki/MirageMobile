@@ -76,7 +76,7 @@ obj/local/armeabi-v7a/objs/MirageMobile/MirageMobile.o: \
  /home/diego/android-ndk-r8e/sources/cxx-stl/gnu-libstdc++/4.6/include/valarray \
  /home/diego/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp \
  /home/diego/android-ndk-r8e/sources/cxx-stl/gnu-libstdc++/4.6/include/set \
- jni/DebugHelpers.hpp
+ jni/Utils.h jni/DebugHelpers.hpp
 
 /home/diego/android-ndk-r8e/platforms/android-9/arch-arm/usr/include/jni.h:
 
@@ -235,5 +235,7 @@ jni/CameraCalibration.hpp:
 /home/diego/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp:
 
 /home/diego/android-ndk-r8e/sources/cxx-stl/gnu-libstdc++/4.6/include/set:
+
+jni/Utils.h:
 
 jni/DebugHelpers.hpp:

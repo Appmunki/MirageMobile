@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////
 // File includes:
 #include "Pattern.hpp"
+#include "Utils.h"
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -28,7 +29,7 @@ public:
     PatternDetector
         (
         cv::Ptr<cv::FeatureDetector>     detector  = new cv::FastFeatureDetector(50),
-        cv::Ptr<cv::DescriptorExtractor> extractor = new cv::FREAK(false, false), 
+        cv::Ptr<cv::DescriptorExtractor> extractor = new cv::FREAK(false, false),
         cv::Ptr<cv::DescriptorMatcher>   matcher   = new cv::BFMatcher(cv::NORM_HAMMING, true),
         bool enableRatioTest                       = false
         );
@@ -37,6 +38,11 @@ public:
     * 
     */
     void train(const Pattern& pattern);
+
+
+    void startTimer();
+      void stopTimer(char* text);
+
 
     /**
     * Initialize Pattern structure from the input image.
@@ -53,6 +59,9 @@ public:
     bool enableRatioTest;
     bool enableHomographyRefinement;
     float homographyReprojectionThreshold;
+
+    timeval t1, t2;
+      double elapsedTime;
 
 protected:
 

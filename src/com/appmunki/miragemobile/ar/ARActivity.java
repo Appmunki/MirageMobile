@@ -1,6 +1,7 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -33,8 +34,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.Size;
@@ -78,7 +81,7 @@ public abstract class ARActivity extends Activity {
 	private AlertDialog alert;
 
 	private int counter = 0;
-	
+
 	private String fileToDownload = "";
 
 	ARActivity arActivity;
@@ -95,6 +98,7 @@ public abstract class ARActivity extends Activity {
 				// Load native library after(!) OpenCV initialization
 				// System.loadLibrary("opencv_java");
 				System.loadLibrary("MirageMobile");
+				loadPattern();
 				loadOnCreate();
 
 			}
@@ -106,6 +110,21 @@ public abstract class ARActivity extends Activity {
 			}
 		}
 	};
+
+	public void loadPattern() {
+
+		String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
+		path = path + "PyramidPattern.jpg";
+
+		try {
+			Util.copyFileFromAssets(getApplicationContext(), "PyramidPattern.jpg", path);
+			Matcher.loadPattern(path);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+
+	}
 
 	public void loadOnCreate() {
 		arActivity = this;
@@ -135,8 +154,7 @@ public abstract class ARActivity extends Activity {
 
 		// Testing Matcher
 		loadMatcher();
-		
-		
+
 	}
 
 	@Override
@@ -194,7 +212,7 @@ public abstract class ARActivity extends Activity {
 						Log.i(TAG, "dess: " + b.getdess().rows + ":" + b.getdess().cols + ":" + b.getdess().rows * b.getdess().cols);
 					}
 					Matcher.fetch();
-					
+
 				}
 			}
 		}).start();
@@ -304,12 +322,16 @@ public abstract class ARActivity extends Activity {
 
 	private void parseJson(String json) {
 		System.out.print(json);
-//		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>().use("values", TargetImageResponse.class)
-//				.use("values.dess", Mat.class).use("values.keys", Vector.class).use("values.keys.values", KeyPoint.class).deserialize(json);
-//		for (TargetImageResponse item : items) {
-//
-//			new TargetImage(item).save(this);
-//		}
+		// List<TargetImageResponse> items = new
+		// JSONDeserializer<List<TargetImageResponse>>().use("values",
+		// TargetImageResponse.class)
+		// .use("values.dess", Mat.class).use("values.keys",
+		// Vector.class).use("values.keys.values",
+		// KeyPoint.class).deserialize(json);
+		// for (TargetImageResponse item : items) {
+		//
+		// new TargetImage(item).save(this);
+		// }
 	}
 
 	/** Will set up the database definition **/
@@ -341,7 +363,9 @@ public abstract class ARActivity extends Activity {
 	}
 
 	public void testSaveImage(byte[] org) {
-		File photo = new File(Environment.getExternalStorageDirectory(), "photo.jpg");
+		Log.v("TEST", "" + Environment.getExternalStorageDirectory());
+		File photo = new File(Environment.getExternalStorageDirectory(), "photo" + counter + ".jpg");
+		counter++;
 
 		if (photo.exists()) {
 			photo.delete();
@@ -436,6 +460,9 @@ public abstract class ARActivity extends Activity {
 			mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 			this.preview_width = 640;
 			this.preview_height = 480;
+
+			// this.preview_width = 800;
+			// this.preview_height = 480;
 		}
 
 		/**
@@ -507,24 +534,22 @@ public abstract class ARActivity extends Activity {
 
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
-//				if(counter==20){
-				Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U,
-						new Scalar(255));
-				src.put(0, 0, data);
-				Mat dst=new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U,
-						new Scalar(255));
-				
-				
-				Core.transpose(src, dst);
-				Core.flip(dst, dst, 1);
-				//Log.v("MIRAGE_NATIVE","CAMBIAR IMAGEN");
-				Matcher.loadImage(dst.getNativeObjAddr());
-				//counter++;
-				//}
-//				counter=0;
-//				//Highgui.imwrite("/mnt/sdcard/MirageTest/"+counter+".jpg", dst);
-//				}
-//				counter++;
+				if (counter == 0) {
+					Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U,
+							new Scalar(255));
+					src.put(0, 0, data);
+					Mat dst = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U,
+							new Scalar(255));
+
+					Core.transpose(src, dst);
+					Core.flip(dst, dst, 1);
+					// Log.v("MIRAGE_NATIVE","CAMBIAR IMAGEN");
+					Matcher.loadImage(dst.getNativeObjAddr());
+
+					counter++;
+				} else {
+					counter = 0;
+				}
 			}
 
 		};

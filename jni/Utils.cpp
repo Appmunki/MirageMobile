@@ -9,7 +9,7 @@
 
 Utils::Utils()
 {
-  // TODO Auto-generated constructor stub
+	double elapsedTime = 0;
 
 }
 
@@ -17,4 +17,5 @@ Utils::~Utils()
 {
   // TODO Auto-generated destructor stub
 }
+
 

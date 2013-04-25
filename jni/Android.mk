@@ -19,8 +19,8 @@ include /home/diego/OpenCV-2.4.4-android-sdk/sdk/native/jni/OpenCV.mk
 
 
 LOCAL_MODULE    := MirageMobile
-LOCAL_SRC_FILES := MirageMobile.cpp GeometryTypes.cpp ARPipeline.cpp CameraCalibration.cpp Pattern.cpp PatternDetector.cpp
+LOCAL_SRC_FILES := Utils.cpp MirageMobile.cpp GeometryTypes.cpp ARPipeline.cpp CameraCalibration.cpp Pattern.cpp PatternDetector.cpp
 #ARPipeline.cpp CameraCalibration.cpp GeometryTypes.cpp Pattern.cpp PatternDetector.cpp Utils.cpp
-LOCAL_LDLIBS    += -llog -ldl
+LOCAL_LDLIBS    += -llog -ldl -landroid
 
 include $(BUILD_SHARED_LIBRARY)

@@ -40,9 +40,14 @@ ARPipeline m_pipeline;
 Matrix44 glMatrixTest;
 Matrix44 glProjectionMatrix;
 
+bool isPatternPresent = false;
+
 const char *nativeString = "/sdcard/Pictures/Mirage/PyramidPattern.jpg";
 Mat patternImage;
 int counter = 0;
+
+timeval t1, t2;
+double elapsedTime;
 
 void
 processSingleImage(const cv::Mat& patternImage, const cv::Mat& image);
@@ -55,6 +60,10 @@ extractFeatures(const Mat& img, Mat& des, vector<KeyPoint>& keys);
 
 void
 buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix);
+
+void testFlow();
+
+void stopTimer();
 
 //ARDrawingContext& drawingCtx);
 
@@ -208,7 +217,7 @@ void buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projec
 }
 
 void processSingleImage(const cv::Mat& patternImage, const cv::Mat& image) {
-	cv::Size frameSize(image.cols, image.rows);
+	//cv::Size frameSize(image.cols, image.rows);
 
 	bool shouldQuit = false;
 	shouldQuit = processFrame(image);
@@ -217,22 +226,15 @@ void processSingleImage(const cv::Mat& patternImage, const cv::Mat& image) {
 bool processFrame(const cv::Mat& cameraFrame) {
 	// Clone image used for background (we will draw overlay on it)
 	cv::Mat img = cameraFrame.clone();
-
-	bool isPatternPresent = m_pipeline.processFrame(cameraFrame);
+	isPatternPresent = m_pipeline.processFrame(cameraFrame);
 	Transformation patternPose;
 	patternPose = m_pipeline.getPatternLocation();
-
-	m_pipeline.m_patternInfo.draw2dContour(img, Scalar(0, 255, 0));
-	imwrite("/mnt/sdcard/MirageTest/1.jpg", img);
-
+	/*m_pipeline.m_patternInfo.draw2dContour(img, Scalar(0, 255, 0));
+	 imwrite("/mnt/sdcard/MirageTest/1.jpg", img);
+	 */
 	glMatrixTest = patternPose.getMat44();
 
-	/*if (m_pipeline.m_patternInfo.points2d.size() > 1) {
-		float distX = m_pipeline.m_patternInfo.points2d[0].x - m_pipeline.m_patternInfo.points2d[1].x;
-		float distY = m_pipeline.m_patternInfo.points2d[0].y - m_pipeline.m_patternInfo.points2d[1].y;
 
-		LOG("DISTANCIA X: %f Y:%f", distX, distY);
-	}*/
 
 	return false;
 }
@@ -295,24 +297,33 @@ inline void readDatabase(float *mdata, int &count) {
 	}
 }
 
+inline void startTimer() {
+	gettimeofday(&t1, NULL);
+}
+
+inline void stopTimer() {
+	gettimeofday(&t2, NULL);
+
+	// compute and print the elapsed time in millisec
+	elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
+	elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
+	LOG("PRUEBA FLOW %f ms.\n", elapsedTime);
+}
+
 JNIEXPORT void JNICALL
 Java_com_appmunki_miragemobile_ar_Matcher_fetch(JNIEnv *, jobject) {
+
 	LOG("Fetch");
+
 	//m_calibration = CameraCalibration(526.58037684199849f, 524.65577209994706f, 318.41744018680112f, 202.96659047014398f);
-	//m_calibration = CameraCalibration(786.42938232f, 786.42938232f, 217.01358032f, 311.25384521f);
+	//  Use this
+	m_calibration = CameraCalibration(786.42938232f, 786.42938232f, 217.01358032f, 311.25384521f);
+	//m_calibration = CameraCalibration(674.85465753264498f, 674.43269416560099f,236.99202219745999f,293.96907219036780f);
+	//m_calibration = CameraCalibration(1255.0268311797888f, 1251.7340902666558f, 350.35472039685698f, 589.89384582035859f);
 
-	float distorsion[5] = {0.12511057719838597f, 1.1885259508076416f,
-		       0.0018152449454049871f, 0.0058028812916887575f,
-		       -18.760884645692691f};
-
-	m_calibration = CameraCalibration(674.85465753264498f, 674.43269416560099f,236.99202219745999f,293.96907219036780f,distorsion);
-
-	patternImage = imread(nativeString, 0);
+	//patternImage = imread(nativeString, 0);
 	m_pipeline = ARPipeline(patternImage, m_calibration);
 
-	LOG("INICIA TEST");
-	//test();
-	LOG("TERMINA TEST");
 
 	/*FILE* pFile = fopen("/data/data/com.appmunki.miragemobile/files/Data.txt",
 	 "rb");
@@ -487,16 +498,96 @@ inline int min(int a, int b) {
 	return a > b ? b : a;
 }
 
+inline void testFlow() {
+
+
+	Mat imgA = imread("/storage/emulated/0/MirageTest/1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat imgB = imread("/storage/emulated/0/MirageTest/2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+
+	Size img_sz = imgA.size();
+	Mat imgC(img_sz, 1);
+
+	int win_size = 15;
+	int maxCorners = 300;
+	double qualityLevel = 0.05;
+	double minDistance = 5.0;
+	int blockSize = 3;
+	double k = 0.04;
+	std::vector<cv::Point2f> cornersA;
+	cornersA.reserve(maxCorners);
+	std::vector<cv::Point2f> cornersB;
+	cornersB.reserve(maxCorners);
+	LOG("goodFeaturesToTrack");
+	startTimer();
+
+	std::vector<cv::KeyPoint> keypointsA;
+	std::vector<cv::KeyPoint> keypointsB;
+
+
+	FastFeatureDetector detector(50);
+
+	detector.detect(imgA,keypointsA);
+	detector.detect(imgB,keypointsB);
+
+	for (int i = 0; i < maxCorners; ++i) {
+		cornersA.push_back(keypointsA[i].pt);
+		cornersB.push_back(keypointsB[i].pt);
+	}
+
+
+
+	//goodFeaturesToTrack(imgA, cornersA, maxCorners, qualityLevel, minDistance, cv::Mat());
+	//goodFeaturesToTrack(imgB, cornersB, maxCorners, qualityLevel, minDistance, cv::Mat());
+	stopTimer();
+	LOG("cornerSubPix");
+	startTimer();
+	cornerSubPix(imgA, cornersA, Size(win_size, win_size), Size(-1, -1), TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
+	cornerSubPix(imgB, cornersB, Size(win_size, win_size), Size(-1, -1), TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
+	stopTimer();
+// Call Lucas Kanade algorithm
+
+	CvSize pyr_sz = Size(img_sz.width + 8, img_sz.height / 3);
+	LOG("calcOpticalFlowPyrLK");
+	startTimer();
+	std::vector<uchar> features_found;
+	features_found.reserve(maxCorners);
+	std::vector<float> feature_errors;
+	feature_errors.reserve(maxCorners);
+	calcOpticalFlowPyrLK(imgA, imgB, cornersA, cornersB, features_found, feature_errors, Size(win_size, win_size), 5,
+			cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3), 0);
+	stopTimer();
+// Make an image of the results
+
+	for (int i = 0; i < features_found.size(); i++) {
+		cout << "Error is " << feature_errors[i] << endl;
+//continue;
+		cout << "Got it" << endl;
+		Point p0(ceil(cornersA[i].x), ceil(cornersA[i].y));
+		Point p1(ceil(cornersB[i].x), ceil(cornersB[i].y));
+		line(imgB, p0, p1, CV_RGB(255,255,255), 2);
+
+		imwrite("/mnt/sdcard/MirageTest/ImageA.jpg", imgA);
+		imwrite("/mnt/sdcard/MirageTest/ImageB.jpg", imgB);
+		imwrite("/mnt/sdcard/MirageTest/LKpyr_OpticalFlow.jpg", imgC);
+
+	}
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_appmunki_miragemobile_ar_Matcher_isPatternPresent(JNIEnv *env, jobject obj) {
+	jboolean isPresent = isPatternPresent;
+	return isPatternPresent;
+}
+
 JNIEXPORT jfloatArray JNICALL
 Java_com_appmunki_miragemobile_ar_Matcher_loadImage(JNIEnv *env, jobject obj, long addrGray) {
 
 	Mat& testImage = *(Mat*) addrGray;
 	//LOG("CAMBIAR IMAGEN");
-
+	//imwrite("/mnt/sdcard/MirageTest/ImageTest.jpg", testImage);
 	if (patternImage.empty()) {
 		LOG("Input image cannot be read");
 	} else {
-		//LOG("Input image WORKS");
 		processSingleImage(patternImage, testImage);
 	}
 }
@@ -516,14 +607,13 @@ Java_com_appmunki_miragemobile_ar_Matcher_getMatrix(JNIEnv *env, jobject obj) {
 	}
 
 	env->SetFloatArrayRegion(result, 0, 16, array1);
+
 	return result;
 }
 
-
-
 JNIEXPORT jfloatArray JNICALL
 Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env, jobject obj) {
-	buildProjectionMatrix(480,640,glProjectionMatrix);
+	buildProjectionMatrix(480, 640, glProjectionMatrix);
 
 	jfloatArray result;
 	result = env->NewFloatArray(16);
@@ -539,6 +629,16 @@ Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env, jobje
 
 	env->SetFloatArrayRegion(result, 0, 16, array1);
 	return result;
+}
+
+
+
+JNIEXPORT void JNICALL
+Java_com_appmunki_miragemobile_ar_Matcher_loadPattern(JNIEnv *env, jobject obj, jstring path) {
+	const char * mPath;
+
+    mPath = env->GetStringUTFChars(path , NULL ) ;
+	patternImage = imread(mPath,0);
 }
 
 JNIEXPORT void JNICALL

@@ -19,6 +19,7 @@
 
 #include <opencv2/opencv.hpp>
 
+
 /**
  * Store the image data and computed descriptors of target pattern
  */

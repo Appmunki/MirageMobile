@@ -118,5 +118,8 @@ public class Matcher {
 	public static native float[] getProjectionMatrix();
 	
 	public static native void loadImage(long mGray);
+	
+	public static native boolean isPatternPresent();
+	public static native void loadPattern(String path);
 
 }

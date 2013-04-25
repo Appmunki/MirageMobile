@@ -69,7 +69,9 @@ obj/local/armeabi/objs/MirageMobile/ARPipeline.o: jni/ARPipeline.cpp \
  /home/diego/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp \
  /home/diego/android-ndk-r8e/sources/cxx-stl/gnu-libstdc++/4.6/include/valarray \
  /home/diego/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp \
- /home/diego/android-ndk-r8e/sources/cxx-stl/gnu-libstdc++/4.6/include/set
+ /home/diego/android-ndk-r8e/sources/cxx-stl/gnu-libstdc++/4.6/include/set \
+ jni/Utils.h \
+ /home/diego/android-ndk-r8e/platforms/android-9/arch-arm/usr/include/android/log.h
 
 jni/ARPipeline.hpp:
 
@@ -218,3 +220,7 @@ jni/CameraCalibration.hpp:
 /home/diego/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp:
 
 /home/diego/android-ndk-r8e/sources/cxx-stl/gnu-libstdc++/4.6/include/set:
+
+jni/Utils.h:
+
+/home/diego/android-ndk-r8e/platforms/android-9/arch-arm/usr/include/android/log.h:

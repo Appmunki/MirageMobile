@@ -2,9 +2,13 @@ package com.appmunki.miragemobile.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -203,6 +207,35 @@ public class Util {
 
 	public static String getPathPictures() {
 		return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+	}
+
+	public static void copyFileFromAssets(Context context, String file, String dest) throws Exception {
+		InputStream in = null;
+		OutputStream fout = null;
+		int count = 0;
+		try {
+			in = context.getAssets().open(file);
+			fout = new FileOutputStream(new File(dest));
+			byte data[] = new byte[1024];
+			while ((count = in.read(data, 0, 1024)) != -1) {
+				fout.write(data, 0, count);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+				}
+			}
+			if (fout != null) {
+				try {
+					fout.close();
+				} catch (IOException e) {
+				}
+			}
+		}
 	}
 
 }

@@ -17,10 +17,13 @@
 #include "PatternDetector.hpp"
 #include "CameraCalibration.hpp"
 #include "GeometryTypes.hpp"
+#include "Utils.h"
 
 class ARPipeline
 {
 public:
+
+
 
   ARPipeline();
 
@@ -30,9 +33,15 @@ public:
 
   const Transformation& getPatternLocation() const;
 
+  void startTimer();
+  void stopTimer();
+
   PatternDetector     m_patternDetector;
   Pattern             m_pattern;
   PatternTrackingInfo m_patternInfo;
+
+  timeval t1, t2;
+  double elapsedTime;
 
 private:
 
