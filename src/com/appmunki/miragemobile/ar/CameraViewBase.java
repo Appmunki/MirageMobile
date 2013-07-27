@@ -43,10 +43,13 @@ public class CameraViewBase extends SurfaceView implements
 	private Bitmap mBitmap;
 	private int mViewMode;
 
+	private boolean isDebugging;
+
 	private MarkerFoundListener m_markerfoundListener;
 
-	public CameraViewBase(Context context) {
+	public CameraViewBase(Context context, boolean debugging) {
 		super(context);
+		this.isDebugging = debugging;
 		mHolder = getHolder();
 		mHolder.addCallback(this);
 		Log.i(TAG, "Instantiated new " + this.getClass());
@@ -107,7 +110,13 @@ public class CameraViewBase extends SurfaceView implements
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
 				synchronized (CameraViewBase.this) {
-					System.arraycopy(data, 0, mFrame, 0, data.length);
+
+					// Add testing framework here
+					if (isDebugging) {
+
+					} else {
+						System.arraycopy(data, 0, mFrame, 0, data.length);
+					}
 					CameraViewBase.this.notify();
 				}
 				camera.addCallbackBuffer(mBuffer);

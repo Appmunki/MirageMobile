@@ -54,7 +54,7 @@ public class LoadingScreenActivity extends Activity {
 
 			@Override
 			protected Void doInBackground(Void... arg0) {
-				Matcher.load();
+				Matcher.load(true);
 				return null;
 			}
 

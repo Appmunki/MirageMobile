@@ -2,34 +2,24 @@ package com.appmunki.miragemobile.ar;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Vector;
-
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
-import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.graphics.Typeface;
-import android.hardware.Camera;
-import android.media.MediaScannerConnection;
+import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -38,8 +28,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.RelativeLayout.LayoutParams;
+import android.widget.TextView;
 
 import com.appmunki.miragemobile.R;
 import com.entity.KeyPoint;
@@ -71,7 +61,6 @@ public abstract class ARActivity extends Activity {
 		if (countOnCreate == 1) {
 			// Check if test data is loaded or not
 			checkTestData();
-
 		}
 		countOnCreate++;
 
@@ -88,6 +77,14 @@ public abstract class ARActivity extends Activity {
 			protected Void doInBackground(Void... params) {
 				// Create the db
 				syncDB();
+				// Check if test image exist
+				if (!(new File(getApplicationContext().getFilesDir().toString()
+						+ "/testimage.png").exists())) {
+					Log.d(TAG, "testimage.png doesn't exist");
+
+				} else {
+					Log.d(TAG, "testimage.png doesn't exist");
+				}
 
 				// Check the data.txt
 				if (!(new File(getApplicationContext().getFilesDir().toString()
@@ -113,7 +110,7 @@ public abstract class ARActivity extends Activity {
 				} else {
 					Log.d(TAG, "Data.txt exist");
 				}
-				Matcher.load();
+				Matcher.load(true);
 				return null;
 			}
 
@@ -130,6 +127,40 @@ public abstract class ARActivity extends Activity {
 
 		}.execute();
 
+	}
+
+	private void setupCameraLayout() {
+		// Add a Parent
+		RelativeLayout main = new RelativeLayout(this);
+
+		// Defining the RelativeLayout layout parameters.
+		// In this case I want to fill its parent
+		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.MATCH_PARENT,
+				RelativeLayout.LayoutParams.MATCH_PARENT);
+
+		// Add preview
+		mCameraViewBase = new CameraViewBase(this, false);
+		main.addView(mCameraViewBase);
+		mCameraViewBase.setVisibility(SurfaceView.VISIBLE);
+		// Add canvas overlay
+		mCameraOverlayView = new CameraOverlayView(this);
+		mCameraOverlayView.setVisibility(View.VISIBLE);
+		mCameraViewBase.addMarkerFoundListener(mCameraOverlayView);
+
+		main.addView(mCameraOverlayView);
+
+		// Add in GLView
+		GLSurfaceView mGLView = new GLSurfaceView(this);
+		// mGLView.setEGLContextClientVersion(2);
+		mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+		mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		mGLView.setZOrderOnTop(true);
+
+		mGLView.setRenderer(new TestRender());
+		main.addView(mGLView);
+		// Add relative layout as main
+		setContentView(main, rlp);
 	}
 
 	private void loadSplashScreen() {
@@ -222,31 +253,6 @@ public abstract class ARActivity extends Activity {
 					});
 			ad.show();
 		}
-	}
-
-	private void setupCameraLayout() {
-		// Add a Parent
-		RelativeLayout main = new RelativeLayout(this);
-
-		// Defining the RelativeLayout layout parameters.
-		// In this case I want to fill its parent
-		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
-				RelativeLayout.LayoutParams.MATCH_PARENT);
-
-		// Add preview
-		mCameraViewBase = new CameraViewBase(this);
-		main.addView(mCameraViewBase);
-		mCameraViewBase.setVisibility(SurfaceView.VISIBLE);
-
-		// Add canvas overlay
-		mCameraOverlayView = new CameraOverlayView(this);
-		mCameraOverlayView.setVisibility(View.VISIBLE);
-		mCameraViewBase.addMarkerFoundListener(mCameraOverlayView);
-
-		main.addView(mCameraOverlayView);
-		// Add relative layout as main
-		setContentView(main, rlp);
 	}
 
 	private void testJson() {
