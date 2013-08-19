@@ -54,3 +54,6 @@ proguard/
 *.iws
 .idea/
 
+/bin
+/gen
+/obj
