@@ -1,4 +1,9 @@
 eclipse.preferences.version=1
+environment/project/com.android.toolchain.gcc.454249426/NDKROOT/delimiter=\:
+environment/project/com.android.toolchain.gcc.454249426/NDKROOT/operation=append
+environment/project/com.android.toolchain.gcc.454249426/NDKROOT/value=/home/diego/android-ndk-r8e
+environment/project/com.android.toolchain.gcc.454249426/append=true
+environment/project/com.android.toolchain.gcc.454249426/appendContributed=true
 org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=16
 org.eclipse.cdt.core.formatter.alignment_for_assignment=16
 org.eclipse.cdt.core.formatter.alignment_for_base_clause_in_type_declaration=80
