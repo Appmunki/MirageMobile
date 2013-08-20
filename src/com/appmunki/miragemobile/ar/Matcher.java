@@ -7,23 +7,30 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import com.appmunki.miragemobile.ar.entity.KeyPoint;
+import com.appmunki.miragemobile.ar.entity.Mat;
+import com.appmunki.miragemobile.ar.entity.TargetImage;
+
 import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
-import com.entity.KeyPoint;
-import com.entity.Mat;
-import com.entity.TargetImage;
 
 public class Matcher {
 	private static final String TAG = "Matcher";
 
-	public static void fetch(Context context) {
+	public static void fetchJava(Context context) {
 		List<TargetImage> bs = TargetImage.objects(context).all().toList();
 
-		if (!(new File(context.getFilesDir().toString() + "/Data.txt").exists())) {
-			writeData(bs, context);
+		Log.v("DEBUG",bs.size()+"");
+		
+		for (TargetImage target:bs) {
+			Log.v("DEBUG",target.getname());
 		}
+		
+		//if (!(new File(context.getFilesDir().toString() + "/Data.txt").exists())) {
+		//	writeData(bs, context);
+		//}
 		fetch();
 	}
 
@@ -112,5 +119,18 @@ public class Matcher {
 	public static native void fetch();
 
 	public static native void match(long mGray);
+	
+	public static native void matchDebug(String path);
+	
+	public static native float[] getMatrix();
+	public static native float[] getProjectionMatrix();
+	
+	public static native void loadImage(long mGray);
+	
+	public static native boolean isPatternPresent();
+	public static native void loadPattern(String path);
+	
+	
+	public static native void runDebug(String pathPattern,String pathImageToMatch);
 
 }

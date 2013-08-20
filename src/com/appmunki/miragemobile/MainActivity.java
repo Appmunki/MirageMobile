@@ -1,18 +1,42 @@
 package com.appmunki.miragemobile;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.os.Bundle;
 import android.view.Menu;
 
 import com.appmunki.miragemobile.ar.ARActivity;
+import com.appmunki.miragemobile.ar.entity.TargetImage;
+import com.appmunki.miragemobile.client.DataClient;
+import com.orm.androrm.DatabaseAdapter;
+import com.orm.androrm.Model;
 
 public class MainActivity extends ARActivity {
 
-	private final String TAG = "MainActivity";
+	static int countOnCreate = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		/*if (countOnCreate == 0) {
+			DataClient dc = new DataClient(this);
+			dc.execute(new ArrayList<String>());
+			createDatabase();
+		}
+		countOnCreate++;
+		*/
 
+	}
+
+	private void createDatabase() {
+		DatabaseAdapter.setDatabaseName("miragedb");
+		List<Class<? extends Model>> models = new ArrayList<Class<? extends Model>>();
+		models.add(TargetImage.class);
+
+		DatabaseAdapter adapter = DatabaseAdapter
+				.getInstance(getApplicationContext());
+		adapter.setModels(models);
 	}
 
 	@Override
