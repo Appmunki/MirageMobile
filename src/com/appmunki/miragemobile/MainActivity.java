@@ -19,13 +19,13 @@ public class MainActivity extends ARActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		/*if (countOnCreate == 0) {
+		if (countOnCreate == 0) {
 			DataClient dc = new DataClient(this);
-			dc.execute(new ArrayList<String>());
+			//dc.execute(new ArrayList<String>());
 			createDatabase();
 		}
 		countOnCreate++;
-		*/
+		
 
 	}
 

@@ -17,7 +17,9 @@ import java.nio.IntBuffer;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Environment;
+import android.util.Log;
 
 /**
  * Contains utility functions
@@ -227,15 +229,58 @@ public class Util {
 				try {
 					in.close();
 				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 			if (fout != null) {
 				try {
 					fout.close();
 				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}
+	}
+
+	public static boolean createDirIfNotExists(String path) {
+		boolean ret = true;
+
+		File file = new File(Environment.getExternalStorageDirectory(), path);
+		if (!file.exists()) {
+			if (!file.mkdirs()) {
+				Log.e("TravellerLog :: ", "Problem creating Image folder");
+				ret = false;
+			}
+		}
+		return ret;
+	}
+
+	public static void copyAssetsPatterns(Context context) {
+		try {
+			createDirIfNotExists("MirageDebug");
+			String path = "";
+			for (String name : listPatternFiles(context)) {
+				path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/MirageDebug/";
+				path += name;
+				Util.copyFileFromAssets(context, "patterns/" + name, path);
+
+				Log.v("PATTERN", "PATH " + path);
+				Log.v("PATTERN", name);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public static String[] listPatternFiles(Context context) {
+		try {
+			String[] filenames = context.getAssets().list("patterns");			
+			return filenames;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

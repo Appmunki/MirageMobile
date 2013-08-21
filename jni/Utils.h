@@ -8,7 +8,7 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#include <stdio.h>
+
 #include <android/log.h>
 
 // Utility for logging:

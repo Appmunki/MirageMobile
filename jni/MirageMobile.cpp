@@ -1,10 +1,12 @@
 #include <jni.h>
 #include <android/log.h>
 #include <string.h>
-//#include <assert.h>
-//#include <cstdio>
-//#include <cstdlib>
+#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <stdio.h>
 #include <Utils.h>
+#include <math.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -200,65 +202,61 @@ Java_com_appmunki_miragemobile_ar_Matcher_fetch(JNIEnv *, jobject) {
 
 	//m_calibration = CameraCalibration(526.58037684199849f, 524.65577209994706f, 318.41744018680112f, 202.96659047014398f);
 	//  Use this
-	m_calibration = CameraCalibration(786.42938232f, 786.42938232f, 217.01358032f, 311.25384521f);
+	//m_calibration = CameraCalibration(786.42938232f, 786.42938232f, 217.01358032f, 311.25384521f);
 	//m_calibration = CameraCalibration(674.85465753264498f, 674.43269416560099f,236.99202219745999f,293.96907219036780f);
 	//m_calibration = CameraCalibration(1255.0268311797888f, 1251.7340902666558f, 350.35472039685698f, 589.89384582035859f);
 
 	//patternImage = imread(nativeString, 0);
-	m_pipeline = ARPipeline(patternImage, m_calibration);
+	//m_pipeline = ARPipeline(patternImage, m_calibration);
 
-	/*FILE* pFile = fopen("/data/data/com.appmunki.miragemobile/files/Data.txt",
-	 "rb");
+	FILE* pFile = fopen("/data/data/com.appmunki.miragemobile/files/Data.txt", "rb");
 
-	 long lSize;
-	 char * buffer;
-	 size_t sresult;
+	long lSize;
+	char * buffer;
+	size_t sresult;
 
-	 if (pFile == NULL)
-	 {
-	 fputs("File error", stderr);
-	 exit(1);
-	 }
+	if (pFile == NULL) {
+		fputs("File error", stderr);
+		exit(1);
+	}
 
-	 // obtain file size:
-	 fseek(pFile, 0, SEEK_END);
+	// obtain file size:
+	fseek(pFile, 0, SEEK_END);
 
-	 lSize = ftell(pFile);
+	lSize = ftell(pFile);
 
-	 rewind(pFile);
 
-	 // allocate memory to contain the whole file:
-	 buffer = (char*) malloc(sizeof(char) * lSize);
-	 if (buffer == NULL)
-	 {
-	 fputs("Memory error", stderr);
-	 exit(2);
-	 }
+	rewind(pFile);
 
-	 // copy the file into the buffer:
-	 sresult = fread(buffer, 1, lSize, pFile);
-	 if (sresult != lSize)
-	 {
-	 fputs("Reading error", stderr);
-	 exit(3);
-	 }
+	// allocate memory to contain the whole file:
+	buffer = (char*) malloc(sizeof(char) * lSize);
+	if (buffer == NULL) {
+		fputs("Memory error", stderr);
+		exit(2);
+	}
 
-	 // the whole file is now loaded in the memory buffer.
+	// copy the file into the buffer:
+	sresult = fread(buffer, 1, lSize, pFile);
+	if (sresult != lSize) {
+		fputs("Reading error", stderr);
+		exit(3);
+	}
 
-	 int dataSize, count = 0;
-	 char *endPtr;
-	 dataSize = strtol(buffer, &endPtr, 10);
-	 float *mdata = new float[dataSize];
-	 // read data as an array of float number
-	 for (int i = 0; i < dataSize; ++i)
-	 {
-	 mdata[i] = strtod(endPtr, &endPtr);
-	 //LOGE("data: %f",mdata[i]);
-	 }
-	 readDatabase(mdata, count);
-	 loaded = true;
-	 LOG("Done");
-	 */
+	// the whole file is now loaded in the memory buffer.
+
+	int dataSize, count = 0;
+	char *endPtr;
+	dataSize = strtol(buffer, &endPtr, 10);
+	float *mdata = new float[dataSize];
+	// read data as an array of float number
+	for (int i = 0; i < dataSize; ++i) {
+		mdata[i] = strtod(endPtr, &endPtr);
+		//LOGE("data: %f",mdata[i]);
+	}
+	readDatabase(mdata, count);
+	loaded = true;
+	LOG("Done");
+
 }
 inline void extractFeatures(const Mat& img, Mat& des, vector<KeyPoint>& keys) {
 	// detect image keypoints
@@ -454,7 +452,7 @@ Java_com_appmunki_miragemobile_ar_Matcher_loadPattern(JNIEnv *env, jobject obj, 
 	patternImage = imread(mPath, 0);
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT bool JNICALL
 Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, jstring pathPattern, jstring pathImageToMatch) {
 
 	const char *nativeString = env->GetStringUTFChars(pathPattern, NULL);
@@ -509,6 +507,8 @@ Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, 
 		}
 	}
 
+	LOG("GOOD MATCHES %d",good_matches.size());
+
 	//-- Localize the object
 	vector<Point2f> obj;
 	vector<Point2f> scene;
@@ -530,6 +530,9 @@ Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, 
 	obj_corners[3] = cvPoint(0, img_object.rows);
 	std::vector<Point2f> scene_corners(4);
 	LOG("10");
+
+
+
 	cv::perspectiveTransform(cv::Mat(obj_corners), cv::Mat(scene_corners), H);
 	//perspectiveTransform(obj_corners, scene_corners, H);
 
@@ -544,13 +547,24 @@ Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, 
 	circle(img_scene_show, scene_corners[2], 10, Scalar(0, 255, 0), 4);
 	circle(img_scene_show, scene_corners[3], 10, Scalar(0, 255, 0), 4);
 
+	LOG("CORNER 1 %f %f",scene_corners[0].x,scene_corners[0].y);
+		LOG("CORNER 2 %f %f",scene_corners[1].x,scene_corners[1].y);
+		LOG("CORNER 3 %f %f",scene_corners[2].x,scene_corners[2].y);
+		LOG("CORNER 4 %f %f",scene_corners[3].x,scene_corners[3].y);
+
 	LOG("11");
 
 	const char *pathImageResult = "/mnt/sdcard/outputDebug.jpg";
 
 	imwrite(pathImageResult, img_scene_show);
-	LOG("12");
 
+	int cornerDiff = scene_corners[0].x-scene_corners[1].x;
+
+	if(abs(cornerDiff)>10){
+		return true;
+	}else{
+		return false;
+	}
 
 
 }
@@ -592,8 +606,6 @@ Java_com_appmunki_miragemobile_ar_Matcher_match(JNIEnv* env, jobject obj, long a
 	}
 }
 
-
-
 JNIEXPORT void JNICALL
 Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jstring path) {
 
@@ -601,41 +613,38 @@ Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, j
 
 		const char *inputString = env->GetStringUTFChars(path, NULL);
 
-				Mat img = imread(inputString, 0);
+		Mat img = imread(inputString, 0);
 
-				// read image from file
-				vector<KeyPoint> trainKeys;
-				Mat trainDes;
-				vector<pair<float, int> > result;
-				// detect image keypoints
-				extractFeatures(img, trainDes, trainKeys);
+		// read image from file
+		vector<KeyPoint> trainKeys;
+		Mat trainDes;
+		vector<pair<float, int> > result;
+		// detect image keypoints
+		extractFeatures(img, trainDes, trainKeys);
 
-				if (!trainKeys.size()) {
-					trainDes.release();
-					trainKeys.clear();
-					return;
-				}
-				LOG("Matching begin");
-				match(img, trainKeys, trainDes, result);
-				int size = min(result.size(), MAX_ITEM);
+		if (!trainKeys.size()) {
+			trainDes.release();
+			trainKeys.clear();
+			return;
+		}
+		LOG("Matching begin");
+		match(img, trainKeys, trainDes, result);
+		int size = min(result.size(), MAX_ITEM);
 
-				// print out the best result
-				if (result.size()) {
-					LOG("Size: %d\n", result.size());
+		// print out the best result
+		if (result.size()) {
+			LOG("Size: %d\n", result.size());
 
-					for (int i = 0; i < size; ++i) {
-						LOG("%f  %d", result[i].first, result[i].second);
-					}
-				}
-				trainDes.release();
-				trainKeys.clear();
-				LOG("Matching end");
+			for (int i = 0; i < size; ++i) {
+				LOG("%f  %d", result[i].first, result[i].second);
+			}
+		}
+		trainDes.release();
+		trainKeys.clear();
+		LOG("Matching end");
 		return;
 	}
 }
-
-
-
 
 #ifdef __cplusplus
 }

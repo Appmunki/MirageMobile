@@ -131,6 +131,6 @@ public class Matcher {
 	public static native void loadPattern(String path);
 	
 	
-	public static native void runDebug(String pathPattern,String pathImageToMatch);
+	public static native boolean runDebug(String pathPattern,String pathImageToMatch);
 
 }

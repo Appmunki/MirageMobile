@@ -8,21 +8,14 @@ import com.appmunki.miragemobile.ar.Matcher;
 import com.appmunki.miragemobile.util.SystemUiHider;
 import com.appmunki.miragemobile.util.Util;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -30,12 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- * 
- * @see SystemUiHider
- */
+
 public class DebugActivity extends Activity {
 
 	Button buttonRun, buttonImagePattern, buttonImageToMatch;
@@ -45,13 +33,15 @@ public class DebugActivity extends Activity {
 	final static int PATTERN = 0;
 	final static int IMAGE_TO_MATCH = 1;
 
+	final static boolean DEBUG = true;
+
 	final static String TAG = "DEBUG";
 
 	String pathPattern, pathImageToMatch;
 
 	boolean opencvLoad = false;
 
-	Context context;
+	DebugActivity debugActivity;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,80 +72,46 @@ public class DebugActivity extends Activity {
 			}
 		});
 
-		
-		
 		buttonRun.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				if (opencvLoad) {
-					if(pathPattern!=null&&!pathPattern.equals("")&&pathImageToMatch!=null&&!pathImageToMatch.equals("")){
-					Matcher.runDebug(pathPattern, pathImageToMatch);
-					Bitmap bmp = BitmapFactory.decodeFile("/mnt/sdcard/outputDebug.jpg");
-					
-					if(bmp.getHeight()>2048||bmp.getWidth()>2048){
-						float scale = 1;
-						if(bmp.getHeight()>=bmp.getWidth()){
-							scale = 2000/(float)bmp.getHeight();
-						}else if(bmp.getWidth()>bmp.getHeight()){
-							scale = 2000/(float)bmp.getWidth();
-						}
-						
-						float newWidth = bmp.getWidth()*scale;
-						float newHeight = bmp.getHeight()*scale;
-						 Log.v(TAG,"NEW WIDTH "+newWidth);
-						    Log.v(TAG,"NEW HEIGHT "+newHeight);
-						
-						
-						bmp = getResizedBitmap(bmp, (int) newHeight,  (int)newWidth);
-					}
-					image.setImageBitmap(bmp);
-					}else{
-						Toast.makeText(context, "PATH TO IMAGES NULL", Toast.LENGTH_SHORT).show();
-					}
+					new AsyncMatch(debugActivity,pathImageToMatch).execute();
+
 				}
 			}
 		});
 
-		context = this;
-	}
-	
-	
-	public Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
-	    int width = bm.getWidth();
-	    int height = bm.getHeight();
-	    float scaleWidth = ((float) newWidth) / width;
-	    float scaleHeight = ((float) newHeight) / height;
-	    
-	    Log.v(TAG,"NEW WIDTH "+scaleWidth);
-	    Log.v(TAG,"NEW HEIGHT "+scaleHeight);
-	    
-	    // CREATE A MATRIX FOR THE MANIPULATION
-	    Matrix matrix = new Matrix();
-	    // RESIZE THE BIT MAP
-	    matrix.postScale(scaleWidth, scaleHeight);
+		
+		debugActivity = this;
 
-	    // "RECREATE" THE NEW BITMAP
-	    Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
-	    return resizedBitmap;
+		if (!DEBUG) {
+			Intent intent = new Intent(this, MainActivity.class);
+			startActivity(intent);
+		}
 	}
 
+	
+	
+	public void callback(Bitmap bitmap){
+		if(bitmap!=null){
+		image.setImageBitmap(bitmap);
+		}else{
+			Toast.makeText(this, "ERROR the image is null", Toast.LENGTH_SHORT).show();
+		}
+	}
 
-	
-	
-	
 	public void loadPattern() {
 
 		String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
 		path = path + "PyramidPattern.jpg";
-
 		try {
 			Util.copyFileFromAssets(getApplicationContext(), "PyramidPattern.jpg", path);
 			Matcher.loadPattern(path);
-			Log.v(TAG,"PATTERN LOADED");
+			Log.v(TAG, "PATTERN LOADED");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 
 	}
 
@@ -164,7 +120,6 @@ public class DebugActivity extends Activity {
 		intentPhotoPicker.setType("image/*");
 		startActivityForResult(intentPhotoPicker, request);
 	}
-
 
 	@Override
 	protected void onResume() {
@@ -206,13 +161,13 @@ public class DebugActivity extends Activity {
 			switch (status) {
 			case LoaderCallbackInterface.SUCCESS: {
 				System.loadLibrary("MirageMobile");
-				Log.v(TAG,"LIBRARY LOADED");
+				Log.v(TAG, "LIBRARY LOADED");
 				opencvLoad = true;
 				loadPattern();
 			}
 				break;
 			case LoaderCallbackInterface.INIT_FAILED: {
-				Toast.makeText(context, "INIT FAIL", Toast.LENGTH_LONG).show();
+				Toast.makeText(debugActivity, "INIT FAIL", Toast.LENGTH_LONG).show();
 			}
 				break;
 			default: {

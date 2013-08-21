@@ -123,37 +123,41 @@ public abstract class ARActivity extends Activity {
 			e.printStackTrace();
 		}
 
-
 	}
 
 	public void loadOnCreate() {
 		arActivity = this;
 
+		Util.listPatternFiles(this);
+		
 		// setOrientation();
-		 setupLayout();
+		setupLayout();
 
-//		mGLView = new MyGLSurfaceView(this);
-//
-//		setContentView(mGLView);
-//
-//		final Preview preview = new Preview(this);
-//
-//		// addContentView( preview, new LayoutParams( LayoutParams.WRAP_CONTENT,
-//		// LayoutParams.WRAP_CONTENT ) );
-//
-//		mGLView = new GLSurfaceView(this);
-//		// mGLView.setEGLContextClientVersion(2);
-//		mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-//		mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-//		mGLView.setZOrderOnTop(true);
-//		setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-//		mGLView.setRenderer(new Renderer2());
-//		addContentView(mGLView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-//
-//		Log.v("MIRAGE_NATIVE", Util.getPathPictures() + "/Mirage" + "/");
-//
-//		// Testing Matcher
-//		loadMatcher();
+		// mGLView = new MyGLSurfaceView(this);
+		//
+		// setContentView(mGLView);
+		//
+		// final Preview preview = new Preview(this);
+		//
+		// // addContentView( preview, new LayoutParams(
+		// LayoutParams.WRAP_CONTENT,
+		// // LayoutParams.WRAP_CONTENT ) );
+		//
+		// mGLView = new GLSurfaceView(this);
+		// // mGLView.setEGLContextClientVersion(2);
+		// mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+		// mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		// mGLView.setZOrderOnTop(true);
+		// setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT,
+		// LayoutParams.MATCH_PARENT));
+		// mGLView.setRenderer(new Renderer2());
+		// addContentView(mGLView, new LayoutParams(LayoutParams.MATCH_PARENT,
+		// LayoutParams.MATCH_PARENT));
+		//
+		// Log.v("MIRAGE_NATIVE", Util.getPathPictures() + "/Mirage" + "/");
+		//
+		// // Testing Matcher
+		// loadMatcher();
 
 	}
 
@@ -162,7 +166,6 @@ public abstract class ARActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setFullscreen();
 		disableScreenTurnOff();
-		
 
 	}
 
@@ -258,8 +261,7 @@ public abstract class ARActivity extends Activity {
 
 		// Defining the RelativeLayout layout parameters.
 		// In this case I want to fill its parent
-		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-				RelativeLayout.LayoutParams.MATCH_PARENT);
+		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 		main.setLayoutParams(rlp);
 
 		// Add preview
@@ -276,31 +278,29 @@ public abstract class ARActivity extends Activity {
 			}
 		});
 
-		RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		params1.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		captureButton.setLayoutParams(params1);
-//		main.addView(captureButton);
+		// main.addView(captureButton);
 
 		//
 		// mGLView = new MyGLSurfaceView(this);
 		// mGLView.setZOrderMediaOverlay(true);
 		// // mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		// mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-//		 main.addView(preview);
+		// main.addView(preview);
 		// main.addView(mGLView);
 		//
 		// final Preview preview = new Preview(this);
 		//
-//		main.addView(captureButton);
-		main.addView( preview, new LayoutParams( LayoutParams.MATCH_PARENT,
-				LayoutParams.MATCH_PARENT ) );
-//		main.addView( captureButton, new LayoutParams( LayoutParams.MATCH_PARENT,
-//				LayoutParams.WRAP_CONTENT ) );
-		
-		main.addView(captureButton,params1);
-		
-		
+		// main.addView(captureButton);
+		main.addView(preview, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		// main.addView( captureButton, new LayoutParams(
+		// LayoutParams.MATCH_PARENT,
+		// LayoutParams.WRAP_CONTENT ) );
+
+		main.addView(captureButton, params1);
+
 		//
 		//
 		//
@@ -415,14 +415,12 @@ public abstract class ARActivity extends Activity {
 
 			showDialog();
 
-
-			Log.v("TEST","PRUEBA PRINCIPAL INICIA");
 			Matcher.isPatternPresent();
-			Log.v("TEST","PRUEBA PRINCIPAL TERMINA");
-			
-			
-			//DataClient dc = new DataClient(getPath(pictureFile.getAbsolutePath()), pictureFile.getName(), arActivity);
-			//dc.execute(new ArrayList<String>());
+
+			// DataClient dc = new
+			// DataClient(getPath(pictureFile.getAbsolutePath()),
+			// pictureFile.getName(), arActivity);
+			// dc.execute(new ArrayList<String>());
 
 		}
 
@@ -549,11 +547,9 @@ public abstract class ARActivity extends Activity {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
 				if (counter == 10) {
-					Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U,
-							new Scalar(255));
+					Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
 					src.put(0, 0, data);
-					Mat dst = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U,
-							new Scalar(255));
+					Mat dst = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
 
 					Core.transpose(src, dst);
 					Core.flip(dst, dst, 1);
@@ -799,8 +795,7 @@ public abstract class ARActivity extends Activity {
 	 * @param message
 	 */
 	public void setMessage(String message) {
-		
-		
+
 		fileToDownload = message.replaceAll(" ", "%20");
 		if (alert != null) {
 			alert.setMessage(message);

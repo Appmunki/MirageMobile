@@ -17,7 +17,6 @@ include $(OPENCV)/OpenCV.mk
 #LOCAL_CXXFLAGS  := -Werror -Wno-psabi -O2 -DNDEBUG -fexceptions
 #endif
 
-
 LOCAL_MODULE    := MirageMobile
 LOCAL_SRC_FILES := Utils.cpp MirageMobile.cpp GeometryTypes.cpp ARPipeline.cpp CameraCalibration.cpp Pattern.cpp PatternDetector.cpp
 #ARPipeline.cpp CameraCalibration.cpp GeometryTypes.cpp Pattern.cpp PatternDetector.cpp Utils.cpp
