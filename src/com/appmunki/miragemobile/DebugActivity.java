@@ -9,6 +9,7 @@ import com.appmunki.miragemobile.util.SystemUiHider;
 import com.appmunki.miragemobile.util.Util;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -26,8 +27,8 @@ import android.widget.Toast;
 
 public class DebugActivity extends Activity {
 
-	Button buttonRun, buttonImagePattern, buttonImageToMatch;
-	TextView textViewPattern, textViewImageToMatch;
+	Button buttonRun, buttonImageToMatch;
+	TextView textViewImageToMatch;
 	ImageView image;
 
 	final static int PATTERN = 0;
@@ -37,33 +38,30 @@ public class DebugActivity extends Activity {
 
 	final static String TAG = "DEBUG";
 
-	String pathPattern, pathImageToMatch;
+	String pathImageToMatch;
 
 	boolean opencvLoad = false;
 
 	DebugActivity debugActivity;
+	ProgressDialog progressDialog;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_debug);
+		progressDialog = new ProgressDialog(this);
+		progressDialog.setTitle("MATCH");
+		progressDialog.setMessage("Looking for a possible match");
+		
 
 		image = (ImageView) findViewById(R.id.imageView1);
 
 		buttonRun = (Button) findViewById(R.id.buttonRun);
-		buttonImagePattern = (Button) findViewById(R.id.buttonPattern);
 		buttonImageToMatch = (Button) findViewById(R.id.buttonImageToMatch);
 
 		textViewImageToMatch = (TextView) findViewById(R.id.textViewImageToMatch);
-		textViewPattern = (TextView) findViewById(R.id.textViewPattern);
-
-		buttonImagePattern.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				loadPhoto(PATTERN);
-			}
-		});
 
 		buttonImageToMatch.setOnClickListener(new OnClickListener() {
 			@Override
@@ -76,6 +74,7 @@ public class DebugActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				if (opencvLoad) {
+					progressDialog.show();
 					new AsyncMatch(debugActivity,pathImageToMatch).execute();
 
 				}
@@ -94,6 +93,7 @@ public class DebugActivity extends Activity {
 	
 	
 	public void callback(Bitmap bitmap){
+		progressDialog.dismiss();
 		if(bitmap!=null){
 		image.setImageBitmap(bitmap);
 		}else{
@@ -140,9 +140,6 @@ public class DebugActivity extends Activity {
 
 			switch (requestCode) {
 			case PATTERN:
-				pathPattern = imageFilePath;
-				String imageName = pathPattern.substring(pathPattern.lastIndexOf("/") + 1);
-				textViewPattern.setText(imageName);
 				break;
 			case IMAGE_TO_MATCH:
 				pathImageToMatch = imageFilePath;
