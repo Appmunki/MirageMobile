@@ -1,4 +1,12 @@
 eclipse.preferences.version=1
+environment/project/com.android.toolchain.gcc.454249426/NDKROOT/delimiter=\:
+environment/project/com.android.toolchain.gcc.454249426/NDKROOT/operation=replace
+environment/project/com.android.toolchain.gcc.454249426/NDKROOT/value=/host/Development/android-ndk-r8d
+environment/project/com.android.toolchain.gcc.454249426/OPENCV/delimiter=\:
+environment/project/com.android.toolchain.gcc.454249426/OPENCV/operation=append
+environment/project/com.android.toolchain.gcc.454249426/OPENCV/value=/home/diego/OpenCV-2.4.4-android-sdk/sdk/native/jni
+environment/project/com.android.toolchain.gcc.454249426/append=true
+environment/project/com.android.toolchain.gcc.454249426/appendContributed=true
 org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=16
 org.eclipse.cdt.core.formatter.alignment_for_assignment=16
 org.eclipse.cdt.core.formatter.alignment_for_base_clause_in_type_declaration=80
