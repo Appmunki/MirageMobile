@@ -127,4 +127,8 @@ public class Matcher {
 	public static native void convertFrame(int frameWidth, int frameHeight,
 			byte[] data, int[] rgba);
 
+	public static native void addPattern(String imageFilePath);
+
+	public static native void addPattern(int width, int height, byte yuv[]);
+
 }

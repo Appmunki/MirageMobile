@@ -18,6 +18,7 @@ import android.graphics.Typeface;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -41,6 +42,13 @@ import com.orm.androrm.Model;
 
 import flexjson.JSONDeserializer;
 
+/**
+ * Purpose of this activity is to setup AR for a inheriting activity. Loading in
+ * Markers Initializing Camera and overlay
+ * 
+ * @author radzell
+ * 
+ */
 public abstract class ARActivity extends Activity {
 
 	protected static final String TAG = "Aractivity";
@@ -49,6 +57,7 @@ public abstract class ARActivity extends Activity {
 	private CameraViewBase mCameraViewBase;
 	private RelativeLayout splashmain;
 	private CameraOverlayView mCameraOverlayView;
+	private boolean isDebugging = false;
 
 	// private Preview mPreview;
 
@@ -140,7 +149,7 @@ public abstract class ARActivity extends Activity {
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 
 		// Add preview
-		mCameraViewBase = new CameraViewBase(this, false);
+		mCameraViewBase = new CameraViewBase(this, isDebugging);
 		main.addView(mCameraViewBase);
 		mCameraViewBase.setVisibility(SurfaceView.VISIBLE);
 		// Add canvas overlay

@@ -43,6 +43,7 @@ extern "C" {
   static vector<pair<int,Matrix44> > mModelViewMatrixs;
   static Matrix44 glProjectionMatrix;
 
+
   /**
    * Convert data stored in an array into keypoints and descriptor
    */
@@ -157,6 +158,16 @@ extern "C" {
 
 
             extractFeatures(pattern.gray, pattern.descriptor, pattern.keypoints);
+  }
+  JNIEXPORT void JNICALL
+  Java_com_appmunki_miragemobile_ar_Matcher_addPattern(JNIEnv* env, jobject obj,jint width, jint height,jbyteArray yuv){
+    jbyte* _yuv  = env->GetByteArrayElements(yuv, 0);
+    int* _rgba = new int[width*height];
+
+    Mat myuv(height + height/2, width, CV_8UC1, (unsigned char *)_yuv);
+    Mat mrgba(height, width, CV_8UC4, (unsigned char *)_rgba);
+    Mat mgray(height, width, CV_8UC1, (unsigned char *)_yuv);
+
   }
   JNIEXPORT void JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_load(JNIEnv *, jobject obj,jboolean isDebug){
@@ -311,13 +322,10 @@ extern "C" {
 
 
   }
-    /**
-     * Match the query image to images in database. The best matches are returned
-     */
-    /**
-     * train keys become framepattern
-     */
-    inline void match(Pattern& framepattern, vector< pair<int, PatternTrackingInfo&> >& result) {
+  /**
+   * Match the query image to images in database. The best matches are returned
+   */
+  inline void match(Pattern& framepattern, vector< pair<int, PatternTrackingInfo&> >& result) {
             // use Flann based matcher to match images
            cv::FlannBasedMatcher bf(new flann::LshIndexParams(10,10,2));
            float confidence=0;
@@ -422,24 +430,12 @@ extern "C" {
       Mat mgray(height, width, CV_8UC1, (unsigned char *)_yuv);
 
 
-      /**
-       * Do the matching
-       */
-
-      //Check if it's a debug
-      if(isDebugging)
-      {
-          LOG("Debugging");
-          //Mat debugimage = imread("",CV_LOAD_IMAGE_GRAYSCALE);
-      }else{
-          LOG("Not Debugging");
-      }
       // read image from file
       vector< pair<int, PatternTrackingInfo& > > result;
 
-      /**
-       * Changed trainkeys to framepattern
-       */
+
+      //Changed trainkeys to framepattern
+
       Pattern framepattern;
       buildPatternFromImage(mrgba,mgray,framepattern);
 
@@ -450,7 +446,7 @@ extern "C" {
         return NULL ;
       }
 
-      //Does the matching
+      //Calls Matching
       LOG("Matching begin");
       match(framepattern,result);
 
@@ -502,7 +498,7 @@ extern "C" {
       Mat mrgba(height, width, CV_8UC4, (unsigned char *)_rgba);
       Mat mgray(height, width, CV_8UC1, (unsigned char *)_gray);
 
-      //cvtColor(myuv, mrgba, CV_YUV420sp2RGBA, 4);
+      cvtColor(myuv, mrgba, CV_YUV420sp2RGBA, 4);
       cvtColor(myuv, mgray, CV_YUV420sp2GRAY, 1);
 
       vector<KeyPoint> v;
@@ -510,10 +506,19 @@ extern "C" {
       ORB detector(1000);
       detector.detect(mgray, v);
       int size= v.size();
-      if(size>30)
-        size=20;
+      /*if(size>30)
+        size=20;*/
       for( size_t i = 0; i < size; i++ ){
+
+          //place circles on RGB Image
           circle(mrgba, Point(v[i].pt.x, v[i].pt.y), 5, Scalar(255,191,0,255),-1);
+
+          //place circles on YUV Image
+          circle(myuv, Point(v[i].pt.x, v[i].pt.y), 5, Scalar(255,191,0,255),-1);
+
+          //place keypoints on Gray Image
+          circle(mgray, Point(v[i].pt.x, v[i].pt.y), 5, Scalar(255,191,0,255),-1);
+
       }
 
       env->ReleaseIntArrayElements(rgba, _rgba, 0);

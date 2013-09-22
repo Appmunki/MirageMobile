@@ -1,17 +1,14 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -20,6 +17,9 @@ import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.appmunki.miragemobile.utils.Util;
+import com.appmunki.miragemobile.utils.Util.CVFunction;
 
 public class CameraViewBase extends SurfaceView implements
 		SurfaceHolder.Callback, Runnable {
@@ -41,20 +41,46 @@ public class CameraViewBase extends SurfaceView implements
 	int[] mGRAY;
 
 	private Bitmap mBitmap;
+	private byte[] mTestData;
+
 	private int mViewMode;
 
 	private boolean isDebugging;
 
 	private MarkerFoundListener m_markerfoundListener;
+	private CVFunction mFunc = CVFunction.Features;
+
+	private Bitmap testbmp;
 
 	public CameraViewBase(Context context, boolean debugging) {
 		super(context);
+		loadTestData(context);
 		this.isDebugging = debugging;
 		mHolder = getHolder();
 		mHolder.addCallback(this);
 		Log.i(TAG, "Instantiated new " + this.getClass());
 		mSize = 0;
 		mViewMode = VIEW_MODE_RGBA;
+	}
+
+	public void loadTestData(Context context) {
+
+		// load image
+		try {
+			// get input stream
+			InputStream ims = context.getAssets().open("testimage.png");
+			// Getting image from uri
+			testbmp = BitmapFactory.decodeStream(ims);
+			int width = testbmp.getWidth();
+			int height = testbmp.getHeight();
+			// Converting to yuv
+			byte[] yuv = Util.getNV21(width, height, testbmp);
+
+			mTestData = yuv;
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
 	}
 
 	public int getFrameWidth() {
@@ -113,7 +139,9 @@ public class CameraViewBase extends SurfaceView implements
 
 					// Add testing framework here
 					if (isDebugging) {
-
+						// Getting image from uri
+						Log.i(TAG, "Is in Debug Mode");
+						data = mTestData;
 					} else {
 						System.arraycopy(data, 0, mFrame, 0, data.length);
 					}
@@ -232,22 +260,29 @@ public class CameraViewBase extends SurfaceView implements
 	 */
 	protected Bitmap processFrame(byte[] data) {
 		Log.i(TAG, "processFrame " + mViewMode);
-		int frameSize = getFrameWidth() * getFrameHeight();
+
 		Arrays.fill(mRGBA, 0);
 		int[] rgba = mRGBA;
 		int[] gray = mGRAY;
 
-		// Testing of the keypoint features. Also works as the test of finding
-		// the rgba and gray
-		// Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
-		// gray);
+		if (mFunc == CVFunction.Match) {
+			// Testing of the matching
+			Matcher.match(getFrameWidth());
+		}
+		if (mFunc == CVFunction.DebugMatch) {
+			// Testing of the matching
+			Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
+		}
+		if (mFunc == CVFunction.Features) {
+			// Testing of the keypoint features. Also works as the test of
+			// finding the rgba and gray
+			Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
+					gray);
+		}
 
-		// Convert frame
-		// Matcher.convertFrame(getFrameWidth(), getFrameHeight(), data, rgba);
-
-		// Testing of the matching
-
-		Matcher.matchDebug(getFrameWidth(), getFrameHeight(), data, rgba);
+		if (mFunc == CVFunction.Convert) {
+			rgba = Util.byteToInt(data);
+		}
 
 		Log.i(TAG, "Converted");
 
@@ -263,24 +298,6 @@ public class CameraViewBase extends SurfaceView implements
 	 */
 	public void addMarkerFoundListener(MarkerFoundListener markerfoundListener) {
 		this.m_markerfoundListener = markerfoundListener;
-	}
-
-	/**
-	 * Convert the byte array to an int starting from the given offset.
-	 * 
-	 * @param b
-	 *            The byte array
-	 * @param offset
-	 *            The array offset
-	 * @return The integer
-	 */
-	public static int byteArrayToInt(byte[] b, int offset) {
-		int value = 0;
-		for (int i = 0; i < 4; i++) {
-			int shift = (4 - 1 - i) * 8;
-			value += (b[i + offset] & 0x000000FF) << shift;
-		}
-		return value;
 	}
 
 	/**
@@ -343,33 +360,20 @@ public class CameraViewBase extends SurfaceView implements
 					this.wait();
 					if (!mThreadRun)
 						break;
-					// Log.i(TAG, "Checkpoint 1");
 
 					// Take the frame and return just the overlay
 					bmp = processFrame(mFrame);
-					// Log.i(TAG, "Checkpoint 2");
 
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-			// Log.i(TAG, "Checkpoint 3");
+			// TODO change back to bmp
 			if (bmp != null) {
-				// Log.i(TAG, "Checkpoint 4");
+				Log.i(TAG, "testbmp Not Null");
 				this.m_markerfoundListener.found(bmp);
-				// Canvas canvas = mHolder.lockCanvas();
-				// if (canvas != null) {
-				// Log.i(TAG,
-				// "Canvas:" + canvas.getWidth() + "x"
-				// + canvas.getHeight());
-				// Log.i(TAG, "Frame:" + getFrameWidth() + "x"
-				// + getFrameHeight());
-				// canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-				// canvas.drawBitmap(bmp,
-				// (canvas.getWidth() - getFrameWidth()) / 2,
-				// (canvas.getHeight() - getFrameHeight()) / 2, null);
-				// mHolder.unlockCanvasAndPost(canvas);
-				// }
+			} else {
+				Log.i(TAG, "testbmp Null");
 			}
 		}
 		Log.i(TAG, "Finished processing thread");

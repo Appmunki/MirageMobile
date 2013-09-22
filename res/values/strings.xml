@@ -8,5 +8,7 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="title_activity_ar">ARActivity</string>
     <string name="title_activity_loading_screen">LoadingScreenActivity</string>
+    <string name="title_activity_test_ar">TestARActivity</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

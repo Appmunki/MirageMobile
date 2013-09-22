@@ -1,5 +1,7 @@
 package com.appmunki.miragemobile.ar;
 
+import com.appmunki.miragemobile.utils.Util;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -27,7 +29,7 @@ public class CameraOverlayView extends View implements MarkerFoundListener {
 
 	@Override
 	public void found(Bitmap mbitmap) {
-		Log.i(TAG, "Match finished");
+		Log.i(TAG, "Displaying Camera Overlay");
 		this.mbitmap = mbitmap;
 		postInvalidate();
 
@@ -35,6 +37,8 @@ public class CameraOverlayView extends View implements MarkerFoundListener {
 
 	private Canvas canvas;
 	private Bitmap bitmap;
+	private int canvasHeight;
+	private int canvasWidth;
 
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -42,6 +46,9 @@ public class CameraOverlayView extends View implements MarkerFoundListener {
 		if (bitmap != null) {
 			bitmap.recycle();
 		}
+		this.canvasWidth = w;
+		this.canvasHeight = h;
+		Log.i(TAG, "canvas " + w + "x" + h);
 		canvas = new Canvas();
 		bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 		canvas.setBitmap(bitmap);
@@ -58,9 +65,21 @@ public class CameraOverlayView extends View implements MarkerFoundListener {
 		super.onDraw(c);
 		if (mbitmap != null) {
 			// Log.i(TAG, "Drawing mbitmap");
-			// c.drawColor(0xFFAAAAAA);
+
+			Log.i("Bitmap Size", mbitmap.getWidth() + "x" + mbitmap.getHeight());
+			// Scale bitmap if larger than screen
+
+			// mbitmap = Util.resizedBitmap(mbitmap, newHeight, 720);
+			mbitmap = Util.rotateandresize(mbitmap, 270, canvasWidth,
+					canvasHeight);
+			Log.i("New Bitmap Size",
+					mbitmap.getWidth() + "x" + mbitmap.getHeight());
+
 			c.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-			c.drawBitmap(mbitmap, (1196 - 1280) / 2, (720 - 720) / 2, null);
+			c.drawBitmap(mbitmap,
+					(this.canvasHeight - mbitmap.getHeight()) / 2,
+					(this.canvasWidth - mbitmap.getWidth()) / 2, null);
+			c.drawPaint(paint);
 		}
 	}
 }
