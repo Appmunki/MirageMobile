@@ -20,6 +20,6 @@ include $(OPENCV)/OpenCV.mk
 LOCAL_MODULE    := MirageMobile
 LOCAL_SRC_FILES := Utils.cpp MirageMobile.cpp GeometryTypes.cpp ARPipeline.cpp CameraCalibration.cpp Pattern.cpp PatternDetector.cpp
 #ARPipeline.cpp CameraCalibration.cpp GeometryTypes.cpp Pattern.cpp PatternDetector.cpp Utils.cpp
-LOCAL_LDLIBS    += -llog -ldl -landroid
+LOCAL_LDLIBS    += -llog -ldl -landroid -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)

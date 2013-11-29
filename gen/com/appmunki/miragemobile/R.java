@@ -30,8 +30,8 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>any</code></td><td>-1</td><td></td></tr>
-<tr><td><code>back</code></td><td>0</td><td></td></tr>
-<tr><td><code>front</code></td><td>1</td><td></td></tr>
+<tr><td><code>back</code></td><td>99</td><td></td></tr>
+<tr><td><code>front</code></td><td>98</td><td></td></tr>
 </table>
          */
         public static final int camera_id=0x7f010001;
@@ -138,7 +138,7 @@ containing a value of this type.
 
           <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
-          @attr name android:buttonBarButtonStyle
+          @attr name com.appmunki.miragemobile:buttonBarButtonStyle
         */
         public static final int ButtonBarContainerTheme_buttonBarButtonStyle = 1;
         /**
@@ -148,7 +148,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 
           <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
-          @attr name android:buttonBarStyle
+          @attr name com.appmunki.miragemobile:buttonBarStyle
         */
         public static final int ButtonBarContainerTheme_buttonBarStyle = 0;
         /** Attributes that can be used with a CameraBridgeViewBase.
@@ -184,10 +184,10 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>any</code></td><td>-1</td><td></td></tr>
-<tr><td><code>back</code></td><td>0</td><td></td></tr>
-<tr><td><code>front</code></td><td>1</td><td></td></tr>
+<tr><td><code>back</code></td><td>99</td><td></td></tr>
+<tr><td><code>front</code></td><td>98</td><td></td></tr>
 </table>
-          @attr name android:camera_id
+          @attr name com.appmunki.miragemobile:camera_id
         */
         public static final int CameraBridgeViewBase_camera_id = 1;
         /**
@@ -201,7 +201,7 @@ containing a value of this type.
 theme attribute (in the form
 "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
 containing a value of this type.
-          @attr name android:show_fps
+          @attr name com.appmunki.miragemobile:show_fps
         */
         public static final int CameraBridgeViewBase_show_fps = 0;
     };

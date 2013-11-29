@@ -36,10 +36,12 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
@@ -117,8 +119,8 @@ public abstract class ARActivity extends Activity {
 		path = path + "PyramidPattern.jpg";
 
 		try {
-			Util.copyFileFromAssets(getApplicationContext(), "PyramidPattern.jpg", path);
-			Matcher.loadPattern(path);
+//			Util.copyFileFromAssets(getApplicationContext(), "PyramidPattern.jpg", path);
+//			Matcher.loadPattern(path);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -267,6 +269,7 @@ public abstract class ARActivity extends Activity {
 		// Add preview
 		final Preview preview = new Preview(this);
 
+		
 		captureButton = new Button(this);
 		captureButton.setText("TAKE");
 		captureButton.setBottom(1);
@@ -361,6 +364,8 @@ public abstract class ARActivity extends Activity {
 
 		// testSaveImage(org);
 
+		
+		
 		org.opencv.core.Mat mRGB = new org.opencv.core.Mat();
 		org.opencv.core.Mat mGray = new org.opencv.core.Mat();
 		Imgproc.cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
@@ -414,8 +419,45 @@ public abstract class ARActivity extends Activity {
 			captureButton.setVisibility(View.INVISIBLE);
 
 			showDialog();
+			
+			
+			int nrOfPixels = data.length / 3; // Three bytes per pixel.
+			int pixels[] = new int[nrOfPixels];
+			for(int i = 0; i < nrOfPixels; i++) {
+			   int r = data[3*i];
+			   int g = data[3*i + 1];
+			   int b = data[3*i + 2];
+			   pixels[i] = Color.rgb(r,g,b);
+			}
+			Log.v(TAG,"NUmero de piexeles "+nrOfPixels/3);
+			
+			Bitmap bitmap = Bitmap.createBitmap(pixels, 3264, 2448, Bitmap.Config.ARGB_8888);
+			
+			Matcher.sendMyBitmap(bitmap);
+			
+			
+//			Mat mYuv = new Mat(mFrameHeight + mFrameHeight / 2, mFrameWidth,
+//					CvType.CV_8UC1);
+//			mYuv.put(0, 0, data);
+//			
+//			Log.v("MIRAGE",mFrameHeight);
+//
+//			Mat mRGB = new Mat();
+//			Mat mGray = new Mat();
+//			Imgproc.cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
+//			Imgproc.cvtColor(mRGB, mGray, Imgproc.COLOR_RGB2GRAY, 0);
+//
+//			Log.v("MIRAGE","picture size "+data.length);
+//			
+//			Matcher.match(mGray.getNativeObjAddr());
+			
+			
 
-			Matcher.isPatternPresent();
+			//Matcher.isPatternPresent();
+			
+			
+			
+			
 
 			// DataClient dc = new
 			// DataClient(getPath(pictureFile.getAbsolutePath()),
@@ -425,6 +467,31 @@ public abstract class ARActivity extends Activity {
 		}
 
 	};
+	
+	
+	PreviewCallback previewCallback = new Camera.PreviewCallback() {
+
+		@Override
+		public void onPreviewFrame(byte[] data, Camera camera) {
+			processFrame(data);
+		}
+
+		protected void processFrame(byte[] data) {
+
+			Mat mYuv = new Mat(mFrameHeight + mFrameHeight / 2, mFrameWidth,
+					CvType.CV_8UC1);
+			mYuv.put(0, 0, data);
+
+			Mat mRGB = new Mat();
+			Mat mGray = new Mat();
+			Imgproc.cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
+			Imgproc.cvtColor(mRGB, mGray, Imgproc.COLOR_RGB2GRAY, 0);
+
+			Log.v("MIRAGE","picture");
+			
+			Matcher.match(mGray.getNativeObjAddr());
+		}
+	}; 
 
 	private String getPath(String absolutePath) {
 		String path = absolutePath.substring(0, absolutePath.lastIndexOf('/'));
@@ -509,10 +576,10 @@ public abstract class ARActivity extends Activity {
 			// p.setPreviewSize(mFrameWidth, mFrameHeight);
 			// Log.d(TAG, "Focus mode: " + p.getFocusMode());
 			for (Size size : p.getSupportedPreviewSizes())
-				Log.e(TAG, "Preview size choosen: " + size.width + "x" + size.height);
+				Log.e(TAG, "Preview size choosen: " + size.width + "x" + size.height +"      "+(size.width*size.height));
 
 			for (Size size : p.getSupportedPictureSizes())
-				Log.e(TAG, "Picture size choosen: " + size.width + "x" + size.height);
+				Log.e(TAG, "Picture size choosen: " + size.width + "x" + size.height +"      "+(size.width*size.height));
 
 			Log.e(TAG, "Fps choosen: " + p.getSupportedPreviewFpsRange().get(0).length);
 			mCamera.setParameters(p);
@@ -546,6 +613,8 @@ public abstract class ARActivity extends Activity {
 
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
+				
+				
 				if (counter == 10) {
 					Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
 					src.put(0, 0, data);

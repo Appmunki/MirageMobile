@@ -16,6 +16,8 @@
 #include <opencv2/legacy/legacy.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <android/bitmap.h>
+
 #include "ARPipeline.hpp"
 #include "DebugHelpers.hpp"
 
@@ -188,8 +190,8 @@ inline void stopTimer() {
 	gettimeofday(&t2, NULL);
 
 	// compute and print the elapsed time in millisec
-	elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
-	elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
+	elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0; // sec to ms
+	elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0; // us to ms
 	LOG("PRUEBA FLOW %f ms.\n", elapsedTime);
 }
 
@@ -223,8 +225,7 @@ Java_com_appmunki_miragemobile_ar_Matcher_fetch(JNIEnv *, jobject) {
 	// obtain file size:
 	fseek(pFile, 0, SEEK_END);
 
-	lSize = ftell(pFile);
-
+	//lSize = ftell(pFile);
 
 	rewind(pFile);
 
@@ -279,8 +280,8 @@ inline void extractFeatures(const Mat& img, Mat& des, vector<KeyPoint>& keys) {
 	// compute image descriptor
 	sde.compute(img, keys, des);
 }
-inline bool refineMatchesWithHomography(int it, float &confidence, const std::vector<cv::KeyPoint>& queryKeypoints,
-		const std::vector<cv::KeyPoint>& trainKeypoints, float reprojectionThreshold, std::vector<cv::DMatch>& matches, cv::Mat& homography) {
+inline bool refineMatchesWithHomography(int it, float &confidence, const std::vector<cv::KeyPoint>& queryKeypoints, const std::vector<cv::KeyPoint>& trainKeypoints, float reprojectionThreshold,
+		std::vector<cv::DMatch>& matches, cv::Mat& homography) {
 	const unsigned int minNumberMatchesAllowed = 8;
 
 	if (matches.size() < minNumberMatchesAllowed)
@@ -396,13 +397,27 @@ JNIEXPORT jfloatArray JNICALL
 Java_com_appmunki_miragemobile_ar_Matcher_loadImage(JNIEnv *env, jobject obj, long addrGray) {
 
 	Mat& testImage = *(Mat*) addrGray;
+
+
+
+
+	const char *pathImageResult = "/storage/emulated/0/Pictures/outputDebug.jpg";
+
+
+	stringstream ss;
+	ss << pathImageResult << counter << ".jpg";
+
+	counter= counter+1;
+
+	imwrite(ss.str(), testImage);
+
 	//LOG("CAMBIAR IMAGEN");
 	//imwrite("/mnt/sdcard/MirageTest/ImageTest.jpg", testImage);
-	if (patternImage.empty()) {
-		LOG("Input image cannot be read");
-	} else {
-		processSingleImage(patternImage, testImage);
-	}
+//	if (patternImage.empty()) {
+//		LOG("Input image cannot be read");
+//	} else {
+//		processSingleImage(patternImage, testImage);
+//	}
 }
 
 JNIEXPORT jfloatArray JNICALL
@@ -507,7 +522,7 @@ Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, 
 		}
 	}
 
-	LOG("GOOD MATCHES %d",good_matches.size());
+	LOG("GOOD MATCHES %d", good_matches.size());
 
 	//-- Localize the object
 	vector<Point2f> obj;
@@ -531,8 +546,6 @@ Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, 
 	std::vector<Point2f> scene_corners(4);
 	LOG("10");
 
-
-
 	cv::perspectiveTransform(cv::Mat(obj_corners), cv::Mat(scene_corners), H);
 	//perspectiveTransform(obj_corners, scene_corners, H);
 
@@ -547,10 +560,10 @@ Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, 
 	circle(img_scene_show, scene_corners[2], 10, Scalar(0, 255, 0), 4);
 	circle(img_scene_show, scene_corners[3], 10, Scalar(0, 255, 0), 4);
 
-	LOG("CORNER 1 %f %f",scene_corners[0].x,scene_corners[0].y);
-		LOG("CORNER 2 %f %f",scene_corners[1].x,scene_corners[1].y);
-		LOG("CORNER 3 %f %f",scene_corners[2].x,scene_corners[2].y);
-		LOG("CORNER 4 %f %f",scene_corners[3].x,scene_corners[3].y);
+	LOG("CORNER 1 %f %f", scene_corners[0].x, scene_corners[0].y);
+	LOG("CORNER 2 %f %f", scene_corners[1].x, scene_corners[1].y);
+	LOG("CORNER 3 %f %f", scene_corners[2].x, scene_corners[2].y);
+	LOG("CORNER 4 %f %f", scene_corners[3].x, scene_corners[3].y);
 
 	LOG("11");
 
@@ -558,22 +571,84 @@ Java_com_appmunki_miragemobile_ar_Matcher_runDebug(JNIEnv *env, jobject objJNI, 
 
 	imwrite(pathImageResult, img_scene_show);
 
-	int cornerDiff = scene_corners[0].x-scene_corners[1].x;
+	int cornerDiff = scene_corners[0].x - scene_corners[1].x;
 
-	if(abs(cornerDiff)>10){
+	if (abs(cornerDiff) > 10) {
 		return true;
-	}else{
+	} else {
 		return false;
 	}
 
-
 }
+
+
+
+void saveImage(unsigned char* img) {
+	FILE *f;
+	int w = 640, h = 480;
+
+	int filesize = 54 + 3 * w * h; //w is your image width, h is image height, both int
+
+	unsigned char bmpfileheader[14] = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+	unsigned char bmpinfoheader[40] = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0 };
+	unsigned char bmppad[3] = { 0, 0, 0 };
+
+	bmpfileheader[2] = (unsigned char) (filesize);
+	bmpfileheader[3] = (unsigned char) (filesize >> 8);
+	bmpfileheader[4] = (unsigned char) (filesize >> 16);
+	bmpfileheader[5] = (unsigned char) (filesize >> 24);
+
+	bmpinfoheader[4] = (unsigned char) (w);
+	bmpinfoheader[5] = (unsigned char) (w >> 8);
+	bmpinfoheader[6] = (unsigned char) (w >> 16);
+	bmpinfoheader[7] = (unsigned char) (w >> 24);
+	bmpinfoheader[8] = (unsigned char) (h);
+	bmpinfoheader[9] = (unsigned char) (h >> 8);
+	bmpinfoheader[10] = (unsigned char) (h >> 16);
+	bmpinfoheader[11] = (unsigned char) (h >> 24);
+
+	f = fopen("/storage/emulated/0/Pictures/outputDebugTest.jpg", "wb");
+	fwrite(bmpfileheader, 1, 14, f);
+	fwrite(bmpinfoheader, 1, 40, f);
+	for (int i = 0; i < h; i++) {
+		fwrite(img + (w * (h - i - 1) * 3), 3, w, f);
+		fwrite(bmppad, 1, (4 - (w * 3) % 4) % 4, f);
+	}
+	fflush(f);
+	fclose(f);
+}
+
+
+
+
+JNIEXPORT void JNICALL
+Java_com_appmunki_miragemobile_ar_Matcher_sendMyBitmap(JNIEnv * env, jobject obj, jobject bitmap) {
+	AndroidBitmapInfo androidBitmapInfo;
+	void* pixels;
+	AndroidBitmap_getInfo(env, bitmap, &androidBitmapInfo);
+	AndroidBitmap_lockPixels(env, bitmap, &pixels);
+	unsigned char* pixelsChar = (unsigned char*) pixels;
+	saveImage(pixelsChar);
+}
+
+
+
 
 JNIEXPORT void JNICALL
 Java_com_appmunki_miragemobile_ar_Matcher_match(JNIEnv* env, jobject obj, long addrGray) {
 
+	LOG("Image is now on jni part");
+
+	Mat& img = *(Mat*) addrGray;
+	LOG("Size: %d\n    %d", img.size, addrGray);
+
+	const char *pathImageResult = "/storage/emulated/0/Pictures/outputDebug.jpg";
+
+	imwrite(pathImageResult, img);
+
 	if (loaded) {
 		Mat& img = *(Mat*) addrGray;
+		LOG("Size: %d\n", img.size);
 
 		// read image from file
 		vector<KeyPoint> trainKeys;

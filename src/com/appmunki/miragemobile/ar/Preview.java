@@ -114,9 +114,11 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 			Imgproc.cvtColor(mYuv, mRGB, Imgproc.COLOR_YUV2RGB_NV21, 3);
 			Imgproc.cvtColor(mRGB, mGray, Imgproc.COLOR_RGB2GRAY, 0);
 
+			Log.v("MIRAGE","picture");
+			
 			Matcher.match(mGray.getNativeObjAddr());
 		}
-	};
+	}; 
 
 	/**
 	 * Get optimal size for preview

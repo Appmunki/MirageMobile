@@ -12,6 +12,7 @@ import com.appmunki.miragemobile.ar.entity.Mat;
 import com.appmunki.miragemobile.ar.entity.TargetImage;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.Log;
 
@@ -119,6 +120,7 @@ public class Matcher {
 	public static native void fetch();
 
 	public static native void match(long mGray);
+	public static native int sendMyBitmap(Bitmap bitmap);
 	
 	public static native void matchDebug(String path);
 	
