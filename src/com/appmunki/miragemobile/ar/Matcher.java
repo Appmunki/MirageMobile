@@ -31,20 +31,17 @@ public class Matcher {
 	 * 
 	 * @param b
 	 */
-	private synchronized static void writeData(List<TargetImage> b,
-			Context context) {
+	private synchronized static void writeData(List<TargetImage> b, Context context) {
 		try {
 			Log.e(TAG, context.getFilesDir().toString() + "/Data.txt");
 
-			BufferedWriter bw = new BufferedWriter(new FileWriter(context
-					.getFilesDir().toString() + "/Data.txt"));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(context.getFilesDir().toString() + "/Data.txt"));
 			int dataSize = 1;
 			Iterator<TargetImage> it = b.iterator();
 			int size = b.size();
 			for (int i = 0; i < size; ++i) {
 				TargetImage temp = it.next();
-				dataSize += temp.getdess().rows * temp.getdess().cols + 3
-						+ temp.getkeys().size() * 7 + 1;
+				dataSize += temp.getdess().rows * temp.getdess().cols + 3 + temp.getkeys().size() * 7 + 1;
 			}
 			bw.write(dataSize + " ");
 			bw.write(size + " ");
@@ -79,8 +76,7 @@ public class Matcher {
 	 * @param k
 	 * @throws IOException
 	 */
-	private synchronized static void writeKey(BufferedWriter bw, KeyPoint k)
-			throws IOException {
+	private synchronized static void writeKey(BufferedWriter bw, KeyPoint k) throws IOException {
 		bw.write(k.angle + " ");
 		bw.write(k.classId + " ");
 		bw.write(k.octave + " ");
@@ -97,8 +93,7 @@ public class Matcher {
 	 * @param k
 	 * @throws IOException
 	 */
-	private synchronized static void writeDes(BufferedWriter bw, Mat k)
-			throws IOException {
+	private synchronized static void writeDes(BufferedWriter bw, Mat k) throws IOException {
 		bw.write(k.rows + " ");
 		bw.write(k.cols + " ");
 		bw.write(k.type + " ");
@@ -108,15 +103,15 @@ public class Matcher {
 		}
 	}
 
+	public static native void loadImage(long mGray);
+
 	public static native void load(boolean isDebug);
 
 	public static native int[] match(long mGray);
 
-	public static native int[] matchDebug(int width, int height, byte yuv[],
-			int[] rgba);
+	public static native int[] matchDebug(int width, int height, byte yuv[], int[] rgba);
 
-	public static native void FindFeatures(int width, int height, byte yuv[],
-			int[] rgba, int[] gray);
+	public static native void FindFeatures(int width, int height, byte yuv[], int[] rgba, int[] gray);
 
 	public static native boolean isPatternPresent();
 
@@ -124,8 +119,7 @@ public class Matcher {
 
 	public static native float[] getProjectionMatrix();
 
-	public static native void convertFrame(int frameWidth, int frameHeight,
-			byte[] data, int[] rgba);
+	public static native void convertFrame(int frameWidth, int frameHeight, byte[] data, int[] rgba);
 
 	public static native void addPattern(String imageFilePath);
 

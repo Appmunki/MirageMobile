@@ -5,6 +5,12 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -21,8 +27,7 @@ import android.view.SurfaceView;
 import com.appmunki.miragemobile.utils.Util;
 import com.appmunki.miragemobile.utils.Util.CVFunction;
 
-public class CameraViewBase extends SurfaceView implements
-		SurfaceHolder.Callback, Runnable {
+public class CameraViewBase extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 	private static final String TAG = "Mirage::CameraViewBase";
 
 	private Camera mCamera;
@@ -110,19 +115,15 @@ public class CameraViewBase extends SurfaceView implements
 		try {
 			mCamera = Camera.open();
 		} catch (Exception e) {
-			Log.e(TAG, "Camera is not available (in use or does not exist): "
-					+ e.getLocalizedMessage());
+			Log.e(TAG, "Camera is not available (in use or does not exist): " + e.getLocalizedMessage());
 		}
 
-		if (mCamera == null
-				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+		if (mCamera == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 			for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
 				try {
 					mCamera = Camera.open(camIdx);
 				} catch (RuntimeException e) {
-					Log.e(TAG,
-							"Camera #" + camIdx + "failed to open: "
-									+ e.getLocalizedMessage());
+					Log.e(TAG, "Camera #" + camIdx + "failed to open: " + e.getLocalizedMessage());
 				}
 			}
 		}
@@ -137,6 +138,14 @@ public class CameraViewBase extends SurfaceView implements
 			public void onPreviewFrame(byte[] data, Camera camera) {
 				synchronized (CameraViewBase.this) {
 
+					Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
+					src.put(0, 0, data);
+					Mat dst = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
+
+					Core.transpose(src, dst);
+					Core.flip(dst, dst, 1);
+					Matcher.loadImage(dst.getNativeObjAddr());
+
 					// Add testing framework here
 					if (isDebugging) {
 						// Getting image from uri
@@ -149,6 +158,7 @@ public class CameraViewBase extends SurfaceView implements
 				}
 				camera.addCallbackBuffer(mBuffer);
 			}
+
 		});
 
 		return true;
@@ -198,11 +208,8 @@ public class CameraViewBase extends SurfaceView implements
 
 			/* Now allocate the buffer */
 			params = mCamera.getParameters();
-			int size = params.getPreviewSize().width
-					* params.getPreviewSize().height;
-			size = size
-					* ImageFormat.getBitsPerPixel(params.getPreviewFormat())
-					/ 8;
+			int size = params.getPreviewSize().width * params.getPreviewSize().height;
+			size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
 			mBuffer = new byte[size];
 			/* The buffer where the current frame will be copied */
 			mFrame = new byte[size];
@@ -212,15 +219,12 @@ public class CameraViewBase extends SurfaceView implements
 			 * Notify that the preview is about to be started and deliver
 			 * preview size
 			 */
-			onPreviewStarted(params.getPreviewSize().width,
-					params.getPreviewSize().height);
+			onPreviewStarted(params.getPreviewSize().width, params.getPreviewSize().height);
 
 			try {
 				setPreview();
 			} catch (IOException e) {
-				Log.e(TAG,
-						"mCamera.setPreviewDisplay/setPreviewTexture fails: "
-								+ e);
+				Log.e(TAG, "mCamera.setPreviewDisplay/setPreviewTexture fails: " + e);
 			}
 
 			/* Now we can start a preview */
@@ -229,8 +233,7 @@ public class CameraViewBase extends SurfaceView implements
 	}
 
 	@Override
-	public void surfaceChanged(SurfaceHolder _holder, int format, int width,
-			int height) {
+	public void surfaceChanged(SurfaceHolder _holder, int format, int width, int height) {
 		Log.i(TAG, "called surfaceChanged");
 		// stop preview before making changes
 		try {
@@ -276,8 +279,7 @@ public class CameraViewBase extends SurfaceView implements
 		if (mFunc == CVFunction.Features) {
 			// Testing of the keypoint features. Also works as the test of
 			// finding the rgba and gray
-			Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba,
-					gray);
+			Matcher.FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba, gray);
 		}
 
 		if (mFunc == CVFunction.Convert) {
@@ -286,8 +288,7 @@ public class CameraViewBase extends SurfaceView implements
 
 		Log.i(TAG, "Converted");
 
-		mBitmap.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0,
-				getFrameWidth(), getFrameHeight());
+		mBitmap.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0, getFrameWidth(), getFrameHeight());
 		Log.i(TAG, "Pixel Sets");
 
 		return mBitmap;
@@ -314,11 +315,9 @@ public class CameraViewBase extends SurfaceView implements
 	 *            processFrame
 	 */
 	protected void onPreviewStarted(int previewWidth, int previewHeight) {
-		Log.i(TAG, "called onPreviewStarted(" + previewWidth + ", "
-				+ previewHeight + ")");
+		Log.i(TAG, "called onPreviewStarted(" + previewWidth + ", " + previewHeight + ")");
 		/* Create a bitmap that will be used through to calculate the image to */
-		mBitmap = Bitmap.createBitmap(previewWidth, previewHeight,
-				Bitmap.Config.ARGB_8888);
+		mBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888);
 		mRGBA = new int[previewWidth * previewHeight];
 		mGRAY = new int[previewWidth * previewHeight];
 
