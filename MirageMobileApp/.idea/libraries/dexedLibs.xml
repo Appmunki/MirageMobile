@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="dexedLibs">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/bin/dexedLibs/java-879ebed00c5e968067b5376c40421ece.jar!/" />
+      <root url="jar://$PROJECT_DIR$/bin/dexedLibs/androrm-af531fb273294c31fc8330978a33ae53.jar!/" />
+      <root url="jar://$PROJECT_DIR$/bin/dexedLibs/flexjson-2.1-7965f76c2df6dba4c8c062c9d85afca4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/bin/dexedLibs/flexjson-2.1-javadoc-c9863070f8b231166f56442eed7c6637.jar!/" />
+      <root url="jar://$PROJECT_DIR$/bin/dexedLibs/android-support-v4-95fe58f84ce3deb44bf8b57476a9f5c4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
