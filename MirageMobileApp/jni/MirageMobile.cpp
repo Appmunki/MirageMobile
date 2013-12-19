@@ -412,6 +412,7 @@ extern "C" {
 
   JNIEXPORT jintArray JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv){
+    LOG("------------------MatchDebug----------------");
     //Conversion of frame
     jbyte* _yuv  = env->GetByteArrayElements(yuv, 0);
     int* _rgba = new int[width*height];

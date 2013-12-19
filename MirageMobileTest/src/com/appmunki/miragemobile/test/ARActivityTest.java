@@ -17,22 +17,27 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
 
 import com.appmunki.miragemobile.MainActivity;
+import com.appmunki.miragemobile.TestARActivity;
 
-public class ARActivityTest extends ActivityInstrumentationTestCase2<MainActivity>{
+public class ARActivityTest extends ActivityInstrumentationTestCase2<TestARActivity>{
 
 	
 	
 	
 
-	public ARActivityTest(Class<MainActivity> activityClass) {
+	public ARActivityTest(Class<TestARActivity> activityClass) {
 		super(activityClass);
 	}
 	public ARActivityTest() {
-	    super(MainActivity.class);
+	    super(TestARActivity.class);
 	}
-
+	/**
+	 * Tests the matching code
+	 * Loads in a list of bitmaps 
+	 * Then, checks the matching versus a testimage
+	 */
 	public void testMatching(){
-		  MainActivity activity = getActivity();
+		  TestARActivity activity = getActivity();
 		  
 		  //Test that the images were loaded
 		  List<Bitmap> bitmapList = new ArrayList<Bitmap>();
@@ -43,7 +48,11 @@ public class ARActivityTest extends ActivityInstrumentationTestCase2<MainActivit
 		  }
 		  activity.matchDebug(getBitmapFromAsset("query.jpg"));
 	}
-	
+	/**
+	 * Retrieve a bitmap from a assets folder
+	 * @param strName
+	 * @return
+	 */
 	private Bitmap getBitmapFromAsset(String strName)
     {
         AssetManager assetManager = getInstrumentation().getTargetContext().getResources().getAssets();
@@ -61,13 +70,14 @@ public class ARActivityTest extends ActivityInstrumentationTestCase2<MainActivit
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Options o = new BitmapFactory.Options();
-        o.inSampleSize =  666666;
-        Bitmap bitmap = BitmapFactory.decodeStream(istr,null,o);
+        Bitmap bitmap = BitmapFactory.decodeStream(istr);
         		
         return bitmap;
     }
-	
+	/**
+	 * Saves the nitmap in a file for testing
+	 * @param finalBitmap
+	 */
 	private void saveImage(Bitmap finalBitmap) {
 
 	    String root = Environment.getExternalStorageDirectory().toString();
