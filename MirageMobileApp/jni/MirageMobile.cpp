@@ -443,6 +443,15 @@ extern "C" {
     match(framepattern,result);
     LOG("Results size %d",result.size());
 
+
+
+    //abitrary result array
+    jintArray resultArray;
+    resultArray = (*env).NewIntArray(9);
+    if (resultArray == NULL) {
+            return NULL; /* out of memory error thrown */
+    }
+    return resultArray;
   }
   JNIEXPORT jintArray JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_match(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv, jintArray rgba){
