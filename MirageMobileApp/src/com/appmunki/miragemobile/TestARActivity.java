@@ -15,11 +15,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.appmunki.miragemobile.ar.ARActivity;
 import com.appmunki.miragemobile.ar.ARLib;
 import com.appmunki.miragemobile.ar.Matcher;
 import com.appmunki.miragemobile.utils.Util;
 
-public class TestARActivity extends Activity {
+public class TestARActivity extends ARActivity {
 	
 
 	private enum CVFunction {

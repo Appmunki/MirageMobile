@@ -67,11 +67,12 @@ public abstract class ARActivity extends Activity {
 		disableScreenTurnOff();
 		setOrientation();
 		super.onCreate(savedInstanceState);
-		if (countOnCreate == 1) {
+		//This needs to be redone It initiliazes the camera but it shouldn't
+		/*if (countOnCreate == 1) {
 			// Check if test data is loaded or not
 			checkTestData();
 		}
-		countOnCreate++;
+		countOnCreate++;*/
 
 	}
 
