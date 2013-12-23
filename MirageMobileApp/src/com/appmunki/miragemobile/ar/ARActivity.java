@@ -129,7 +129,7 @@ public abstract class ARActivity extends Activity {
 		
 		int[] pixels = new int[width * height];
 		bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-		Matcher.matchDebug(width,height,pixels);
+//		Matcher.matchDebug(width,height,pixels);
 	}
 	
 	private void setupCameraLayout() {

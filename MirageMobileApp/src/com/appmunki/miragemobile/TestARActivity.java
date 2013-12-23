@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -145,31 +146,32 @@ public class TestARActivity extends ARActivity {
 		
 		ARLib.testMatConvert(bitmap);
 		// Set variables
-//		int width = bmp.getWidth();
-//		int height = bmp.getHeight();
-//		byte[] yuv = Util.getNV21(width, height, bmp);
-//		int[] rgba = new int[width * height];
-//		int[] gray = new int[width * height];
-//
-//		// Run match code
-//		// Matcher.matchDebug(width, height, yuv, rgba);
-//		if (mFunc == CVFunction.Features) {
-//			Toast.makeText(getApplicationContext(), "FindFeatues",
-//					Toast.LENGTH_SHORT).show();
-//			Matcher.FindFeatures(width, height, yuv, rgba, gray);
-//		} else if (mFunc == CVFunction.DebugMatch) {
-//			Toast.makeText(getApplicationContext(), "DebugMatch",
-//					Toast.LENGTH_SHORT).show();
-//			Matcher.matchDebug(width, height, yuv, rgba);
-//		}
-//		// Set result bitmap to imageview
-//		bmp.setPixels(rgba, 0/* offset */, width/* stride */, 0, 0, width,
+		int width = bitmap.getWidth();
+		int height = bitmap.getHeight();
+		byte[] yuv = Util.getNV21(width, height, bitmap);
+		int[] rgba = new int[width * height];
+		int[] gray = new int[width * height];
+
+		// Run match code
+		// Matcher.matchDebug(width, height, yuv, rgba);
+		if (mFunc == CVFunction.Features) {
+			Toast.makeText(getApplicationContext(), "FindFeatues",
+					Toast.LENGTH_SHORT).show();
+			Matcher.FindFeatures(width, height, yuv, rgba, gray);
+		} else if (mFunc == CVFunction.DebugMatch) {
+			Toast.makeText(getApplicationContext(), "DebugMatch",
+					Toast.LENGTH_SHORT).show();
+			int[] result = Matcher.matchDebug(width, height, yuv);
+			Log.v("DEBUG",result.length+"");
+		}
+		// Set result bitmap to imageview
+//		bitmap.setPixels(rgba, 0/* offset */, width/* stride */, 0, 0, width,
 //				height);
-//
-//		Bitmap bm = Bitmap.createBitmap(height + height / 2, width,
-//				Bitmap.Config.ARGB_8888);
+
+		Bitmap bm = Bitmap.createBitmap(height + height / 2, width,
+				Bitmap.Config.ARGB_8888);
 //		bm.copyPixelsFromBuffer(ByteBuffer.wrap(yuv));
-//
+
 //		imResult.setImageBitmap(bm);
 	}
 }

@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 #opencv
 #OPENCV_LIB_TYPE:=STATIC
 OPENCV_INSTALL_MODULES:=on
-include /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/OpenCV.mk
+include /home/diego/Development/OpenCV-2.4.7-android-sdk/sdk/native/jni/OpenCV.mk
 
 ifdef DEBUG
 CONFIG_DIR  := Debug
