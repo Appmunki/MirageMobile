@@ -176,7 +176,7 @@ inline void buildPatternFromImage(cv::Mat& frame, const cv::Mat& mgray, Pattern&
 	extractFeatures(pattern.gray, pattern.descriptor, pattern.keypoints);
 }
 JNIEXPORT void JNICALL
-Java_com_appmunki_miragemobile_ar_Matcher_addPattern(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv) {
+Java_com_appmunki_miragemobile_ar_ARActivity_addPattern(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv) {
 	jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
 	int* _rgba = new int[width * height];
 
@@ -373,10 +373,10 @@ Java_com_appmunki_miragemobile_ar_Matcher_convertFrame(JNIEnv* env, jobject obj,
 }
 
 JNIEXPORT jintArray JNICALL
-Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv) {
-	LOG("------------------MatchDebug----------------");
+Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jint width, jint height, jintArray yuv) {
+	LOGE("------------------MatchDebug----------------");
 	//Conversion of frame
-	jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
+	jint* _yuv = env->GetIntArrayElements(yuv, 0);
 	int* _rgba = new int[width * height];
 
 	Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
@@ -408,6 +408,8 @@ Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, j
 	if (resultArray == NULL) {
 		return NULL; /* out of memory error thrown */
 	}
+        LOGE("------------------End MatchDebug----------------");
+
 	return resultArray;
 }
 JNIEXPORT jintArray JNICALL

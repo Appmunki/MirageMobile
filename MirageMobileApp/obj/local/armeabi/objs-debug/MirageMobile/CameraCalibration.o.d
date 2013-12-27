@@ -1,8 +1,8 @@
 obj/local/armeabi/objs-debug/MirageMobile/CameraCalibration.o: \
  jni/CameraCalibration.cpp jni/CameraCalibration.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/opencv.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/types_c.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/opencv.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/types_c.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/assert.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_cprolog.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/config/features.h \
@@ -53,8 +53,8 @@ obj/local/armeabi/objs-debug/MirageMobile/CameraCalibration.o: \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/platforms/android-9/arch-arm/usr/include/machine/limits.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/platforms/android-9/arch-arm/usr/include/sys/syslimits.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/platforms/android-9/arch-arm/usr/include/asm/page.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/version.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/version.hpp \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/algorithm \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_prolog.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/debug/_debug.h \
@@ -177,52 +177,52 @@ obj/local/armeabi/objs-debug/MirageMobile/CameraCalibration.o: \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_bvector.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/sstream \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_ioserr.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/operations.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/operations.hpp \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/limits \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/mat.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/miniflann.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/defines.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/config.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc_c.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/types_c.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo_c.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/video.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/tracking.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/background_segm.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/mat.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/miniflann.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/defines.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/config.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc_c.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/types_c.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo_c.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/video.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/tracking.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/background_segm.hpp \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/list \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_list.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_list.c \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_carray.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/objdetect/objdetect.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/objdetect/objdetect.hpp \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/deque \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_deque.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_deque.c \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/calib3d/calib3d.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/ml/ml.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/calib3d/calib3d.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/ml/ml.hpp \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/iostream \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui_c.h \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/contrib.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui_c.h \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/contrib.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/valarray \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_valarray.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_numeric.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_numeric.c \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_valarray.c \
- /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp \
+ /home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/set \
  /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_set.h
 
 jni/CameraCalibration.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/opencv.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/opencv.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/types_c.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/types_c.h:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/assert.h:
 
@@ -324,9 +324,9 @@ jni/CameraCalibration.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/platforms/android-9/arch-arm/usr/include/asm/page.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/core.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/version.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/version.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/algorithm:
 
@@ -572,33 +572,33 @@ jni/CameraCalibration.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_ioserr.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/operations.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/operations.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/limits:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/mat.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/core/mat.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/miniflann.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/miniflann.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/defines.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/defines.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/config.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/flann/config.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc_c.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc_c.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/types_c.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/types_c.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo_c.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/photo/photo_c.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/video.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/video.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/tracking.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/tracking.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/background_segm.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/video/background_segm.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/list:
 
@@ -608,9 +608,9 @@ jni/CameraCalibration.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_carray.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/objdetect/objdetect.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/objdetect/objdetect.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/deque:
 
@@ -618,19 +618,19 @@ jni/CameraCalibration.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_deque.c:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/calib3d/calib3d.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/calib3d/calib3d.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/ml/ml.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/ml/ml.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/iostream:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui_c.h:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui_c.h:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/contrib.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/contrib.hpp:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/valarray:
 
@@ -642,7 +642,7 @@ jni/CameraCalibration.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_valarray.c:
 
-/home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp:
+/home/radzell/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/set:
 

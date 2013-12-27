@@ -18,7 +18,7 @@ public class Matcher {
 			int[] rgba);
 	public static native int[] match(Bitmap bitmap);
 
-	public static native int[] matchDebug(int width, int height, byte yuv[]);
+	public static native int[] matchDebug(int width, int height, int[] pixels);
 	public static native int[] matchDebug(Bitmap bitmap);
 
 	public static native void FindFeatures(int width, int height, byte yuv[],

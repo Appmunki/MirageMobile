@@ -161,8 +161,8 @@ public class TestARActivity extends ARActivity {
 		} else if (mFunc == CVFunction.DebugMatch) {
 			Toast.makeText(getApplicationContext(), "DebugMatch",
 					Toast.LENGTH_SHORT).show();
-			int[] result = Matcher.matchDebug(width, height, yuv);
-			Log.v("DEBUG",result.length+"");
+			//int[] result = Matcher.matchDebug(width, height, yuv);
+			//Log.v("DEBUG",result.length+"");
 		}
 		// Set result bitmap to imageview
 //		bitmap.setPixels(rgba, 0/* offset */, width/* stride */, 0, 0, width,

@@ -39,14 +39,19 @@ public class ARActivityTest extends ActivityInstrumentationTestCase2<TestARActiv
 	public void testMatching(){
 		  TestARActivity activity = getActivity();
 		  
-		  //Test that the images were loaded
+		  /*  //Test that the images were loaded
 		  List<Bitmap> bitmapList = new ArrayList<Bitmap>();
 		  for(int i=1;i<10;i++){
 			  Bitmap bitmap = getBitmapFromAsset("posters/Movie Poster "+i+".jpg");
 			  bitmapList.add(bitmap);
 			  activity.addPattern(bitmap);
-		  }
-		  activity.matchDebug(getBitmapFromAsset("query.jpg"));
+		  }*/
+		  activity.addPattern(getBitmapFromAsset("posters/Movie Poster "+1+".jpg"));
+		  activity.addPattern(getBitmapFromAsset("posters/Movie Poster "+2+".jpg"));
+		  activity.addPattern(getBitmapFromAsset("pattern1.jpg"));
+
+		  activity.matchDebug(getBitmapFromAsset("query2.jpg"));
+		  Log.e("Root",Environment.getExternalStorageDirectory().toString());
 	}
 	/**
 	 * Retrieve a bitmap from a assets folder
