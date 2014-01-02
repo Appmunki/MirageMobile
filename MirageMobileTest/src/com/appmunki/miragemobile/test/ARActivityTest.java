@@ -39,14 +39,15 @@ public class ARActivityTest extends ActivityInstrumentationTestCase2<TestARActiv
 	public void testMatching(){
 		  TestARActivity activity = getActivity();
 		  
+		  
 		  //Test that the images were loaded
 		  List<Bitmap> bitmapList = new ArrayList<Bitmap>();
-		  for(int i=1;i<10;i++){
+		  for(int i=1;i<8;i++){
 			  Bitmap bitmap = getBitmapFromAsset("posters/Movie Poster "+i+".jpg");
 			  bitmapList.add(bitmap);
 			  activity.addPattern(bitmap);
 		  }
-		  activity.matchDebug(getBitmapFromAsset("query.jpg"));
+		  activity.matchDebug(getBitmapFromAsset("query1.jpg"));
 	}
 	/**
 	 * Retrieve a bitmap from a assets folder
