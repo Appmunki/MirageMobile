@@ -33,6 +33,7 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 
 import com.appmunki.miragemobile.R;
+import com.appmunki.miragemobile.utils.Util;
 import com.entity.KeyPoint;
 import com.entity.Mat;
 import com.entity.TargetImage;
@@ -114,12 +115,11 @@ public abstract class ARActivity extends Activity {
 	public void addPattern(Bitmap bitmap){
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
-		int[] pixels = new int[width * height];
-		bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+		byte[] pixels = Util.getNV21(width, height, bitmap);
 		addPattern(width, height,pixels);
 		bitmap.recycle();
 	}
-	public native void addPattern(int width, int height, int yuv[]);
+	public native void addPattern(int width, int height, byte yuv[]);
 	
 	public void matchDebug(Bitmap bitmap){
 		int width = bitmap.getWidth();
@@ -127,8 +127,7 @@ public abstract class ARActivity extends Activity {
 		
 		Log.i("Match","Scene size "+width+"x"+height);
 		
-		int[] pixels = new int[width * height];
-		bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+		byte[] pixels = Util.getNV21(width, height, bitmap);
 		Matcher.matchDebug(width,height,pixels);
 	}
 	

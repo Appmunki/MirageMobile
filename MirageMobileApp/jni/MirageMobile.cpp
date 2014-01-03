@@ -202,6 +202,8 @@ extern "C" {
 
     __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int)patterns.size());
     //LOG("Pattern size %d",(int)pattern.size());
+    env->ReleaseByteArrayElements(yuv, _yuv, 0);
+
 
   }
   JNIEXPORT void JNICALL
@@ -442,6 +444,8 @@ extern "C" {
     LOG("Matching begin");
     match(framepattern,result);
     LOG("Results size %d",result.size());
+
+    env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
   }
   JNIEXPORT jintArray JNICALL
