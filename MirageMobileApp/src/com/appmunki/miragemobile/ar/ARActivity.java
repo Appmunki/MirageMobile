@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.highgui.Highgui;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -34,6 +40,7 @@ import android.widget.TextView;
 
 import com.appmunki.miragemobile.R;
 import com.appmunki.miragemobile.utils.Util;
+import com.appmunki.miragemobile.utils.Util.CVFunction;
 import com.entity.KeyPoint;
 import com.entity.Mat;
 import com.entity.TargetImage;
@@ -68,12 +75,11 @@ public abstract class ARActivity extends Activity {
 		disableScreenTurnOff();
 		setOrientation();
 		super.onCreate(savedInstanceState);
-		//This needs to be redone It initiliazes the camera but it shouldn't
-		/*if (countOnCreate == 1) {
-			// Check if test data is loaded or not
-			checkTestData();
-		}
-		countOnCreate++;*/
+		// This needs to be redone It initiliazes the camera but it shouldn't
+		/*
+		 * if (countOnCreate == 1) { // Check if test data is loaded or not
+		 * checkTestData(); } countOnCreate++;
+		 */
 
 	}
 
@@ -107,39 +113,53 @@ public abstract class ARActivity extends Activity {
 
 	}
 
-	
-	public void addPattern(String imageFilePath){
+	public void addPattern(String imageFilePath) {
 		Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
 		addPattern(bitmap);
 	}
-	public void addPattern(Bitmap bitmap){
+
+	public void addPattern(Bitmap bitmap) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
 		byte[] pixels = Util.getNV21(width, height, bitmap);
-		addPattern(width, height,pixels);
+		addPattern(width, height, pixels);
 		bitmap.recycle();
 	}
+
 	public native void addPattern(int width, int height, byte yuv[]);
-	
-	public void matchDebug(Bitmap bitmap){
+
+	public void matchDebug(Bitmap bitmap) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
-		
-		Log.i("Match","Scene size "+width+"x"+height);
-		
+
+		Log.i("Match", "Scene size " + width + "x" + height);
+
 		byte[] pixels = Util.getNV21(width, height, bitmap);
-		Matcher.matchDebug(width,height,pixels);
+		int[] result = Matcher.matchDebug(width, height, pixels);
+
+		org.opencv.core.Mat test = new org.opencv.core.Mat();
+		Utils.bitmapToMat(bitmap, test);
+
+		Core.line(test, new Point(result[0], result[1]), new Point(result[2], result[3]), new Scalar(0, 255, 0, 255), 10);
+		Core.line(test, new Point(result[2], result[3]), new Point(result[4], result[5]), new Scalar(0, 255, 0, 255), 10);
+		Core.line(test, new Point(result[4], result[5]), new Point(result[6], result[7]), new Scalar(0, 255, 0, 255), 10);
+		Core.line(test, new Point(result[6], result[7]), new Point(result[0], result[1]), new Scalar(0, 255, 0, 255), 10);
+
+		Core.circle(test, new Point(result[0], result[1]), 10, new Scalar(0, 0, 255, 255), 5);
+		Core.circle(test, new Point(result[2], result[3]), 10, new Scalar(0, 0, 255, 255), 5);
+		Core.circle(test, new Point(result[4], result[5]), 10, new Scalar(0, 0, 255, 255), 5);
+		Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0, 0, 255, 255), 5);
+
+		Highgui.imwrite("/mnt/sdcard/outputDebug.jpg", test);
 	}
-	
+
 	private void setupCameraLayout() {
 		// Add a Parent
 		RelativeLayout main = new RelativeLayout(this);
 
 		// Defining the RelativeLayout layout parameters.
 		// In this case I want to fill its parent
-		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
-				RelativeLayout.LayoutParams.MATCH_PARENT);
+		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
 		// Add preview
 		mCameraViewBase = new CameraViewBase(this, isDebugging);
@@ -173,9 +193,7 @@ public abstract class ARActivity extends Activity {
 		// Adding Logo
 		ImageView logoLayout = new ImageView(this);
 		logoLayout.setImageResource(R.drawable.miragelogo);
-		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.WRAP_CONTENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT);
+		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
 		content.addView(logoLayout, lp1);
 
@@ -185,20 +203,15 @@ public abstract class ARActivity extends Activity {
 		loadingText.setText("Loading AR ...");
 		loadingText.setTypeface(null, Typeface.BOLD);
 		loadingText.setGravity(Gravity.CENTER);
-		lp1 = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT);
+		lp1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		content.addView(loadingText, lp1);
 
 		// Adding progress bar
-		ProgressBar progressBar = new ProgressBar(this, null,
-				android.R.attr.progressBarStyleLarge);
+		ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
 
 		content.addView(progressBar);
 
-		LayoutParams lp = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		lp.addRule(RelativeLayout.CENTER_IN_PARENT, content.getId());
 		splashmain.addView(content, lp);
 
@@ -209,8 +222,7 @@ public abstract class ARActivity extends Activity {
 	 * Avoid that the screen get's turned off by the system.
 	 */
 	public void disableScreenTurnOff() {
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-				WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	/**
@@ -218,8 +230,7 @@ public abstract class ARActivity extends Activity {
 	 */
 	public void setFullscreen() {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	}
 
 	/**
@@ -245,14 +256,13 @@ public abstract class ARActivity extends Activity {
 			AlertDialog ad = new AlertDialog.Builder(this).create();
 			ad.setCancelable(false); // This blocks the 'BACK' button
 			ad.setMessage("Fatal error: can't open camera!");
-			ad.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-							finish();
-						}
-					});
+			ad.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					finish();
+				}
+			});
 			ad.show();
 		}
 	}
@@ -277,9 +287,7 @@ public abstract class ARActivity extends Activity {
 
 	private void parseJson(String json) {
 		System.out.print(json);
-		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>()
-				.use("values", TargetImageResponse.class)
-				.use("values.dess", Mat.class).use("values.keys", Vector.class)
+		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>().use("values", TargetImageResponse.class).use("values.dess", Mat.class).use("values.keys", Vector.class)
 				.use("values.keys.values", KeyPoint.class).deserialize(json);
 		for (TargetImageResponse item : items) {
 
