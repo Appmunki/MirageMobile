@@ -194,8 +194,6 @@ extern "C" {
     Mat mrgba(height, width, CV_8UC4, (unsigned char *)_rgba);
     Mat mgray(height, width, CV_8UC1, (unsigned char *)_yuv);
 
-    LOG("adding Pattern");
-
     Pattern pattern;
     buildPatternFromImage(mrgba,mgray,pattern);
     patterns.push_back(pattern);
@@ -444,7 +442,7 @@ extern "C" {
     LOG("Matching begin");
     match(framepattern,result);
     LOG("Results size %d",result.size());
-
+    imwrite();
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
   }

@@ -45,10 +45,7 @@ void PatternTrackingInfo::draw2dContour(cv::Mat& image, cv::Scalar color) const 
   colors.push_back(cv::Scalar(0,255,255,255));
 
   for (size_t i = 0; i < points2d.size(); i++) {
-    //LOG("draw2dContour points %d: (%d,%d)",i,i,(i + 1) % points2d.size());
-    //LOG("draw2dContour line %d: (%d,%d) to (%d,%d)",i,points2d[i].x,points2d[i].y, points2d[(i + 1) % points2d.size()].x,points2d[(i + 1) % points2d.size() ].y);
     cv::circle(image, points2d[i], 10,colors[i], 2);
-
     cv::line(image, points2d[i], points2d[(i + 1) % points2d.size()], color, 2, CV_AA);
   }
 }
