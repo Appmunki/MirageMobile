@@ -47,99 +47,9 @@ extern "C"
   static Matrix44 glProjectionMatrix;
   static std::vector<Point2f> scene_corners(4);
 
-  void
-  convertBitmapToMat()
-  {
-
-  }
-
-  JNIEXPORT void JNICALL
-  Java_com_appmunki_miragemobile_ar_ARLib_testMatConvert(JNIEnv* env,
-      jobject obj, jobject bitmap)
-  {
-    AndroidBitmapInfo info;
-    void* pixels;
-    int ret;
-
-    AndroidBitmap_getInfo(env, bitmap, &info);
-
-    AndroidBitmap_lockPixels(env, bitmap, &pixels);
-
-    uint16_t *pictureRGB;
-    int size = sizeof(uint16_t) * info.width * info.height;
-    pictureRGB = (uint16_t*) malloc(
-        sizeof(uint16_t) * info.width * info.height);
-    memcpy((char*) pixels, (char*) pictureRGB,
-        info.width * info.height * sizeof(uint16_t));
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-  }
   /**
-   * Convert data stored in an array into keypoints and descriptor
+   * Extracts features from a image
    */
-  void
-  readKeyAndDesc(vector<KeyPoint> &trainKeys, Mat &trainDes, float *mdata,
-      int &count)
-  {
-    // doc du lieu
-    int keyNum, octave, classId;
-    float x, y, angle, size, response;
-    keyNum = mdata[count++];
-    for (int i = 0; i < keyNum; ++i)
-      {
-        angle = mdata[count++];
-        classId = mdata[count++];
-        octave = mdata[count++];
-        x = mdata[count++];
-        y = mdata[count++];
-        response = mdata[count++];
-        size = mdata[count++];
-        KeyPoint p(x, y, size, angle, response, octave, classId);
-        trainKeys.push_back(p);
-      }
-
-    int rows, cols, type;
-    uchar *data;
-    rows = mdata[count++];
-    cols = mdata[count++];
-    type = mdata[count++];
-    int matSize = rows * cols;
-
-    data = new uchar[matSize];
-    for (int i = 0; i < matSize; ++i)
-      {
-        data[i] = mdata[count++];
-      }
-
-    trainDes = Mat(rows, cols, CV_8U, data);
-
-  }
-
-  /**
-   * Read database from an array
-   */
-  inline void
-  readDB(float *mdata, int &count)
-  {
-
-    int querySize;
-    querySize = mdata[count++];
-    for (int i = 0; i < querySize; ++i)
-      {
-        vector < KeyPoint > qK;
-        Mat qD;
-        Size qS;
-
-        qS.height = mdata[count++];
-        qS.width = mdata[count++];
-
-        readKeyAndDesc(qK, qD, mdata, count);
-        LOG("width %d height %d", qS.width, qS.height);
-        Pattern pattern(i, qD, qK, qS);
-        patterns.push_back(pattern);
-      }
-  }
-
   inline void
   extractFeatures(const Mat& img, Mat& des, vector<KeyPoint>& keys)
   {
@@ -164,7 +74,10 @@ extern "C"
     // compute image descriptor
     sde.compute(img, keys, des);
   }
-
+  /**
+   * Builds a pattern from a reference image
+   * TODO move this into the pattern.h and pattern.cpp file
+   */
   inline void
   buildPatternFromImage(cv::Mat& frame, const cv::Mat& mgray, Pattern& pattern)
   {
@@ -482,11 +395,11 @@ extern "C"
         index++;
       }
 
-    env->ReleaseIntArrayElements(newArray, narr, NULL);
+    env->ReleaseIntArrayElements(newArray, narr, 0);
     return newArray;
-//    return NULL;
-
   }
+
+
   JNIEXPORT jintArray JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_match(JNIEnv* env, jobject obj,
       jint width, jint height, jbyteArray yuv, jintArray rgba)
