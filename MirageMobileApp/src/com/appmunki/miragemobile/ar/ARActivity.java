@@ -127,7 +127,7 @@ public abstract class ARActivity extends Activity {
 	}
 
 	public native void addPattern(int width, int height, byte yuv[]);
-
+	
 	public void matchDebug(Bitmap bitmap) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
@@ -135,7 +135,11 @@ public abstract class ARActivity extends Activity {
 		Log.i("Match", "Scene size " + width + "x" + height);
 
 		byte[] pixels = Util.getNV21(width, height, bitmap);
-		int[] result = Matcher.matchDebug(width, height, pixels);
+		
+		//Result of the amount of found markers
+		int result = Matcher.matchDebug(width, height, pixels);
+
+		/*int[] result = Matcher.matchDebug(width, height, pixels);
 
 		org.opencv.core.Mat test = new org.opencv.core.Mat();
 		Utils.bitmapToMat(bitmap, test);
@@ -151,6 +155,19 @@ public abstract class ARActivity extends Activity {
 		Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0, 0, 255, 255), 5);
 
 		Highgui.imwrite("/mnt/sdcard/outputDebug.jpg", test);
+		Log.e("Result", "results: "+result.length);*/
+	}
+	public int match(Bitmap bitmap) {
+		int width = bitmap.getWidth();
+		int height = bitmap.getHeight();
+
+		Log.i("Match", "Scene size " + width + "x" + height);
+
+		byte[] pixels = Util.getNV21(width, height, bitmap);
+		
+		//Result of the amount of found markers
+		return Matcher.matchDebug(width, height, pixels);
+		
 	}
 
 	private void setupCameraLayout() {

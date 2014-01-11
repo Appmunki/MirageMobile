@@ -47,6 +47,131 @@ extern "C"
   static Matrix44 glProjectionMatrix;
   static std::vector<Point2f> scene_corners(4);
 
+  //static Mat intrinsic(3,3);
+  //static Mat intrinsicInverse(3,3);
+  inline void setIntrinsicParams(Mat& intrinsic,Mat& intrinsicInverse)
+  {
+      // Camera parameters
+      double f_x = 786.42938232; // Focal length in x axis
+      double f_y = 786.42938232; // Focal length in y axis (usually the same?)
+      double c_x = 217.01358032; // Camera primary point x
+      double c_y = 311.25384521; // Camera primary point y
+      double tau = f_x/f_y;
+      double screen_width = 480; // In pixels
+      double screen_height = 640; // In pixels
+
+      double fovY = 1/(f_x/screen_height * 2);
+      double aspectRatio = screen_width/screen_height * f_y/f_x;
+      double near = .1;  // Near clipping distance
+      double far = 1000;  // Far clipping distance
+      double frustum_height = near * fovY;
+      double frustum_width = frustum_height * aspectRatio;
+
+      double offset_x = (screen_width/2 - c_x)/screen_width * frustum_width * 2;
+      double offset_y = (screen_height/2 - c_y)/screen_height * frustum_height * 2;
+
+      intrinsic = (Mat_<double>(3,3) << f_x, 0, c_x, 0, f_y, c_y, 0, 0, 1.0);
+      intrinsicInverse = (Mat_<double>(3,3) << (1/(tau*f_y)), 0, -c_x/(tau*f_y), 0, 1.0/f_y, -1*c_y/f_y, 0, 0, 1.0);
+  }
+  string type2str(int type) {
+    string r;
+
+    uchar depth = type & CV_MAT_DEPTH_MASK;
+    uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+    switch ( depth ) {
+      case CV_8U:  r = "8U"; break;
+      case CV_8S:  r = "8S"; break;
+      case CV_16U: r = "16U"; break;
+      case CV_16S: r = "16S"; break;
+      case CV_32S: r = "32S"; break;
+      case CV_32F: r = "32F"; break;
+      case CV_64F: r = "64F"; break;
+      default:     r = "User"; break;
+    }
+
+    r += "C";
+    r += (chans+'0');
+
+    return r;
+  }
+  void printMat(Mat& m){
+    for(int i=0; i<m.rows; i++){
+        for(int j=0; j<m.cols; j++) {
+            LOG("%f",m.at<double>(i,j));
+        }
+    }
+
+  }
+  inline void computePose(Mat& intrinsic,Mat& intrinsicInverse,Mat& H){
+    LOG("Computing Pose");
+    Mat h1 = (Mat_<double>(3,1) << H.at<double>(0,0) , H.at<double>(1,0) , H.at<double>(2,0));
+    Mat h2 = (Mat_<double>(3,1) << H.at<double>(0,1) , H.at<double>(1,1) , H.at<double>(2,1));
+    Mat h3 = (Mat_<double>(3,1) << H.at<double>(0,2) , H.at<double>(1,2) , H.at<double>(2,2));
+
+
+    // Calculate a length, for normalizing
+    double lambda = h1.at<double>(0,0)*h1.at<double>(0,0) + h1.at<double>(1,0)*h1.at<double>(1,0) + h1.at<double>(2,0)*h1.at<double>(2,0);
+    LOG("lambda %f",lambda);
+    if(lambda ==0) return;
+    lambda = 1.0/lambda;
+    // Normalize intrinsicInverse
+    intrinsicInverse.at<double>(0,0) *= lambda;
+    intrinsicInverse.at<double>(1,0) *= lambda;
+    intrinsicInverse.at<double>(2,0) *= lambda;
+    intrinsicInverse.at<double>(0,1) *= lambda;
+    intrinsicInverse.at<double>(1,1) *= lambda;
+    intrinsicInverse.at<double>(2,1) *= lambda;
+    intrinsicInverse.at<double>(0,2) *= lambda;
+    intrinsicInverse.at<double>(1,2) *= lambda;
+    intrinsicInverse.at<double>(2,2) *= lambda;
+    LOG("checkpoint 1 %d ",intrinsic.type());
+    //std::cout<<"hello world"<<std::endl;
+    // Column vectors of rotation matrix
+    LOG("intrinsic %d x %d type: %s",intrinsicInverse.rows,intrinsicInverse.cols,type2str(intrinsicInverse.type()).c_str());
+    LOG("h1 %d x %d type: %s",h1.rows,h1.cols,type2str(h1.type()).c_str());
+
+    Mat r1 = intrinsicInverse *h1;
+    LOG("checkpoint 2/3");
+
+    Mat r2 = intrinsicInverse * h2;
+    LOG("checkpoint 3/3");
+
+    Mat r3 = r1.cross(r2);    // Orthogonal to r1 and r2
+    LOG("checkpoint 2");
+
+    // Put rotation columns into rotation matrix... with some unexplained sign changes
+    Mat rotationMatrix = (Mat_<double>(3,3) <<  r1.at<double>(0,0) , -r2.at<double>(0,0) , -r3.at<double>(0,0) ,
+                -r1.at<double>(1,0) , r2.at<double>(1,0) , r3.at<double>(1,0) ,
+                -r1.at<double>(2,0) , r2.at<double>(2,0) , r3.at<double>(2,0));
+    LOG("checkpoint 3");
+
+
+
+    // Translation vector T
+    Mat translationVector = intrinsicInverse * h3;
+    translationVector.at<double>(0,0) *= 1;
+    translationVector.at<double>(1,0) *= -1;
+    translationVector.at<double>(2,0) *= -1;
+
+    SVD decomposed(rotationMatrix); // I don't really know what this does. But it works.
+    rotationMatrix = decomposed.u * decomposed.vt;
+    Mat modelviewMatrix = (Mat_<double>(4,4) << rotationMatrix.at<double>(0,0), rotationMatrix.at<double>(0,1), rotationMatrix.at<double>(0,2), translationVector.at<double>(0,0),
+              rotationMatrix.at<double>(1,0), rotationMatrix.at<double>(1,1), rotationMatrix.at<double>(1,2), translationVector.at<double>(1,0),
+              rotationMatrix.at<double>(2,0), rotationMatrix.at<double>(2,1), rotationMatrix.at<double>(2,2), translationVector.at<double>(2,0),
+              0,0,0,1);
+    printMat(modelviewMatrix);
+    double* h =(double*)modelviewMatrix.data;
+    LOGE("d--------------");
+    for(int i=0;i<16;i++){
+        LOGE("%f",h[i]);
+    }
+
+    //return h;
+    //return modelviewMatrix.ptr<double>(0);
+
+  }
+
   /**
    * Extracts features from a image
    */
@@ -209,6 +334,7 @@ extern "C"
       }
 
     Mat H = findHomography(obj, scene, CV_RANSAC, 4);
+    LOG("second  %d x %d",H.cols,H.rows);
 
     //-- Get the corners from the image_1 ( the object to be "detected" )
     std::vector < Point2f > obj_corners(4);
@@ -247,7 +373,7 @@ extern "C"
    * Match the query image to images in database. The best matches are returned
    */
   inline void
-  match(Pattern& framepattern, vector<pair<int, PatternTrackingInfo&> >& result)
+  match(Pattern& framepattern, vector<pair<int, PatternTrackingInfo> >& result)
   {
     // use Flann based matcher to match images
     cv::FlannBasedMatcher bf(new flann::LshIndexParams(10, 10, 2));
@@ -298,10 +424,12 @@ extern "C"
               {
 
                 // Transform contour with precise homography
-                // cv::perspectiveTransform(m_pattern.points2d, info.points2d, info.homography);
+                //cv::perspectiveTransform(m_pattern.points2d, info.points2d, info.homography);
 
                 PatternTrackingInfo info;
                 info.homography = m_roughHomography;
+
+
 
                 cv::perspectiveTransform(framepattern.points2d, info.points2d,
                     info.homography);
@@ -309,16 +437,18 @@ extern "C"
                 drawHomography(framepattern.frame, patterns[i].keypoints,
                     framepattern.keypoints, patterns[i].size, matches);
 
-                info.draw2dContour(framepattern.frame, Scalar(0, 0, 255, 255));
-                pair<int, PatternTrackingInfo&> p(i, info);
+                //info.draw2dContour(framepattern.frame, Scalar(0, 0, 255, 255));
+                pair<int, PatternTrackingInfo> p(i, info);
                 result.push_back(p);
+
+
 
               }
           }
       }
 
     // sort in descending
-    //std::sort(result.begin(), result.end(), compare<int, PatternTrackingInfo&>);
+    //std::sort(result.begin(), result.end(), compare<int, PatternTrackingInfo>);
   }
 
   /**
@@ -348,7 +478,7 @@ extern "C"
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
   }
 
-  JNIEXPORT jintArray JNICALL
+  JNIEXPORT jint JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj,
       jint width, jint height, jbyteArray yuv)
   {
@@ -362,7 +492,7 @@ extern "C"
     Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
 
     // read image from file
-    vector < pair<int, PatternTrackingInfo&> > result;
+    vector < pair<int, PatternTrackingInfo> > result;
 
     //Changed trainkeys to framepattern
 
@@ -373,13 +503,21 @@ extern "C"
       {
         framepattern.descriptor.release();
         framepattern.keypoints.clear();
-        return NULL;
+        return 0;
       }
 
     //Calls Matching
     LOG("Matching begin");
     match(framepattern, result);
     LOG("Results size %d", result.size());
+
+    //Testing out the computePose
+    Mat intrinsic;
+    Mat intrinsicInverse;
+    setIntrinsicParams(intrinsic,intrinsicInverse);
+    for(int i=0;i<result.size();i++){
+        computePose(intrinsic,intrinsicInverse,result[i].second.homography);
+    }
 
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
@@ -396,7 +534,7 @@ extern "C"
       }
 
     env->ReleaseIntArrayElements(newArray, narr, 0);
-    return newArray;
+    return result.size();
   }
 
 
@@ -413,7 +551,7 @@ extern "C"
     Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
 
     // read image from file
-    vector < pair<int, PatternTrackingInfo&> > result;
+    vector < pair<int, PatternTrackingInfo> > result;
 
     //Changed trainkeys to framepattern
 
