@@ -137,7 +137,8 @@ public abstract class ARActivity extends Activity {
 		byte[] pixels = Util.getNV21(width, height, bitmap);
 		
 		//Result of the amount of found markers
-		int result = Matcher.matchDebug(width, height, pixels);
+		double[] modelviewMatrix = new double[16];
+		int result = Matcher.matchDebug(width, height, pixels,modelviewMatrix);
 
 		/*int[] result = Matcher.matchDebug(width, height, pixels);
 
@@ -166,7 +167,13 @@ public abstract class ARActivity extends Activity {
 		byte[] pixels = Util.getNV21(width, height, bitmap);
 		
 		//Result of the amount of found markers
-		return Matcher.matchDebug(width, height, pixels);
+		double[] modelviewMatrix = new double[16];
+
+		int res = Matcher.matchDebug(width, height, pixels,modelviewMatrix);
+		for(double model :modelviewMatrix){
+			Log.e(TAG, "t:"+model);
+		}
+		return res;
 		
 	}
 

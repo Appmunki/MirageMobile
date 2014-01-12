@@ -103,7 +103,7 @@ extern "C"
     }
 
   }
-  inline void computePose(Mat& intrinsic,Mat& intrinsicInverse,Mat& H){
+  inline  void computePose(Mat& intrinsic,Mat& intrinsicInverse,Mat& H,double **modelviewArray){
     LOG("Computing Pose");
     Mat h1 = (Mat_<double>(3,1) << H.at<double>(0,0) , H.at<double>(1,0) , H.at<double>(2,0));
     Mat h2 = (Mat_<double>(3,1) << H.at<double>(0,1) , H.at<double>(1,1) , H.at<double>(2,1));
@@ -161,14 +161,8 @@ extern "C"
               rotationMatrix.at<double>(2,0), rotationMatrix.at<double>(2,1), rotationMatrix.at<double>(2,2), translationVector.at<double>(2,0),
               0,0,0,1);
     printMat(modelviewMatrix);
-    double* h =(double*)modelviewMatrix.data;
-    LOGE("d--------------");
-    for(int i=0;i<16;i++){
-        LOGE("%f",h[i]);
-    }
+    *modelviewArray =(double*)modelviewMatrix.data;
 
-    //return h;
-    //return modelviewMatrix.ptr<double>(0);
 
   }
 
@@ -255,24 +249,10 @@ extern "C"
 
     __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d",
         (int) patterns.size());
-    //LOG("Pattern size %d",(int)pattern.size());
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
   }
-  JNIEXPORT void JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_load(JNIEnv *, jobject obj,
-      jboolean isDebug)
-  {
 
-    LOG("Loading and training the images");
-
-    //Add ARpipline here
-    m_calibration = CameraCalibration(786.42938232f, 786.42938232f,
-        217.01358032f, 311.25384521f);
-
-    //m_pipeline  = ARPipeline(patternImage, m_calibration);
-
-  }
 
   inline bool
   refineMatchesWithHomography(int it, float &confidence,
@@ -480,10 +460,12 @@ extern "C"
 
   JNIEXPORT jint JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj,
-      jint width, jint height, jbyteArray yuv)
+      jint width, jint height, jbyteArray yuv,jdoubleArray modelviewmatrix)
   {
     LOG("------------------MatchDebug----------------");
     //Conversion of frame
+    double* modelViewPtr  = env->GetDoubleArrayElements(modelviewmatrix,0); // Get C++ pointer to array data
+
     jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
     int* _rgba = new int[width * height];
 
@@ -512,13 +494,20 @@ extern "C"
     LOG("Results size %d", result.size());
 
     //Testing out the computePose
+    double *modelviews[result.size()];
     Mat intrinsic;
     Mat intrinsicInverse;
     setIntrinsicParams(intrinsic,intrinsicInverse);
     for(int i=0;i<result.size();i++){
-        computePose(intrinsic,intrinsicInverse,result[i].second.homography);
+        double *modelviewMatrix;
+        computePose(intrinsic,intrinsicInverse,result[i].second.homography,&modelviewMatrix);
+        modelviews[i]=modelviewMatrix;
     }
-
+    for(int i=0;i<16;i++){
+        LOGE("done %f",modelviews[0][i]);
+        modelViewPtr[i]=modelviews[0][i];
+    }
+    env->ReleaseDoubleArrayElements(modelviewmatrix,modelViewPtr,0);
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
     jintArray newArray = env->NewIntArray(8);
@@ -594,10 +583,6 @@ extern "C"
     // print out the best result
     LOG("Size: %d\n", result.size());
 
-//      for(int i = 0; i < size; ++i) {
-//          fill[i] = result[i].second;
-//          //LOG("%f  %d",result[i].first,result[i].second);
-//      }
 
     //Clean up
 
