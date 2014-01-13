@@ -138,7 +138,9 @@ public abstract class ARActivity extends Activity {
 		
 		//Result of the amount of found markers
 		double[] modelviewMatrix = new double[16];
-		int result = Matcher.matchDebug(width, height, pixels,modelviewMatrix);
+		double[] projectionMatrix = new double[9];
+
+		int result = Matcher.matchDebug(width, height, pixels,modelviewMatrix,projectionMatrix);
 
 		/*int[] result = Matcher.matchDebug(width, height, pixels);
 
@@ -168,10 +170,14 @@ public abstract class ARActivity extends Activity {
 		
 		//Result of the amount of found markers
 		double[] modelviewMatrix = new double[16];
+		double[] projectionMatrix = new double[9];
 
-		int res = Matcher.matchDebug(width, height, pixels,modelviewMatrix);
+		int res = Matcher.matchDebug(width, height, pixels,modelviewMatrix,projectionMatrix);
 		for(double model :modelviewMatrix){
-			Log.e(TAG, "t:"+model);
+			Log.e(TAG, "mv:"+model);
+		}
+		for(double model :projectionMatrix){
+			Log.e(TAG, "pm:"+model);
 		}
 		return res;
 		

@@ -49,7 +49,7 @@ extern "C"
 
   //static Mat intrinsic(3,3);
   //static Mat intrinsicInverse(3,3);
-  inline void setIntrinsicParams(Mat& intrinsic,Mat& intrinsicInverse)
+  inline void setIntrinsicParams(Mat& intrinsic,Mat& intrinsicInverse,double **instrinsicArray,double **instrinsicinverseArray)
   {
       // Camera parameters
       double f_x = 786.42938232; // Focal length in x axis
@@ -72,6 +72,9 @@ extern "C"
 
       intrinsic = (Mat_<double>(3,3) << f_x, 0, c_x, 0, f_y, c_y, 0, 0, 1.0);
       intrinsicInverse = (Mat_<double>(3,3) << (1/(tau*f_y)), 0, -c_x/(tau*f_y), 0, 1.0/f_y, -1*c_y/f_y, 0, 0, 1.0);
+      *instrinsicArray=(double*)intrinsic.data;
+      *instrinsicinverseArray =(double*)intrinsicInverse.data;
+
   }
   string type2str(int type) {
     string r;
@@ -460,15 +463,19 @@ extern "C"
 
   JNIEXPORT jint JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj,
-      jint width, jint height, jbyteArray yuv,jdoubleArray modelviewmatrix)
+      jint width, jint height, jbyteArray yuv,jdoubleArray modelviewmatrix,jdoubleArray projectionmatrix)
   {
     LOG("------------------MatchDebug----------------");
-    //Conversion of frame
-    double* modelViewPtr  = env->GetDoubleArrayElements(modelviewmatrix,0); // Get C++ pointer to array data
+
+    // Get C++ pointer to array data
+    double* modelViewPtr  = env->GetDoubleArrayElements(modelviewmatrix,0);
+    double* projectionPtr  = env->GetDoubleArrayElements(projectionmatrix,0);
 
     jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
-    int* _rgba = new int[width * height];
 
+
+    //Conversion of frame
+    int* _rgba = new int[width * height];
     Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
     Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
     Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
@@ -497,18 +504,23 @@ extern "C"
     double *modelviews[result.size()];
     Mat intrinsic;
     Mat intrinsicInverse;
-    setIntrinsicParams(intrinsic,intrinsicInverse);
+    double *intrinsicArray;
+    double *intrinsicInverseArray;
+    setIntrinsicParams(intrinsic,intrinsicInverse,&intrinsicArray,&intrinsicInverseArray);
     for(int i=0;i<result.size();i++){
         double *modelviewMatrix;
         computePose(intrinsic,intrinsicInverse,result[i].second.homography,&modelviewMatrix);
         modelviews[i]=modelviewMatrix;
     }
     for(int i=0;i<16;i++){
-        LOGE("done %f",modelviews[0][i]);
+        LOGE("mv %f",modelviews[0][i]);
         modelViewPtr[i]=modelviews[0][i];
     }
-
-    env->ReleaseDoubleArrayElements(modelviewmatrix,modelViewPtr,0);
+    for(int i=0;i<9;i++){
+        LOGE("pm %f",intrinsicArray[i]);
+        projectionPtr[i]=intrinsicArray[i];
+    }
+    env->ReleaseDoubleArrayElements(projectionmatrix,projectionPtr,0);
     env->ReleaseDoubleArrayElements(modelviewmatrix,modelViewPtr,0);
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
