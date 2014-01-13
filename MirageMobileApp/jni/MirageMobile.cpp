@@ -507,22 +507,11 @@ extern "C"
         LOGE("done %f",modelviews[0][i]);
         modelViewPtr[i]=modelviews[0][i];
     }
+
+    env->ReleaseDoubleArrayElements(modelviewmatrix,modelViewPtr,0);
     env->ReleaseDoubleArrayElements(modelviewmatrix,modelViewPtr,0);
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
-    jintArray newArray = env->NewIntArray(8);
-    jint *narr = env->GetIntArrayElements(newArray, NULL);
-
-    int index = 0;
-    for (int i = 0; i < 4; i++)
-      {
-        narr[index] = scene_corners[i].x;
-        index++;
-        narr[index] = scene_corners[i].y;
-        index++;
-      }
-
-    env->ReleaseIntArrayElements(newArray, narr, 0);
     return result.size();
   }
 
