@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory.Options;
 import android.os.Environment;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
+import android.widget.RelativeLayout;
 
 import com.appmunki.miragemobile.MainActivity;
 import com.appmunki.miragemobile.TestARActivity;
@@ -30,9 +31,11 @@ public class ARActivityTest extends
 		super(TestARActivity.class);
 	}
 
+	
+
 	public void testAddPattern() {
 		TestARActivity activity = getActivity();
-		// Test that the images were loaded 
+		// Test that the images were loaded
 		List<Bitmap> bitmapList = new ArrayList<Bitmap>();
 		for (int i = 1; i < 8; i++) {
 			Log.i(getName(), "posters/Movie Poster " + i + ".jpg");
@@ -50,17 +53,22 @@ public class ARActivityTest extends
 	public void testRightMatching() {
 		TestARActivity activity = getActivity();
 
-		assertTrue(activity.match(getBitmapFromAsset("query1.jpg"))>0);
+		assertTrue(activity.match(getBitmapFromAsset("query1.jpg")) > 0);
 	}
+
 	/**
-	 * Tests the matching code Loads in a list of bitmaps Then tries aand check for match, but the matche is not in the db
+	 * Tests the matching code Loads in a list of bitmaps Then tries and check
+	 * for match, but the matche is not in the db
 	 */
 	public void testWrongMatching() {
 		TestARActivity activity = getActivity();
 
-		assertEquals(0,activity.match(getBitmapFromAsset("query2.jpg")));
+		assertEquals(0, activity.match(getBitmapFromAsset("query2.jpg")));
 	}
-
+	public void testMatricesProjections(){
+		TestARActivity activity = getActivity();
+		activity.drawSquare();
+	}
 	/**
 	 * 
 	 * @param strName

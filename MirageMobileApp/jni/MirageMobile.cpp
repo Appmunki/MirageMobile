@@ -520,6 +520,9 @@ extern "C"
         LOGE("pm %f",intrinsicArray[i]);
         projectionPtr[i]=intrinsicArray[i];
     }
+
+    result.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
+
     env->ReleaseDoubleArrayElements(projectionmatrix,projectionPtr,0);
     env->ReleaseDoubleArrayElements(modelviewmatrix,modelViewPtr,0);
     env->ReleaseByteArrayElements(yuv, _yuv, 0);

@@ -66,6 +66,8 @@ public abstract class ARActivity extends Activity {
 	private RelativeLayout splashmain;
 	private CameraOverlayView mCameraOverlayView;
 	private boolean isDebugging = false;
+	private RelativeLayout main;
+	private GLSurfaceView mGLView;
 
 	// private Preview mPreview;
 
@@ -75,6 +77,8 @@ public abstract class ARActivity extends Activity {
 		disableScreenTurnOff();
 		setOrientation();
 		super.onCreate(savedInstanceState);
+		this.main = new RelativeLayout(this);
+
 		// This needs to be redone It initiliazes the camera but it shouldn't
 		/*
 		 * if (countOnCreate == 1) { // Check if test data is loaded or not
@@ -104,6 +108,7 @@ public abstract class ARActivity extends Activity {
 				splashmain.setVisibility(RelativeLayout.GONE);
 				// Set up Camera
 				setupCameraLayout();
+				setupGLSurfaceViewLayout();
 
 				// Start the camera
 				mCameraViewBase.openCamera();
@@ -127,7 +132,7 @@ public abstract class ARActivity extends Activity {
 	}
 
 	public native void addPattern(int width, int height, byte yuv[]);
-	
+
 	public void matchDebug(Bitmap bitmap) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
@@ -135,31 +140,40 @@ public abstract class ARActivity extends Activity {
 		Log.i("Match", "Scene size " + width + "x" + height);
 
 		byte[] pixels = Util.getNV21(width, height, bitmap);
-		
-		//Result of the amount of found markers
+
+		// Result of the amount of found markers
 		double[] modelviewMatrix = new double[16];
 		double[] projectionMatrix = new double[9];
 
-		int result = Matcher.matchDebug(width, height, pixels,modelviewMatrix,projectionMatrix);
+		int result = Matcher.matchDebug(width, height, pixels, modelviewMatrix,
+				projectionMatrix);
 
-		/*int[] result = Matcher.matchDebug(width, height, pixels);
-
-		org.opencv.core.Mat test = new org.opencv.core.Mat();
-		Utils.bitmapToMat(bitmap, test);
-
-		Core.line(test, new Point(result[0], result[1]), new Point(result[2], result[3]), new Scalar(0, 255, 0, 255), 10);
-		Core.line(test, new Point(result[2], result[3]), new Point(result[4], result[5]), new Scalar(0, 255, 0, 255), 10);
-		Core.line(test, new Point(result[4], result[5]), new Point(result[6], result[7]), new Scalar(0, 255, 0, 255), 10);
-		Core.line(test, new Point(result[6], result[7]), new Point(result[0], result[1]), new Scalar(0, 255, 0, 255), 10);
-
-		Core.circle(test, new Point(result[0], result[1]), 10, new Scalar(0, 0, 255, 255), 5);
-		Core.circle(test, new Point(result[2], result[3]), 10, new Scalar(0, 0, 255, 255), 5);
-		Core.circle(test, new Point(result[4], result[5]), 10, new Scalar(0, 0, 255, 255), 5);
-		Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0, 0, 255, 255), 5);
-
-		Highgui.imwrite("/mnt/sdcard/outputDebug.jpg", test);
-		Log.e("Result", "results: "+result.length);*/
+		/*
+		 * int[] result = Matcher.matchDebug(width, height, pixels);
+		 * 
+		 * org.opencv.core.Mat test = new org.opencv.core.Mat();
+		 * Utils.bitmapToMat(bitmap, test);
+		 * 
+		 * Core.line(test, new Point(result[0], result[1]), new Point(result[2],
+		 * result[3]), new Scalar(0, 255, 0, 255), 10); Core.line(test, new
+		 * Point(result[2], result[3]), new Point(result[4], result[5]), new
+		 * Scalar(0, 255, 0, 255), 10); Core.line(test, new Point(result[4],
+		 * result[5]), new Point(result[6], result[7]), new Scalar(0, 255, 0,
+		 * 255), 10); Core.line(test, new Point(result[6], result[7]), new
+		 * Point(result[0], result[1]), new Scalar(0, 255, 0, 255), 10);
+		 * 
+		 * Core.circle(test, new Point(result[0], result[1]), 10, new Scalar(0,
+		 * 0, 255, 255), 5); Core.circle(test, new Point(result[2], result[3]),
+		 * 10, new Scalar(0, 0, 255, 255), 5); Core.circle(test, new
+		 * Point(result[4], result[5]), 10, new Scalar(0, 0, 255, 255), 5);
+		 * Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0,
+		 * 0, 255, 255), 5);
+		 * 
+		 * Highgui.imwrite("/mnt/sdcard/outputDebug.jpg", test); Log.e("Result",
+		 * "results: "+result.length);
+		 */
 	}
+
 	public int match(Bitmap bitmap) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
@@ -167,29 +181,21 @@ public abstract class ARActivity extends Activity {
 		Log.i("Match", "Scene size " + width + "x" + height);
 
 		byte[] pixels = Util.getNV21(width, height, bitmap);
-		
-		//Result of the amount of found markers
+
+		// Result of the amount of found markers
 		double[] modelviewMatrix = new double[16];
 		double[] projectionMatrix = new double[9];
 
-		int res = Matcher.matchDebug(width, height, pixels,modelviewMatrix,projectionMatrix);
-		for(double model :modelviewMatrix){
-			Log.e(TAG, "mv:"+model);
-		}
-		for(double model :projectionMatrix){
-			Log.e(TAG, "pm:"+model);
-		}
+		int res = Matcher.matchDebug(width, height, pixels, modelviewMatrix,
+				projectionMatrix);
+
 		return res;
-		
+
 	}
 
-	private void setupCameraLayout() {
-		// Add a Parent
-		RelativeLayout main = new RelativeLayout(this);
+	
 
-		// Defining the RelativeLayout layout parameters.
-		// In this case I want to fill its parent
-		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+	public void setupCameraLayout() {
 
 		// Add preview
 		mCameraViewBase = new CameraViewBase(this, isDebugging);
@@ -201,9 +207,16 @@ public abstract class ARActivity extends Activity {
 		mCameraViewBase.addMarkerFoundListener(mCameraOverlayView);
 
 		main.addView(mCameraOverlayView);
+		
+	}
 
+	public void setupGLSurfaceViewLayout() {
+
+		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.MATCH_PARENT,
+				RelativeLayout.LayoutParams.MATCH_PARENT);
 		// Add in GLView
-		GLSurfaceView mGLView = new GLSurfaceView(this);
+		mGLView = new GLSurfaceView(this);
 		// mGLView.setEGLContextClientVersion(2);
 		mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
@@ -211,10 +224,14 @@ public abstract class ARActivity extends Activity {
 
 		mGLView.setRenderer(new TestRender());
 		main.addView(mGLView);
-		// Add relative layout as main
+		
 		setContentView(main, rlp);
-	}
 
+	}
+	public void drawSquare() {
+		mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		mGLView.requestRender();
+	}
 	private void loadSplashScreen() {
 		splashmain = new RelativeLayout(this);
 		LinearLayout content = new LinearLayout(this);
@@ -223,7 +240,9 @@ public abstract class ARActivity extends Activity {
 		// Adding Logo
 		ImageView logoLayout = new ImageView(this);
 		logoLayout.setImageResource(R.drawable.miragelogo);
-		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.WRAP_CONTENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
 
 		content.addView(logoLayout, lp1);
 
@@ -233,15 +252,20 @@ public abstract class ARActivity extends Activity {
 		loadingText.setText("Loading AR ...");
 		loadingText.setTypeface(null, Typeface.BOLD);
 		loadingText.setGravity(Gravity.CENTER);
-		lp1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		lp1 = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
 		content.addView(loadingText, lp1);
 
 		// Adding progress bar
-		ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
+		ProgressBar progressBar = new ProgressBar(this, null,
+				android.R.attr.progressBarStyleLarge);
 
 		content.addView(progressBar);
 
-		LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		LayoutParams lp = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
 		lp.addRule(RelativeLayout.CENTER_IN_PARENT, content.getId());
 		splashmain.addView(content, lp);
 
@@ -252,7 +276,8 @@ public abstract class ARActivity extends Activity {
 	 * Avoid that the screen get's turned off by the system.
 	 */
 	public void disableScreenTurnOff() {
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+				WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	/**
@@ -260,7 +285,8 @@ public abstract class ARActivity extends Activity {
 	 */
 	public void setFullscreen() {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	}
 
 	/**
@@ -286,13 +312,14 @@ public abstract class ARActivity extends Activity {
 			AlertDialog ad = new AlertDialog.Builder(this).create();
 			ad.setCancelable(false); // This blocks the 'BACK' button
 			ad.setMessage("Fatal error: can't open camera!");
-			ad.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.dismiss();
-					finish();
-				}
-			});
+			ad.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							finish();
+						}
+					});
 			ad.show();
 		}
 	}
@@ -317,7 +344,9 @@ public abstract class ARActivity extends Activity {
 
 	private void parseJson(String json) {
 		System.out.print(json);
-		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>().use("values", TargetImageResponse.class).use("values.dess", Mat.class).use("values.keys", Vector.class)
+		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>()
+				.use("values", TargetImageResponse.class)
+				.use("values.dess", Mat.class).use("values.keys", Vector.class)
 				.use("values.keys.values", KeyPoint.class).deserialize(json);
 		for (TargetImageResponse item : items) {
 

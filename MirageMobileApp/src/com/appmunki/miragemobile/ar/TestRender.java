@@ -77,17 +77,17 @@ public class TestRender implements Renderer {
 			mostrado = true;
 		}
 		gl.glLoadIdentity();
-		// gl.glTranslatef(0.0f, 0.0f, -10.0f);
 
-		/*
-		 * gl.glMatrixMode(GL10.GL_PROJECTION);
-		 * gl.glLoadMatrixf(mProjectionMatrix, 0);
-		 * 
-		 * gl.glMatrixMode(GL10.GL_MODELVIEW); gl.glLoadIdentity();
-		 * 
-		 * modelViewMatrix = Matcher.getMatrix();
-		 * gl.glLoadMatrixf(modelViewMatrix, 0);
-		 */
+		
+		 gl.glMatrixMode(GL10.GL_PROJECTION);
+		 gl.glLoadMatrixf(mProjectionMatrix, 0);
+		 
+		 //gl.glMatrixMode(GL10.GL_MODELVIEW); 
+		 //gl.glLoadIdentity();
+		 
+		 //modelViewMatrix = Matcher.getMatrix();
+		// gl.glLoadMatrixf(modelViewMatrix, 0);
+		
 
 		// gl.glTranslatef(0, 0, -2);
 		gl.glColor4f(0.2f, 0.35f, 0.3f, 0.75f);
