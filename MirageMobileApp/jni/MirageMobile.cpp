@@ -45,35 +45,37 @@ extern "C"
   bool isDebugging = false;
   static vector<pair<int, Matrix44> > mModelViewMatrixs;
   static Matrix44 glProjectionMatrix;
+  static vector<pair<int, float*> > mModelViewMatrices;
+  static Mat mProjectionMatrix;
   static std::vector<Point2f> scene_corners(4);
 
   //static Mat intrinsic(3,3);
   //static Mat intrinsicInverse(3,3);
-  inline void setIntrinsicParams(Mat& intrinsic,Mat& intrinsicInverse,double **instrinsicArray,double **instrinsicinverseArray)
+  inline void setIntrinsicParams(Mat& intrinsic,Mat& intrinsicInverse,float **instrinsicArray,float **instrinsicinverseArray)
   {
       // Camera parameters
-      double f_x = 786.42938232; // Focal length in x axis
-      double f_y = 786.42938232; // Focal length in y axis (usually the same?)
-      double c_x = 217.01358032; // Camera primary point x
-      double c_y = 311.25384521; // Camera primary point y
-      double tau = f_x/f_y;
-      double screen_width = 480; // In pixels
-      double screen_height = 640; // In pixels
+      float f_x = 786.42938232; // Focal length in x axis
+      float f_y = 786.42938232; // Focal length in y axis (usually the same?)
+      float c_x = 217.01358032; // Camera primary point x
+      float c_y = 311.25384521; // Camera primary point y
+      float tau = f_x/f_y;
+      float screen_width = 480; // In pixels
+      float screen_height = 640; // In pixels
 
-      double fovY = 1/(f_x/screen_height * 2);
-      double aspectRatio = screen_width/screen_height * f_y/f_x;
-      double near = .1;  // Near clipping distance
-      double far = 1000;  // Far clipping distance
-      double frustum_height = near * fovY;
-      double frustum_width = frustum_height * aspectRatio;
+      float fovY = 1/(f_x/screen_height * 2);
+      float aspectRatio = screen_width/screen_height * f_y/f_x;
+      float near = .1;  // Near clipping distance
+      float far = 1000;  // Far clipping distance
+      float frustum_height = near * fovY;
+      float frustum_width = frustum_height * aspectRatio;
 
-      double offset_x = (screen_width/2 - c_x)/screen_width * frustum_width * 2;
-      double offset_y = (screen_height/2 - c_y)/screen_height * frustum_height * 2;
+      float offset_x = (screen_width/2 - c_x)/screen_width * frustum_width * 2;
+      float offset_y = (screen_height/2 - c_y)/screen_height * frustum_height * 2;
 
-      intrinsic = (Mat_<double>(3,3) << f_x, 0, c_x, 0, f_y, c_y, 0, 0, 1.0);
-      intrinsicInverse = (Mat_<double>(3,3) << (1/(tau*f_y)), 0, -c_x/(tau*f_y), 0, 1.0/f_y, -1*c_y/f_y, 0, 0, 1.0);
-      *instrinsicArray=(double*)intrinsic.data;
-      *instrinsicinverseArray =(double*)intrinsicInverse.data;
+      intrinsic = (Mat_<float>(3,3) << f_x, 0, c_x, 0, f_y, c_y, 0, 0, 1.0);
+      intrinsicInverse = (Mat_<float>(3,3) << (1/(tau*f_y)), 0, -c_x/(tau*f_y), 0, 1.0/f_y, -1*c_y/f_y, 0, 0, 1.0);
+      *instrinsicArray=(float*)intrinsic.data;
+      *instrinsicinverseArray =(float*)intrinsicInverse.data;
 
   }
   string type2str(int type) {
@@ -101,33 +103,38 @@ extern "C"
   void printMat(Mat& m){
     for(int i=0; i<m.rows; i++){
         for(int j=0; j<m.cols; j++) {
-            LOG("%f",m.at<double>(i,j));
+            LOG("%f",m.at<float>(i,j));
         }
     }
 
   }
-  inline  void computePose(Mat& intrinsic,Mat& intrinsicInverse,Mat& H,double **modelviewArray){
+  inline  void computePose(Mat& intrinsic,Mat& intrinsicInverse,Mat& H,float **modelviewArray){
     LOG("Computing Pose");
-    Mat h1 = (Mat_<double>(3,1) << H.at<double>(0,0) , H.at<double>(1,0) , H.at<double>(2,0));
-    Mat h2 = (Mat_<double>(3,1) << H.at<double>(0,1) , H.at<double>(1,1) , H.at<double>(2,1));
-    Mat h3 = (Mat_<double>(3,1) << H.at<double>(0,2) , H.at<double>(1,2) , H.at<double>(2,2));
+    printMat(H);
+
+    H.convertTo(H, CV_32FC1);
+
+
+    Mat h1 = (Mat_<float>(3,1) << H.at<float>(0,0) , H.at<float>(1,0) , H.at<float>(2,0));
+    Mat h2 = (Mat_<float>(3,1) << H.at<float>(0,1) , H.at<float>(1,1) , H.at<float>(2,1));
+    Mat h3 = (Mat_<float>(3,1) << H.at<float>(0,2) , H.at<float>(1,2) , H.at<float>(2,2));
 
 
     // Calculate a length, for normalizing
-    double lambda = h1.at<double>(0,0)*h1.at<double>(0,0) + h1.at<double>(1,0)*h1.at<double>(1,0) + h1.at<double>(2,0)*h1.at<double>(2,0);
+    float lambda = h1.at<float>(0,0)*h1.at<float>(0,0) + h1.at<float>(1,0)*h1.at<float>(1,0) + h1.at<float>(2,0)*h1.at<float>(2,0);
     LOG("lambda %f",lambda);
     if(lambda ==0) return;
     lambda = 1.0/lambda;
     // Normalize intrinsicInverse
-    intrinsicInverse.at<double>(0,0) *= lambda;
-    intrinsicInverse.at<double>(1,0) *= lambda;
-    intrinsicInverse.at<double>(2,0) *= lambda;
-    intrinsicInverse.at<double>(0,1) *= lambda;
-    intrinsicInverse.at<double>(1,1) *= lambda;
-    intrinsicInverse.at<double>(2,1) *= lambda;
-    intrinsicInverse.at<double>(0,2) *= lambda;
-    intrinsicInverse.at<double>(1,2) *= lambda;
-    intrinsicInverse.at<double>(2,2) *= lambda;
+    intrinsicInverse.at<float>(0,0) *= lambda;
+    intrinsicInverse.at<float>(1,0) *= lambda;
+    intrinsicInverse.at<float>(2,0) *= lambda;
+    intrinsicInverse.at<float>(0,1) *= lambda;
+    intrinsicInverse.at<float>(1,1) *= lambda;
+    intrinsicInverse.at<float>(2,1) *= lambda;
+    intrinsicInverse.at<float>(0,2) *= lambda;
+    intrinsicInverse.at<float>(1,2) *= lambda;
+    intrinsicInverse.at<float>(2,2) *= lambda;
     LOG("checkpoint 1 %d ",intrinsic.type());
     //std::cout<<"hello world"<<std::endl;
     // Column vectors of rotation matrix
@@ -144,27 +151,26 @@ extern "C"
     LOG("checkpoint 2");
 
     // Put rotation columns into rotation matrix... with some unexplained sign changes
-    Mat rotationMatrix = (Mat_<double>(3,3) <<  r1.at<double>(0,0) , -r2.at<double>(0,0) , -r3.at<double>(0,0) ,
-                -r1.at<double>(1,0) , r2.at<double>(1,0) , r3.at<double>(1,0) ,
-                -r1.at<double>(2,0) , r2.at<double>(2,0) , r3.at<double>(2,0));
+    Mat rotationMatrix = (Mat_<float>(3,3) <<  r1.at<float>(0,0) , -r2.at<float>(0,0) , -r3.at<float>(0,0) ,
+                -r1.at<float>(1,0) , r2.at<float>(1,0) , r3.at<float>(1,0) ,
+                -r1.at<float>(2,0) , r2.at<float>(2,0) , r3.at<float>(2,0));
     LOG("checkpoint 3");
 
 
 
     // Translation vector T
     Mat translationVector = intrinsicInverse * h3;
-    translationVector.at<double>(0,0) *= 1;
-    translationVector.at<double>(1,0) *= -1;
-    translationVector.at<double>(2,0) *= -1;
+    translationVector.at<float>(0,0) *= 1;
+    translationVector.at<float>(1,0) *= -1;
+    translationVector.at<float>(2,0) *= -1;
 
     SVD decomposed(rotationMatrix); // I don't really know what this does. But it works.
     rotationMatrix = decomposed.u * decomposed.vt;
-    Mat modelviewMatrix = (Mat_<double>(4,4) << rotationMatrix.at<double>(0,0), rotationMatrix.at<double>(0,1), rotationMatrix.at<double>(0,2), translationVector.at<double>(0,0),
-              rotationMatrix.at<double>(1,0), rotationMatrix.at<double>(1,1), rotationMatrix.at<double>(1,2), translationVector.at<double>(1,0),
-              rotationMatrix.at<double>(2,0), rotationMatrix.at<double>(2,1), rotationMatrix.at<double>(2,2), translationVector.at<double>(2,0),
+    Mat modelviewMatrix = (Mat_<float>(4,4) << rotationMatrix.at<float>(0,0), rotationMatrix.at<float>(0,1), rotationMatrix.at<float>(0,2), translationVector.at<float>(0,0),
+              rotationMatrix.at<float>(1,0), rotationMatrix.at<float>(1,1), rotationMatrix.at<float>(1,2), translationVector.at<float>(1,0),
+              rotationMatrix.at<float>(2,0), rotationMatrix.at<float>(2,1), rotationMatrix.at<float>(2,2), translationVector.at<float>(2,0),
               0,0,0,1);
-    printMat(modelviewMatrix);
-    *modelviewArray =(double*)modelviewMatrix.data;
+    *modelviewArray =(float*)modelviewMatrix.data;
 
 
   }
@@ -463,13 +469,13 @@ extern "C"
 
   JNIEXPORT jint JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj,
-      jint width, jint height, jbyteArray yuv,jdoubleArray modelviewmatrix,jdoubleArray projectionmatrix)
+      jint width, jint height, jbyteArray yuv,jfloatArray modelviewmatrix,jfloatArray projectionmatrix)
   {
     LOG("------------------MatchDebug----------------");
 
     // Get C++ pointer to array data
-    double* modelViewPtr  = env->GetDoubleArrayElements(modelviewmatrix,0);
-    double* projectionPtr  = env->GetDoubleArrayElements(projectionmatrix,0);
+    float* modelViewPtr  = env->GetFloatArrayElements(modelviewmatrix,0);
+    float* projectionPtr  = env->GetFloatArrayElements(projectionmatrix,0);
 
     jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
 
@@ -501,30 +507,33 @@ extern "C"
     LOG("Results size %d", result.size());
 
     //Testing out the computePose
-    double *modelviews[result.size()];
-    Mat intrinsic;
-    Mat intrinsicInverse;
-    double *intrinsicArray;
-    double *intrinsicInverseArray;
-    setIntrinsicParams(intrinsic,intrinsicInverse,&intrinsicArray,&intrinsicInverseArray);
-    for(int i=0;i<result.size();i++){
-        double *modelviewMatrix;
-        computePose(intrinsic,intrinsicInverse,result[i].second.homography,&modelviewMatrix);
-        modelviews[i]=modelviewMatrix;
+    if(result.size()>0){
+      float *modelviews[result.size()];
+      Mat intrinsic;
+      Mat intrinsicInverse;
+      float *intrinsicArray;
+      float *intrinsicInverseArray;
+      setIntrinsicParams(intrinsic,intrinsicInverse,&intrinsicArray,&intrinsicInverseArray);
+      for(int i=0;i<result.size();i++){
+          float *modelviewMatrix;
+          computePose(intrinsic,intrinsicInverse,result[i].second.homography,&modelviewMatrix);
+          modelviews[i]=modelviewMatrix;
+          pair<int,float*>p(result[i].first,modelviewMatrix);
+          mModelViewMatrices.push_back(p);
+      }
+      for(int i=0;i<16;i++){
+          LOGE("mv %f",modelviews[0][i]);
+          modelViewPtr[i]=modelviews[0][i];
+      }
+      for(int i=0;i<9;i++){
+          LOGE("pm %f",intrinsicArray[i]);
+          projectionPtr[i]=intrinsicArray[i];
+      }
     }
-    for(int i=0;i<16;i++){
-        LOGE("mv %f",modelviews[0][i]);
-        modelViewPtr[i]=modelviews[0][i];
-    }
-    for(int i=0;i<9;i++){
-        LOGE("pm %f",intrinsicArray[i]);
-        projectionPtr[i]=intrinsicArray[i];
-    }
-
     result.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
 
-    env->ReleaseDoubleArrayElements(projectionmatrix,projectionPtr,0);
-    env->ReleaseDoubleArrayElements(modelviewmatrix,modelViewPtr,0);
+    env->ReleaseFloatArrayElements(projectionmatrix,projectionPtr,0);
+    env->ReleaseFloatArrayElements(modelviewmatrix,modelViewPtr,0);
     env->ReleaseByteArrayElements(yuv, _yuv, 0);
 
     return result.size();
@@ -697,10 +706,10 @@ extern "C"
       }
 
     jfloat array1[16];
-    Matrix44 glMatrixTest = mModelViewMatrixs[0].second;
+    float* glMatrixTest = mModelViewMatrices[0].second;
     for (int i = 0; i < 16; ++i)
       {
-        array1[i] = glMatrixTest.data[i];
+        array1[i] = glMatrixTest[i];
       }
 
     env->SetFloatArrayRegion(result, 0, 16, array1);
@@ -712,7 +721,14 @@ extern "C"
   Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env,
       jobject obj)
   {
-    buildProjectionMatrix(480, 640, glProjectionMatrix);
+    if(!mProjectionMatrix.data){
+        Mat intrinsic;
+        Mat intrinsicInverse;
+        float *intrinsicArray;
+        float *intrinsicInverseArray;
+        setIntrinsicParams(intrinsic,intrinsicInverse,&intrinsicArray,&intrinsicInverseArray);
+        mProjectionMatrix=intrinsic;
+    }
 
     jfloatArray result;
     result = env->NewFloatArray(16);

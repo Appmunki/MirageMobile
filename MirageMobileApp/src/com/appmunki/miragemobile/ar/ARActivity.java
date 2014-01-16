@@ -142,8 +142,8 @@ public abstract class ARActivity extends Activity {
 		byte[] pixels = Util.getNV21(width, height, bitmap);
 
 		// Result of the amount of found markers
-		double[] modelviewMatrix = new double[16];
-		double[] projectionMatrix = new double[9];
+		float[] modelviewMatrix = new float[16];
+		float[] projectionMatrix = new float[9];
 
 		int result = Matcher.matchDebug(width, height, pixels, modelviewMatrix,
 				projectionMatrix);
@@ -183,12 +183,12 @@ public abstract class ARActivity extends Activity {
 		byte[] pixels = Util.getNV21(width, height, bitmap);
 
 		// Result of the amount of found markers
-		double[] modelviewMatrix = new double[16];
-		double[] projectionMatrix = new double[9];
+		float[] modelviewMatrix = new float[16];
+		float[] projectionMatrix = new float[9];
 
 		int res = Matcher.matchDebug(width, height, pixels, modelviewMatrix,
 				projectionMatrix);
-
+		
 		return res;
 
 	}
@@ -229,8 +229,8 @@ public abstract class ARActivity extends Activity {
 
 	}
 	public void drawSquare() {
-		mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		mGLView.requestRender();
+		//mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		//mGLView.requestRender();
 	}
 	private void loadSplashScreen() {
 		splashmain = new RelativeLayout(this);

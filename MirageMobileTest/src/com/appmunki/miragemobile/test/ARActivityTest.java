@@ -11,29 +11,24 @@ import java.util.Random;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.BitmapFactory.Options;
 import android.os.Environment;
-import android.test.ActivityInstrumentationTestCase2;
+import android.test.SingleLaunchActivityTestCase;
 import android.util.Log;
-import android.widget.RelativeLayout;
 
-import com.appmunki.miragemobile.MainActivity;
 import com.appmunki.miragemobile.TestARActivity;
 
 public class ARActivityTest extends
-		ActivityInstrumentationTestCase2<TestARActivity> {
+		SingleLaunchActivityTestCase<TestARActivity> {
 
 	public ARActivityTest(Class<TestARActivity> activityClass) {
-		super(activityClass);
+		super("com.appmunki.miragemobile", activityClass);
 	}
 
 	public ARActivityTest() {
-		super(TestARActivity.class);
+		super("com.appmunki.miragemobile", TestARActivity.class);
 	}
 
-	
-
-	public void testAddPattern() {
+	public void test1AddPattern() {
 		TestARActivity activity = getActivity();
 		// Test that the images were loaded
 		List<Bitmap> bitmapList = new ArrayList<Bitmap>();
@@ -50,7 +45,7 @@ public class ARActivityTest extends
 	 * Tests the matching code Loads in a list of bitmaps Then, checks the
 	 * matching versus a testimage
 	 */
-	public void testRightMatching() {
+	public void test3RightMatching() {
 		TestARActivity activity = getActivity();
 
 		assertTrue(activity.match(getBitmapFromAsset("query1.jpg")) > 0);
@@ -60,15 +55,17 @@ public class ARActivityTest extends
 	 * Tests the matching code Loads in a list of bitmaps Then tries and check
 	 * for match, but the matche is not in the db
 	 */
-	public void testWrongMatching() {
+	public void test2WrongMatching() {
 		TestARActivity activity = getActivity();
 
 		assertEquals(0, activity.match(getBitmapFromAsset("query2.jpg")));
 	}
-	public void testMatricesProjections(){
+
+	public void test4MatricesProjections() {
 		TestARActivity activity = getActivity();
 		activity.drawSquare();
 	}
+
 	/**
 	 * 
 	 * @param strName
@@ -118,5 +115,9 @@ public class ARActivityTest extends
 			e.printStackTrace();
 		}
 	}
-
+	@Override
+	protected void tearDown() throws Exception {
+		// TODO Auto-generated method stub
+		//super.tearDown();
+	}
 }

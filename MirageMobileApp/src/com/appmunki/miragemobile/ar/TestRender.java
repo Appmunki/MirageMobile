@@ -63,7 +63,7 @@ public class TestRender implements Renderer {
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 
-		// mProjectionMatrix = Matcher.getProjectionMatrix();
+		mProjectionMatrix = Matcher.getProjectionMatrix();
 
 	}
 
@@ -73,14 +73,11 @@ public class TestRender implements Renderer {
 		gl.glLoadIdentity();
 		gl.glTranslatef(0.0f, 0.0f, -8.0f);
 
-		if (!mostrado) {
-			mostrado = true;
-		}
 		gl.glLoadIdentity();
 
 		
-		 gl.glMatrixMode(GL10.GL_PROJECTION);
-		 gl.glLoadMatrixf(mProjectionMatrix, 0);
+		 //gl.glMatrixMode(GL10.GL_PROJECTION);
+		 //gl.glLoadMatrixf(mProjectionMatrix, 0);
 		 
 		 //gl.glMatrixMode(GL10.GL_MODELVIEW); 
 		 //gl.glLoadIdentity();
@@ -94,16 +91,23 @@ public class TestRender implements Renderer {
 		gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		gl.glEnable(GL10.GL_BLEND);
 		if (Matcher.isPatternPresent()) {
-			square.draw(gl);
+			Log.i("TestRender", "Draw");
+			modelViewMatrix = Matcher.getMatrix();
+			gl.glLoadMatrixf(modelViewMatrix, 0);
+			square.draw(gl);;
 		}
+		square.draw(gl);
+
 	}
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		gl.glViewport(0, 0, width, height);
+/*		gl.glViewport(0, 0, width, height);
 		float ratio = (float) width / height;
 		gl.glMatrixMode(GL10.GL_PROJECTION);
 		gl.glLoadIdentity();
-		gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7);
+		gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7);*/
+		gl.glMatrixMode(GL10.GL_PROJECTION);
+		gl.glLoadMatrixf(mProjectionMatrix, 0);
 	}
 }
