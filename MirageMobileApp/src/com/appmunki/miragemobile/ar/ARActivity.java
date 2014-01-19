@@ -8,11 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.highgui.Highgui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -293,7 +288,7 @@ public abstract class ARActivity extends Activity {
 	 * Set's the orientation to landscape, as this is needed by AndAR.
 	 */
 	public void setOrientation() {
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 	}
 
 	@Override
