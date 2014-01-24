@@ -1,27 +1,41 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Vector;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
+import android.hardware.Camera;
+import android.hardware.Camera.Size;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -37,7 +51,6 @@ import com.appmunki.miragemobile.R;
 import com.appmunki.miragemobile.utils.Util;
 import com.appmunki.miragemobile.utils.Util.CVFunction;
 import com.entity.KeyPoint;
-import com.entity.Mat;
 import com.entity.TargetImage;
 import com.entity.TargetImageResponse;
 import com.orm.androrm.DatabaseAdapter;
@@ -63,6 +76,14 @@ public abstract class ARActivity extends Activity {
 	private boolean isDebugging = false;
 	private RelativeLayout main;
 	private GLSurfaceView mGLView;
+
+	private int mFrameWidth;
+	private int mFrameHeight;
+
+	private int mPictureWidth;
+	private int mPictureHeight;
+
+	private int counter = 0;
 
 	// private Preview mPreview;
 
@@ -133,7 +154,6 @@ public abstract class ARActivity extends Activity {
 		int height = bitmap.getHeight();
 
 		Log.i("Match", "Scene size " + width + "x" + height);
-
 		byte[] pixels = Util.getNV21(width, height, bitmap);
 
 		// Result of the amount of found markers
@@ -183,12 +203,10 @@ public abstract class ARActivity extends Activity {
 
 		int res = Matcher.matchDebug(width, height, pixels, modelviewMatrix,
 				projectionMatrix);
-		
+
 		return res;
 
 	}
-
-	
 
 	public void setupCameraLayout() {
 
@@ -202,31 +220,63 @@ public abstract class ARActivity extends Activity {
 		mCameraViewBase.addMarkerFoundListener(mCameraOverlayView);
 
 		main.addView(mCameraOverlayView);
-		
+
 	}
 
 	public void setupGLSurfaceViewLayout() {
 
-		RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
-				RelativeLayout.LayoutParams.MATCH_PARENT);
-		// Add in GLView
+		final Preview preview = new Preview(this);
+
 		mGLView = new GLSurfaceView(this);
 		// mGLView.setEGLContextClientVersion(2);
 		mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		mGLView.setZOrderOnTop(true);
-
+		setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT));
 		mGLView.setRenderer(new TestRender());
-		main.addView(mGLView);
+		addContentView(mGLView, new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT));
+
+		// mCameraViewBase = new CameraViewBase(this, isDebugging);
+		// main.addView(mCameraViewBase);
+		// mCameraViewBase.setVisibility(SurfaceView.VISIBLE);
+		// // Add canvas overlay
+		// mCameraOverlayView = new CameraOverlayView(this);
+		// mCameraOverlayView.setVisibility(View.VISIBLE);
+		// mCameraViewBase.addMarkerFoundListener(mCameraOverlayView);
+
+		// main.addView(mCameraOverlayView);
+
+		// RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
+		// RelativeLayout.LayoutParams.MATCH_PARENT,
+		// RelativeLayout.LayoutParams.MATCH_PARENT);
+		// // Add in GLView
+		// mGLView = new GLSurfaceView(this);
+		// // mGLView.setEGLContextClientVersion(2);
+		// mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+		// mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		// mGLView.setZOrderOnTop(true);
+		//
+		// mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+		// mGLView. setZOrderMediaOverlay(true);
+		// mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+
+		// mGLView.setRenderer(new TestRender());
+		// main.addView(mCameraOverlayView);
+		// main.addView(mGLView);
+		// setContentView(main);
 		
-		setContentView(main, rlp);
+		Bitmap bitmap = getBitmapFromAsset("posters/Movie Poster 1.jpg");
+		addPattern(bitmap);
 
 	}
+
 	public void drawSquare() {
-		//mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		//mGLView.requestRender();
+		// mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		// mGLView.requestRender();
 	}
+
 	private void loadSplashScreen() {
 		splashmain = new RelativeLayout(this);
 		LinearLayout content = new LinearLayout(this);
@@ -363,6 +413,294 @@ public abstract class ARActivity extends Activity {
 	static {
 		System.loadLibrary("opencv_java");
 		System.loadLibrary("MirageMobile");
+	}
+
+	protected void setDisplayOrientation(Camera camera, int angle) {
+		Method downPolymorphic;
+		try {
+			downPolymorphic = camera.getClass().getMethod(
+					"setDisplayOrientation", new Class[] { int.class });
+			if (downPolymorphic != null)
+				downPolymorphic.invoke(camera, new Object[] { angle });
+		} catch (Exception e1) {
+		}
+	}
+
+	class Preview extends SurfaceView implements SurfaceHolder.Callback,
+			Camera.PreviewCallback {
+
+		private static final String TAG = "Preview";
+		private SurfaceHolder mHolder;
+		public Camera mCamera;
+
+		private int mFrameCount = 0;
+		private int preview_width;
+		private int preview_height;
+
+		public Preview(Context context) {
+			super(context);
+
+			mHolder = getHolder();
+			mHolder.addCallback(this);
+			mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+			this.preview_width = 640;
+			this.preview_height = 480;
+
+		}
+
+		private void initCamera(SurfaceHolder holder)
+				throws InterruptedException {
+			if (mCamera == null) {
+				// The Surface has been created, acquire the camera and tell it
+				// where
+				// to draw.
+				int i = 0;
+				while (i++ < 5) {
+					try {
+						mCamera = Camera.open();
+						break;
+					} catch (RuntimeException e) {
+						Thread.sleep(200);
+					}
+				}
+				try {
+					mCamera.setPreviewDisplay(holder);
+				} catch (IOException exception) {
+					mCamera.release();
+					mCamera = null;
+
+				} catch (RuntimeException e) {
+					Log.e("camera", "stacktrace", e);
+				}
+			}
+		}
+
+		@Override
+		public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2,
+				int arg3) {
+			try {
+				initCamera(mHolder);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+			// Now that the size is known, set up the camera parameters and
+			// begin
+			// the preview.
+
+			Camera.Parameters parameters = mCamera.getParameters();
+			List<Camera.Size> pvsizes = mCamera.getParameters()
+					.getSupportedPreviewSizes();
+			int best_width = 1000000;
+			int best_height = 1000000;
+			int bdist = 100000;
+			for (Size x : pvsizes) {
+				if (Math.abs(x.width - preview_width) < bdist) {
+					bdist = Math.abs(x.width - preview_width);
+					best_width = x.width;
+					best_height = x.height;
+				}
+			}
+			preview_width = best_width;
+			preview_height = best_height;
+
+			Log.d("NativePreviewer", "Determined compatible preview size is: ("
+					+ preview_width + "," + preview_height + ")");
+
+			Log.d("NativePreviewer", "Supported params: "
+					+ mCamera.getParameters().flatten());
+
+			// this is available in 8+
+			// parameters.setExposureCompensation(0);
+			if (parameters.getSupportedWhiteBalance().contains("auto")) {
+				parameters.setWhiteBalance("auto");
+			}
+			// if (parameters.getSupportedAntibanding().contains(
+			// Camera.Parameters.ANTIBANDING_OFF)) {
+			// parameters.setAntibanding(Camera.Parameters.ANTIBANDING_OFF);
+			// }
+
+			List<String> fmodes = mCamera.getParameters()
+					.getSupportedFocusModes();
+			// for(String x: fmodes){
+
+			// }
+
+			if (parameters.get("meter-mode") != null)
+				parameters.set("meter-mode", "meter-average");
+			int idx = fmodes.indexOf(Camera.Parameters.FOCUS_MODE_INFINITY);
+			if (idx != -1) {
+				parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
+			} else if (fmodes.indexOf(Camera.Parameters.FOCUS_MODE_FIXED) != -1) {
+				parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
+			}
+
+			// if (fmodes.indexOf(Camera.Parameters.FOCUS_MODE_AUTO) != -1) {
+			// hasAutoFocus = true;
+			// }
+
+			List<String> scenemodes = mCamera.getParameters()
+					.getSupportedSceneModes();
+			if (scenemodes != null)
+				if (scenemodes.indexOf(Camera.Parameters.SCENE_MODE_ACTION) != -1) {
+					parameters
+							.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION);
+					Log.d("NativePreviewer", "set scenemode to action");
+				}
+
+			parameters.setPreviewSize(preview_width, preview_height);
+
+			mCamera.setParameters(parameters);
+
+			PixelFormat pixelinfo = new PixelFormat();
+			int pixelformat = mCamera.getParameters().getPreviewFormat();
+			PixelFormat.getPixelFormatInfo(pixelformat, pixelinfo);
+
+			Size preview_size = mCamera.getParameters().getPreviewSize();
+			preview_width = preview_size.width;
+			preview_height = preview_size.height;
+			int bufSize = preview_width * preview_height
+					* pixelinfo.bitsPerPixel;
+
+			mCamera.startPreview();
+
+		}
+
+		@Override
+		public void surfaceCreated(SurfaceHolder holder) {
+			mCamera = Camera.open();
+			Camera.Parameters p = mCamera.getParameters();
+			List<String> focusModes = p.getSupportedFocusModes();
+			if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+				p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+			}
+
+			setDisplayOrientation(mCamera, 90);
+
+			// best quality
+			// p.setJpegQuality(100);
+
+			// max resolution
+			mFrameWidth = 640;
+			mFrameHeight = 480;
+
+			mPictureWidth = 1600;
+			mPictureHeight = 1200;
+
+			p.setPreviewSize(mFrameWidth, mFrameHeight);
+			p.setPictureSize(mPictureWidth, mPictureHeight);
+			// p.setPreviewSize(mFrameWidth, mFrameHeight);
+			// Log.d(TAG, "Focus mode: " + p.getFocusMode());
+			for (Size size : p.getSupportedPreviewSizes())
+				Log.e(TAG, "Preview size choosen: " + size.width + "x"
+						+ size.height);
+
+			for (Size size : p.getSupportedPictureSizes())
+				Log.e(TAG, "Picture size choosen: " + size.width + "x"
+						+ size.height);
+
+			Log.e(TAG, "Fps choosen: "
+					+ p.getSupportedPreviewFpsRange().get(0).length);
+			mCamera.setParameters(p);
+			mCamera.setPreviewCallback(previewCallback);
+
+			try {
+				mCamera.setPreviewDisplay(holder);
+				mCamera.startPreview();
+			} catch (IOException exception) {
+				mCamera.release();
+				mCamera = null;
+				Log.d(TAG, "Error setting preview display: ");
+				exception.printStackTrace();
+			}
+
+		}
+
+		Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
+
+			@Override
+			public void onPreviewFrame(byte[] data, Camera camera) {
+				if (counter == 0) {
+					Mat src = new Mat(
+							camera.getParameters().getPreviewSize().height,
+							camera.getParameters().getPreviewSize().width,
+							CvType.CV_8U, new Scalar(255));
+					src.put(0, 0, data);
+					Mat dst = new Mat(
+							camera.getParameters().getPreviewSize().height,
+							camera.getParameters().getPreviewSize().width,
+							CvType.CV_8U, new Scalar(255));
+
+					Core.transpose(src, dst);
+					Core.flip(dst, dst, 1);
+					// Log.v("MIRAGE_NATIVE","CAMBIAR IMAGEN");
+					 Matcher.matchDebugDiego(dst.getNativeObjAddr());
+					
+					
+					 
+
+					counter++;
+				} else {
+					counter = 0;
+				}
+			}
+
+		};
+
+		@Override
+		public void surfaceDestroyed(SurfaceHolder arg0) {
+			if (mCamera != null) {
+				mCamera.stopPreview();
+				mCamera.release();
+				mCamera = null;
+			}
+
+		}
+
+		@Override
+		public void onPreviewFrame(byte[] arg0, Camera arg1) {
+			// TODO Auto-generated method stub
+
+		}
+
+	}
+
+	void imageToFile(Bitmap finalBitmap) {
+		String root = Environment.getExternalStorageDirectory().toString();
+		File myDir = new File(root);
+		myDir.mkdirs();
+		Random generator = new Random();
+		int n = 10000;
+		n = generator.nextInt(n);
+		String fname = "Image-" + n + ".jpg";
+		File file = new File(myDir, fname);
+		if (file.exists())
+			file.delete();
+		try {
+			FileOutputStream out = new FileOutputStream(file);
+			finalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+			out.flush();
+			out.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	private Bitmap getBitmapFromAsset(String strName) {
+		AssetManager assetManager = getResources().getAssets();
+
+		InputStream istr = null;
+		try {
+			istr = assetManager.open(strName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Bitmap bitmap = BitmapFactory.decodeStream(istr);
+
+		return bitmap;
 	}
 
 }

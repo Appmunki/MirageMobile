@@ -1,24 +1,10 @@
 package com.appmunki.miragemobile;
 
-import java.io.FileNotFoundException;
-import java.nio.ByteBuffer;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.appmunki.miragemobile.ar.ARActivity;
-import com.appmunki.miragemobile.ar.ARLib;
-import com.appmunki.miragemobile.ar.Matcher;
-import com.appmunki.miragemobile.utils.Util;
 
 public class TestARActivity extends ARActivity {
 	

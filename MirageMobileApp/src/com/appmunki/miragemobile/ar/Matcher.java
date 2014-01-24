@@ -19,6 +19,9 @@ public class Matcher {
 	public static native int[] match(Bitmap bitmap);
 
 	public static native int matchDebug(int width, int height, byte[] pixels,float[] modelviewMatrix,float[] projectionMatrix);
+	
+	public static native int matchDebugDiego(long mGray);
+	
 	public static native int[] matchDebug(Bitmap bitmap);
 
 	public static native void FindFeatures(int width, int height, byte yuv[],
