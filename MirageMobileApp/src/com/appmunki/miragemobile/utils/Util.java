@@ -3,6 +3,7 @@ package com.appmunki.miragemobile.utils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
@@ -10,7 +11,10 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.util.Log;
 
@@ -494,4 +498,18 @@ public class Util {
 			}
 		}
 	}*/
+	
+	public static Bitmap getBitmapFromAsset(Context context,String strName) {
+		AssetManager assetManager = context.getResources().getAssets();
+
+		InputStream istr = null;
+		try {
+			istr = assetManager.open(strName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Bitmap bitmap = BitmapFactory.decodeStream(istr);
+
+		return bitmap;
+	}
 }

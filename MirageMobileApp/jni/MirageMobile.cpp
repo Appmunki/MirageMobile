@@ -49,6 +49,7 @@ extern "C"
   static Matrix44 glProjectionMatrix;
   Matrix44 glMatrixTest;
 
+
   static vector<pair<int, float*> > mModelViewMatrices;
   static Mat mProjectionMatrix;
 
@@ -57,8 +58,7 @@ extern "C"
 //static Mat intrinsic(3,3);
 //static Mat intrinsicInverse(3,3);
   inline void
-  setIntrinsicParams(Mat& intrinsic, Mat& intrinsicInverse,
-      float **instrinsicArray, float **instrinsicinverseArray)
+  setIntrinsicParams(Mat& intrinsic, Mat& intrinsicInverse, float **instrinsicArray, float **instrinsicinverseArray)
   {
     // Camera parameters
     float f_x = 786.42938232; // Focal length in x axis
@@ -66,24 +66,21 @@ extern "C"
     float c_x = 217.01358032; // Camera primary point x
     float c_y = 311.25384521; // Camera primary point y
     float tau = f_x / f_y;
-    float screen_width = 480; // In pixels
-    float screen_height = 640; // In pixels
+    float mScreen_width = 480; // In pixels
+    float mScreen_height = 640; // In pixels
 
-    float fovY = 1 / (f_x / screen_height * 2);
-    float aspectRatio = screen_width / screen_height * f_y / f_x;
+    float fovY = 1 / (f_x / mScreen_height * 2);
+    float aspectRatio = mScreen_width / mScreen_height * f_y / f_x;
     float near = .1; // Near clipping distance
     float far = 1000; // Far clipping distance
     float frustum_height = near * fovY;
     float frustum_width = frustum_height * aspectRatio;
 
-    float offset_x = (screen_width / 2 - c_x) / screen_width * frustum_width
-        * 2;
-    float offset_y = (screen_height / 2 - c_y) / screen_height * frustum_height
-        * 2;
+    float offset_x = (mScreen_width / 2 - c_x) / mScreen_width * frustum_width * 2;
+    float offset_y = (mScreen_height / 2 - c_y) / mScreen_height * frustum_height * 2;
 
     intrinsic = (Mat_<float>(3, 3) << f_x, 0, c_x, 0, f_y, c_y, 0, 0, 1.0);
-    intrinsicInverse = (Mat_<float>(3, 3) << (1 / (tau * f_y)), 0, -c_x
-        / (tau * f_y), 0, 1.0 / f_y, -1 * c_y / f_y, 0, 0, 1.0);
+    intrinsicInverse = (Mat_<float>(3, 3) << (1 / (tau * f_y)), 0, -c_x / (tau * f_y), 0, 1.0 / f_y, -1 * c_y / f_y, 0, 0, 1.0);
     *instrinsicArray = (float*) intrinsic.data;
     *instrinsicinverseArray = (float*) intrinsicInverse.data;
 
@@ -142,25 +139,19 @@ extern "C"
 
   }
   inline void
-  computePose(Mat& intrinsic, Mat& intrinsicInverse, Mat& H,
-      float **modelviewArray)
+  computePose(Mat& intrinsic, Mat& intrinsicInverse, Mat& H, float **modelviewArray)
   {
     LOG("Computing Pose");
     printMat(H);
 
     H.convertTo(H, CV_32FC1);
 
-    Mat h1 = (Mat_<float>(3, 1) << H.at<float>(0, 0), H.at<float>(1, 0), H.at<
-        float>(2, 0));
-    Mat h2 = (Mat_<float>(3, 1) << H.at<float>(0, 1), H.at<float>(1, 1), H.at<
-        float>(2, 1));
-    Mat h3 = (Mat_<float>(3, 1) << H.at<float>(0, 2), H.at<float>(1, 2), H.at<
-        float>(2, 2));
+    Mat h1 = (Mat_<float>(3, 1) << H.at<float>(0, 0), H.at<float>(1, 0), H.at<float>(2, 0));
+    Mat h2 = (Mat_<float>(3, 1) << H.at<float>(0, 1), H.at<float>(1, 1), H.at<float>(2, 1));
+    Mat h3 = (Mat_<float>(3, 1) << H.at<float>(0, 2), H.at<float>(1, 2), H.at<float>(2, 2));
 
     // Calculate a length, for normalizing
-    float lambda = h1.at<float>(0, 0) * h1.at<float>(0, 0)
-        + h1.at<float>(1, 0) * h1.at<float>(1, 0)
-        + h1.at<float>(2, 0) * h1.at<float>(2, 0);
+    float lambda = h1.at<float>(0, 0) * h1.at<float>(0, 0) + h1.at<float>(1, 0) * h1.at<float>(1, 0) + h1.at<float>(2, 0) * h1.at<float>(2, 0);
     LOG("lambda %f", lambda);
     if (lambda == 0)
       return;
@@ -178,8 +169,7 @@ extern "C"
     LOG("checkpoint 1 %d ", intrinsic.type());
     //std::cout<<"hello world"<<std::endl;
     // Column vectors of rotation matrix
-    LOG("intrinsic %d x %d type: %s", intrinsicInverse.rows,
-        intrinsicInverse.cols, type2str(intrinsicInverse.type()).c_str());
+    LOG("intrinsic %d x %d type: %s", intrinsicInverse.rows, intrinsicInverse.cols, type2str(intrinsicInverse.type()).c_str());
     LOG("h1 %d x %d type: %s", h1.rows, h1.cols, type2str(h1.type()).c_str());
 
     Mat r1 = intrinsicInverse * h1;
@@ -192,10 +182,8 @@ extern "C"
     LOG("checkpoint 2");
 
     // Put rotation columns into rotation matrix... with some unexplained sign changes
-    Mat rotationMatrix =
-        (Mat_<float>(3, 3) << r1.at<float>(0, 0), -r2.at<float>(0, 0), -r3.at<
-            float>(0, 0), -r1.at<float>(1, 0), r2.at<float>(1, 0), r3.at<float>(
-            1, 0), -r1.at<float>(2, 0), r2.at<float>(2, 0), r3.at<float>(2, 0));
+    Mat rotationMatrix = (Mat_<float>(3, 3) << r1.at<float>(0, 0), -r2.at<float>(0, 0), -r3.at<float>(0, 0), -r1.at<float>(1, 0), r2.at<float>(1, 0), r3.at<float>(1, 0), -r1.at<float>(2, 0), r2.at<
+        float>(2, 0), r3.at<float>(2, 0));
     LOG("checkpoint 3");
 
     // Translation vector T
@@ -207,12 +195,8 @@ extern "C"
     SVD decomposed(rotationMatrix); // I don't really know what this does. But it works.
     rotationMatrix = decomposed.u * decomposed.vt;
     Mat modelviewMatrix =
-        (Mat_<float>(4, 4) << rotationMatrix.at<float>(0, 0), rotationMatrix.at<
-            float>(0, 1), rotationMatrix.at<float>(0, 2), translationVector.at<
-            float>(0, 0), rotationMatrix.at<float>(1, 0), rotationMatrix.at<
-            float>(1, 1), rotationMatrix.at<float>(1, 2), translationVector.at<
-            float>(1, 0), rotationMatrix.at<float>(2, 0), rotationMatrix.at<
-            float>(2, 1), rotationMatrix.at<float>(2, 2), translationVector.at<
+        (Mat_<float>(4, 4) << rotationMatrix.at<float>(0, 0), rotationMatrix.at<float>(0, 1), rotationMatrix.at<float>(0, 2), translationVector.at<float>(0, 0), rotationMatrix.at<float>(1, 0), rotationMatrix.at<
+            float>(1, 1), rotationMatrix.at<float>(1, 2), translationVector.at<float>(1, 0), rotationMatrix.at<float>(2, 0), rotationMatrix.at<float>(2, 1), rotationMatrix.at<float>(2, 2), translationVector.at<
             float>(2, 0), 0, 0, 0, 1);
     *modelviewArray = (float*) modelviewMatrix.data;
 
@@ -304,11 +288,8 @@ extern "C"
     }
 
   inline bool
-  refineMatchesWithHomography(int it, float &confidence,
-      const std::vector<cv::KeyPoint>& keypoints_object,
-      const std::vector<cv::KeyPoint>& keypoints_scene,
-      float reprojectionThreshold, std::vector<cv::DMatch>& matches,
-      cv::Mat& homography)
+  refineMatchesWithHomography(int it, float &confidence, const std::vector<cv::KeyPoint>& keypoints_object, const std::vector<cv::KeyPoint>& keypoints_scene, float reprojectionThreshold,
+      std::vector<cv::DMatch>& matches, cv::Mat& homography)
   {
     const unsigned int minNumberMatchesAllowed = 15;
 
@@ -328,8 +309,7 @@ extern "C"
 
     // Find homography matrix and get inliers mask
     std::vector<unsigned char> inliersMask(obj.size());
-    homography = cv::findHomography(obj, scene, CV_RANSAC,
-        reprojectionThreshold, inliersMask);
+    homography = cv::findHomography(obj, scene, CV_RANSAC, reprojectionThreshold, inliersMask);
 
     std::vector < cv::DMatch > inliers;
     for (size_t i = 0; i < inliersMask.size(); i++)
@@ -345,9 +325,7 @@ extern "C"
   }
 
   inline void
-  drawHomography(Mat& img_scene, const std::vector<KeyPoint>& keypoints_object,
-      const std::vector<KeyPoint>& keypoints_scene, const Size& dim,
-      const vector<DMatch>& good_matches)
+  drawHomography(Mat& img_scene, const std::vector<KeyPoint>& keypoints_object, const std::vector<KeyPoint>& keypoints_scene, const Size& dim, const vector<DMatch>& good_matches)
   {
 
     LOG("Drawing Homography %dx%d", dim.width, dim.height);
@@ -376,14 +354,10 @@ extern "C"
     cv::perspectiveTransform(obj_corners, scene_corners, H);
 
     //-- Draw lines between the corners (the mapped object in the scene - image_2 )
-    line(img_scene, scene_corners[0], scene_corners[1],
-        Scalar(255, 255, 255, 255), 2);
-    line(img_scene, scene_corners[1], scene_corners[2],
-        Scalar(255, 255, 255, 255), 2);
-    line(img_scene, scene_corners[2], scene_corners[3],
-        Scalar(255, 255, 255, 255), 2);
-    line(img_scene, scene_corners[3], scene_corners[0],
-        Scalar(255, 255, 255, 255), 2);
+    line(img_scene, scene_corners[0], scene_corners[1], Scalar(255, 255, 255, 255), 2);
+    line(img_scene, scene_corners[1], scene_corners[2], Scalar(255, 255, 255, 255), 2);
+    line(img_scene, scene_corners[2], scene_corners[3], Scalar(255, 255, 255, 255), 2);
+    line(img_scene, scene_corners[3], scene_corners[0], Scalar(255, 255, 255, 255), 2);
 
     //Displaying keypoint
     for (size_t i = 0; i < keypoints_scene.size(); i++)
@@ -421,10 +395,9 @@ extern "C"
         cv::Mat m_roughHomography;
         cv::Mat m_refinedHomography;
 
-        bool homographyFound = refineMatchesWithHomography(i, confidence,
-            patterns[i].keypoints, framepattern.keypoints,
+        bool homographyFound = refineMatchesWithHomography(i, confidence, patterns[i].keypoints, framepattern.keypoints,
 
-            4, matches, m_roughHomography);
+        4, matches, m_roughHomography);
 
         if (homographyFound)
           {
@@ -432,8 +405,7 @@ extern "C"
             Mat m_warpedImg;
 
             Size size = patterns[i].size;
-            cv::warpPerspective(framepattern.gray, m_warpedImg,
-                m_roughHomography, size, cv::INTER_LINEAR);
+            cv::warpPerspective(framepattern.gray, m_warpedImg, m_roughHomography, size, cv::INTER_LINEAR);
 
             //Extract Warped Image Keys
             Mat warpDes;
@@ -445,9 +417,7 @@ extern "C"
             bf.match(patterns[i].descriptor, warpDes, refinedmatches);
 
             //Finds the homography of the refind match
-            homographyFound = refineMatchesWithHomography(i, confidence,
-                patterns[i].keypoints, warpKeys, 4, refinedmatches,
-                m_refinedHomography);
+            homographyFound = refineMatchesWithHomography(i, confidence, patterns[i].keypoints, warpKeys, 4, refinedmatches, m_refinedHomography);
             if (homographyFound)
               {
 
@@ -457,15 +427,11 @@ extern "C"
                 PatternTrackingInfo info;
                 info.homography = m_roughHomography;
 
-                cv::perspectiveTransform(framepattern.points2d, info.points2d,
-                    info.homography);
+                cv::perspectiveTransform(framepattern.points2d, info.points2d, info.homography);
 
-                drawHomography(framepattern.frame, patterns[i].keypoints,
-                    framepattern.keypoints, patterns[i].size, matches);
+                drawHomography(framepattern.frame, patterns[i].keypoints, framepattern.keypoints, patterns[i].size, matches);
 
-                CameraCalibration m_calibration;
-                m_calibration = CameraCalibration(786.42938232f, 786.42938232f,
-                    217.01358032f, 311.25384521f);
+
 
                 info.computePose(framepattern, m_calibration);
 
@@ -518,10 +484,9 @@ extern "C"
     }
 
   JNIEXPORT jint JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_matchDebugDiego(JNIEnv* env, jobject obj,  long addrGray)
-   {
+  Java_com_appmunki_miragemobile_ar_Matcher_matchDebugDiego(JNIEnv* env, jobject obj, long addrGray)
+    {
       Mat& mgray = *(Mat*) addrGray;
-
 
       // read image from file
       vector<pair<int, PatternTrackingInfo> > result;
@@ -768,11 +733,13 @@ extern "C"
       env->ReleaseByteArrayElements(yuv, _yuv, 0);
     }
   void
-  buildProjectionMatrix(int screen_width, int screen_height,
-      Matrix44& projectionMatrix)
+  buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix)
   {
     float nearPlane = 0.01f; // Near clipping distance
     float farPlane = 100.0f; // Far clipping distance
+
+    m_calibration = CameraCalibration(786.42938232f, 786.42938232f, 217.01358032f, 311.25384521f);
+
 
     // Camera parameters
     float f_x = m_calibration.fx(); // Focal length in x axis
@@ -792,14 +759,12 @@ extern "C"
 
     projectionMatrix.data[8] = 2.0f * c_x / screen_width - 1.0f;
     projectionMatrix.data[9] = 2.0f * c_y / screen_height - 1.0f;
-    projectionMatrix.data[10] = -(farPlane + nearPlane)
-        / (farPlane - nearPlane);
+    projectionMatrix.data[10] = -(farPlane + nearPlane) / (farPlane - nearPlane);
     projectionMatrix.data[11] = -1.0f;
 
     projectionMatrix.data[12] = 0.0f;
     projectionMatrix.data[13] = 0.0f;
-    projectionMatrix.data[14] = -2.0f * farPlane * nearPlane
-        / (farPlane - nearPlane);
+    projectionMatrix.data[14] = -2.0f * farPlane * nearPlane / (farPlane - nearPlane);
     projectionMatrix.data[15] = 0.0f;
 
   }

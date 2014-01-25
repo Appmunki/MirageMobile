@@ -28,27 +28,16 @@ public class TestRender implements Renderer {
 
 	float positionY = 0;
 
-	boolean mostrado = false;
-
-	private float[] modelViewMatrixRender = { 0.9998104f, -0.016008556f,
-			-0.01108686f, 0.0f, 0.017046511f, 0.9947495f, 0.10091009f, 0.0f,
-			0.009413224f, -0.10107995f, 0.99483377f, 0.0f, -0.11143964f,
-			-0.06826526f, -3.93519f, 1.0f };
-
-	private float[] modelViewMatrix = { 0.998621f, -0.013804f, -0.050645f,
-			0.000000f, 0.015006f, 0.999613f, 0.023417f, 0.000000f, 0.050302f,
-			-0.024144f, 0.998442f, 0.000000f, 0.079442f, -0.180562f,
-			-3.755618f, 1.000000f };
+	private float[] modelViewMatrix = { 0.998621f, -0.013804f, -0.050645f, 0.000000f, 0.015006f, 0.999613f, 0.023417f, 0.000000f, 0.050302f, -0.024144f, 0.998442f, 0.000000f,
+			0.079442f, -0.180562f, -3.755618f, 1.000000f };
 
 	// private float[] modelViewMatrix = { 1.000000f, 0.000000f, 0.000000f,
 	// 0.000000f, 0.000000f, 1.000000f, 0.000000f, 0.000000f, -0.000000f,
 	// -0.000000f, 1.000000f, 0.000000f, -0.276621f, 0.087513f,
 	// -2.621431f, 1.000000f };
 
-	private float[] mProjectionMatrix = { -3.276789f, 0.000000f, 0.000000f,
-			0.000000f, 0.000000f, 2.457592f, 0.000000f, 0.000000f, -0.095777f,
-			-0.027332f, -1.000200f, -1.000000f, 0.000000f, 0.000000f,
-			-0.020002f, 0.000000f };
+	private float[] mProjectionMatrix = { -3.276789f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.457592f, 0.000000f, 0.000000f, -0.095777f, -0.027332f, -1.000200f, -1.000000f,
+			0.000000f, 0.000000f, -0.020002f, 0.000000f };
 
 	public TestRender() {
 
@@ -61,11 +50,7 @@ public class TestRender implements Renderer {
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 
-//		 mProjectionMatrix = Matcher.getProjectionMatrix();
-		//
-		// for (int i = 0; i < mProjectionMatrix.length; i++) {
-		// Log.v("mProjectionMatrix",mProjectionMatrix[i]+"");
-		// }
+		mProjectionMatrix = Matcher.getProjectionMatrix();
 
 	}
 
@@ -81,30 +66,16 @@ public class TestRender implements Renderer {
 		gl.glLoadMatrixf(mProjectionMatrix, 0);
 
 		if (Matcher.isPatternPresent()) {
-			
-			Log.v("RENDERING","EL PATRON ESTA PRESENTE");
-			
 			gl.glMatrixMode(GL10.GL_MODELVIEW);
 			gl.glLoadIdentity();
-			 modelViewMatrix = Matcher.getMatrix();
+			modelViewMatrix = Matcher.getMatrix();
 			gl.glLoadMatrixf(modelViewMatrix, 0);
-			
+
 			gl.glColor4f(0.2f, 0.35f, 0.3f, 0.75f);
 			gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
 			gl.glEnable(GL10.GL_BLEND);
 			square.draw(gl);
 		}
-
-		
-
-//		gl.glColor4f(0.4f, 0.2f, 0.3f, 0.75f);
-//		gl.glMatrixMode(GL10.GL_MODELVIEW);
-//		gl.glLoadIdentity();
-//		// modelViewMatrix = Matcher.getMatrix();
-//		gl.glLoadMatrixf(modelViewMatrixRender, 0);
-//
-//		square.draw(gl);
-
 	}
 
 	@Override
