@@ -88,11 +88,7 @@ public abstract class ARActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		this.main = new RelativeLayout(this);
 
-		// This needs to be redone It initiliazes the camera but it shouldn't
-		/*
-		 * if (countOnCreate == 1) { // Check if test data is loaded or not
-		 * checkTestData(); } countOnCreate++;
-		 */
+		
 
 	}
 

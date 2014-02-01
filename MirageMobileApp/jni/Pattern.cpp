@@ -12,6 +12,7 @@ Pattern::Pattern()
   // TODO Auto-generated constructor stub
 
 }
+
 void PatternTrackingInfo::computePose(const Pattern& pattern, const CameraCalibration& calibration) {
   cv::Mat Rvec;
   cv::Mat_<float> Tvec;

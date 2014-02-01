@@ -22,43 +22,62 @@ using namespace cv;
 struct Pattern
 {
 
-  Pattern(int pID,Mat& pDesc, vector<KeyPoint> &pKeys,Size& pSize){
-    ID=pID;
-    descriptor=pDesc;
-    keypoints=pKeys;
-    size = pSize;
-
-    //LOG("size width %d height %d",this->size.width,this->size.height);
-    //LOG("pSize width %d height %d",pSize.width,pSize.height);
-
-    // Image dimensions
-    const float w = size.width;
-    const float h = 500;
-
-     LOG("w %d h %d",pSize.width,pSize.height);
-
-    // Normalized dimensions:
-    const float maxSize = std::max(w,h);
-    const float unitW = w / maxSize;
-    const float unitH = h / maxSize;
-
+  Pattern(cv::Mat& frame, const cv::Mat& mgray){
+    frame = frame.clone();
+    gray = mgray.clone();
+    // Store original image in pattern structure
+    size = cv::Size(mgray.cols, mgray.rows);
 
     // Build 2d and 3d contours (3d contour lie in XY plane since it's planar)
     points2d.resize(4);
     points3d.resize(4);
 
-    points2d[0] = cv::Point2f(0,0);
-    points2d[1] = cv::Point2f(w,0);
-    points2d[2] = cv::Point2f(w,h);
-    points2d[3] = cv::Point2f(0,h);
+    // Image dimensions
+    const float w = mgray.cols;
+    const float h = mgray.rows;
+
+    // Normalized dimensions:
+    const float maxSize = std::max(w, h);
+    const float unitW = w / maxSize;
+    const float unitH = h / maxSize;
+
+    points2d[0] = cv::Point2f(0, 0);
+    points2d[1] = cv::Point2f(w, 0);
+    points2d[2] = cv::Point2f(w, h);
+    points2d[3] = cv::Point2f(0, h);
 
     points3d[0] = cv::Point3f(-unitW, -unitH, 0);
-    points3d[1] = cv::Point3f( unitW, -unitH, 0);
-    points3d[2] = cv::Point3f( unitW,  unitH, 0);
-    points3d[3] = cv::Point3f(-unitW,  unitH, 0);
+    points3d[1] = cv::Point3f(unitW, -unitH, 0);
+    points3d[2] = cv::Point3f(unitW, unitH, 0);
+    points3d[3] = cv::Point3f(-unitW, unitH, 0);
+
+    extractFeatures(gray, descriptor, keypoints);
   }
   Pattern();
+  /**
+  * Extracts features from a image
+  **/
+  void extractFeatures(const Mat& img, Mat& des, vector<KeyPoint>& keys)
+  {
+    // detect image keypoints
 
+    cv::ORB sfd1(1000);
+    cv::FREAK sde;
+    //cv::ORB sde;
+    sfd1.detect(img, keys);
+    int s = 3000;
+    while (keys.size() > 1000)
+    {
+        //cerr << "Train keys size " << keys.size() << endl;
+        keys.clear();
+        ORB sfd1(s + 500);
+        s += 500;
+        sfd1.detect(img, keys);
+    }
+
+    // compute image descriptor
+    sde.compute(img, keys, des);
+  }
   int ID;
   vector<cv::KeyPoint> keypoints;
   Mat descriptor;
