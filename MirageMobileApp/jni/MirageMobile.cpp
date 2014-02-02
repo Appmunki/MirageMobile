@@ -48,7 +48,30 @@ extern "C"
   void init(){
 
   }
+  JNIEXPORT void JNICALL
+  Java_com_appmunki_miragemobile_ar_ARActivity_addPattern(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv)
+  {
+    jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
+    int* _rgba = new int[width * height];
 
+    Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
+    Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
+    Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
+
+    LOG("adding Pattern");
+    Pattern pattern(mrgba,mgray);
+    patterns.push_back(pattern);
+
+    vector<Mat> descriptors;
+    descriptors.push_back(pattern.descriptor);
+
+    matcher_->add(descriptors);
+    matcher_->train();
+
+    __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int) patterns.size());
+    env->ReleaseByteArrayElements(yuv, _yuv, 0);
+
+  }
 
   inline void testMatcher(Pattern& scenePattern,  vector<pair<int, PatternTrackingInfo> >& results){
           vector<DMatch > matches;
@@ -106,34 +129,34 @@ extern "C"
                           scene.push_back(scenePattern.keypoints[matches[j].trainIdx].pt);
               }
 
-                   // Find homography matrix and get inliers mask
-                  std::vector<unsigned char> inliersMask(obj.size());
-                  Mat homography = cv::findHomography(obj, scene, CV_RANSAC, 0.05f, inliersMask);
-                  std::vector < cv::DMatch > inliers;
-                  for (size_t j = 0; j < inliersMask.size(); j++)
-                  {
-                          if (inliersMask[j])
-                                  inliers.push_back(matches[j]);
-                  }
+              // Find homography matrix and get inliers mask
+              std::vector<unsigned char> inliersMask(obj.size());
+              Mat homography = cv::findHomography(obj, scene, CV_RANSAC, 0.05f, inliersMask);
+              std::vector < cv::DMatch > inliers;
+              for (size_t j = 0; j < inliersMask.size(); j++)
+              {
+                      if (inliersMask[j])
+                              inliers.push_back(matches[j]);
+              }
               int sum = std::accumulate(inliersMask.begin(), inliersMask.end(), 0);
               LOG("inlier sum: %d\n",sum);
-                  if(inliers.size()<4)
-                          continue;
-                  //pattern.h=homography;
+              if(inliers.size()<4)
+                      continue;
+              //pattern.h=homography;
 
-                  LOG("%d inlier for %d\n",(int)inliers.size(),i);
-                  PatternTrackingInfo info;
-                  info.homography = homography;
-                  cv::perspectiveTransform(scenePattern.points2d, info.points2d, info.homography);
-                  info.computePose(scenePattern, m_calibration);
+              LOG("%d inlier for %d\n",(int)inliers.size(),i);
+              PatternTrackingInfo info;
+              info.homography = homography;
+              cv::perspectiveTransform(scenePattern.points2d, info.points2d, info.homography);
+              info.computePose(scenePattern, m_calibration);
 
-                  Transformation patternPose;
-                  patternPose = info.pose3d;
+              Transformation patternPose;
+              patternPose = info.pose3d;
 
-                  glMatrixTest = patternPose.getMat44();
+              glMatrixTest = patternPose.getMat44();
 
-                  pair<int, PatternTrackingInfo> p(i, info);
-                  results.push_back(p);
+              pair<int, PatternTrackingInfo> p(i, info);
+              results.push_back(p);
           }
           LOG("Prediction %d",results.size());
   }
@@ -146,12 +169,9 @@ extern "C"
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebugDiego(JNIEnv* env, jobject obj, long addrGray)
     {
       Mat& mgray = *(Mat*) addrGray;
-
-      // read image from file
+      if(!mgray.data)
+        LOGE("FRAME ERROR");
       vector<pair<int, PatternTrackingInfo> > result;
-
-      //Changed trainkeys to framepattern
-
       Pattern framepattern(mgray,mgray);
 
 
