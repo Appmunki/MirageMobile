@@ -47,7 +47,7 @@ public class ARActivityTest extends
 	 */
 	public void test3RightMatching() {
 		TestARActivity activity = getActivity();
-		assertTrue(activity.match(getBitmapFromAsset("query1.jpg")) > 0);
+		assertTrue(activity.match(getBitmapFromAsset("query4.jpg")) > 0);
 	}
 
 	/**

@@ -62,18 +62,10 @@ struct Pattern
     // detect image keypoints
 
     cv::ORB sfd1(1000);
-    cv::FREAK sde;
-    //cv::ORB sde;
+    //cv::FREAK sde;
+    cv::BRISK sde;
+
     sfd1.detect(img, keys);
-    int s = 3000;
-    while (keys.size() > 1000)
-    {
-        //cerr << "Train keys size " << keys.size() << endl;
-        keys.clear();
-        ORB sfd1(s + 500);
-        s += 500;
-        sfd1.detect(img, keys);
-    }
 
     // compute image descriptor
     sde.compute(img, keys, des);

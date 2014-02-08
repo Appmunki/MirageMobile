@@ -32,7 +32,7 @@ extern "C"
   //Global variables
   static vector<Pattern> patterns;
   static CameraCalibration m_calibration;
-  static cv::Ptr<cv::DescriptorMatcher> matcher_= new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(5, 12, 1));
+  static cv::Ptr<cv::DescriptorMatcher> matcher_= new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(5, 10, 1));
   static bool isPatternPresent = false;
   static vector<pair<int, Matrix44> > mModelViewMatrixs;
   static Matrix44 glProjectionMatrix;
@@ -48,32 +48,6 @@ extern "C"
   void buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix);
 
 
-  void init(){
-
-  }
-  JNIEXPORT void JNICALL
-  Java_com_appmunki_miragemobile_ar_ARActivity_addPattern(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv)
-  {
-    jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
-    int* _rgba = new int[width * height];
-
-    Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
-    Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
-    Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
-
-    LOG("adding Pattern");
-    Pattern pattern(mrgba,mgray);
-    patterns.push_back(pattern);
-
-    vector<Mat> descriptors;
-    descriptors.push_back(pattern.descriptor);
-
-    matcher_->add(descriptors);
-    matcher_->train();
-
-    __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int) patterns.size());
-    env->ReleaseByteArrayElements(yuv, _yuv, 0);
-  }
 
   void testMatcher(Pattern& scenePattern,  vector<Pattern>& results){
           vector<DMatch > matches;
@@ -154,32 +128,39 @@ extern "C"
   }
 
   void computeHomography(Pattern& scenePattern,  vector<Pattern>& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results){
+    struct timespec tstart={0,0}, tend={0,0};
+
     for(int j=0;j<resultsPatterns.size();j++){
+      LOG("No Homo Extract");
+      clock_gettime(CLOCK_MONOTONIC, &tstart);
+
       Pattern pattern = resultsPatterns[j];
 
       Mat img_object = pattern.gray;
       Mat img_scene = scenePattern.gray;
 
-      //-- Step 1: Detect the keypoints using SURF Detector
-      int minHessian = 1000;
 
-      ORB detector( minHessian );
 
       std::vector<KeyPoint> keypoints_object, keypoints_scene;
 
-      detector.detect( img_object, keypoints_object );
-      detector.detect( img_scene, keypoints_scene );
-
-      //-- Step 2: Calculate descriptors (feature vectors)
-      ORB extractor;
 
       Mat descriptors_object, descriptors_scene;
 
-      extractor.compute( img_object, keypoints_object, descriptors_object );
-      extractor.compute( img_scene, keypoints_scene, descriptors_scene );
+      //extractor.compute( img_object, keypoints_object, descriptors_object );
+      //extractor.compute( img_scene, keypoints_scene, descriptors_scene );
+      keypoints_object = pattern.keypoints;
+      keypoints_scene = scenePattern.keypoints;
+
+      descriptors_object = pattern.descriptor;
+      descriptors_scene = scenePattern.descriptor;
+
+      clock_gettime(CLOCK_MONOTONIC, &tend);
+      LOG("Extraction took %.5f seconds\n",
+                           ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                           ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
       //-- Step 3: Matching descriptor vectors using FLANN matcher
-      FlannBasedMatcher matcherp(new cv::flann::LshIndexParams(5, 12, 1));
+      FlannBasedMatcher matcherp(new cv::flann::LshIndexParams(5, 10, 1));
       std::vector< DMatch > matches;
       matcherp.match( descriptors_object, descriptors_scene, matches );
 
@@ -230,104 +211,7 @@ extern "C"
     }
 
   }
-
-
-  JNIEXPORT jint JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_matchDebugDiego(JNIEnv* env, jobject obj, long addrGray)
-    {
-      Mat& mgray = *(Mat*) addrGray;
-      if(!mgray.data)
-        LOGE("FRAME ERROR");
-      vector<pair<int, PatternTrackingInfo> > result;
-      vector<Pattern> resultPatterns;
-      Pattern scenePattern(mgray,mgray);
-
-
-      //Calls Matching
-      LOG("Matching begin");
-      testMatcher(scenePattern,resultPatterns);
-      computeHomography(scenePattern,resultPatterns,result);
-      LOG("Results size %d", result.size());
-
-
-
-      result.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
-
-      return result.size();
-    }
-
-  JNIEXPORT jint JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv, jfloatArray modelviewmatrix, jfloatArray projectionmatrix)
-    {
-      LOG("------------------MatchDebug----------------");
-
-      // Get C++ pointer to array data
-      float* modelViewPtr = env->GetFloatArrayElements(modelviewmatrix, 0);
-      float* projectionPtr = env->GetFloatArrayElements(projectionmatrix, 0);
-
-      jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
-
-      //Conversion of frame
-      int* _rgba = new int[width * height];
-      Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
-      Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
-      Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
-
-      // read image from file
-      vector<pair<int, PatternTrackingInfo> > result;
-      vector<Pattern> resultPatterns;
-
-      //Changed trainkeys to framepattern
-      Pattern scenePattern(mrgba,mgray);
-
-
-
-      LOG("Matching begin");
-      testMatcher(scenePattern,resultPatterns);
-      computeHomography(scenePattern,resultPatterns,result);
-      LOG("Computing Poses");
-
-      result.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
-
-      env->ReleaseFloatArrayElements(projectionmatrix, projectionPtr, 0);
-      env->ReleaseFloatArrayElements(modelviewmatrix, modelViewPtr, 0);
-      env->ReleaseByteArrayElements(yuv, _yuv, 0);
-
-      return result.size();
-    }
-
-
-  JNIEXPORT jboolean JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_isPatternPresent(JNIEnv *env, jobject obj)
-    {
-      jboolean isPresent = isPatternPresent;
-      return isPatternPresent;
-    }
-
-  JNIEXPORT jfloatArray JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_getMatrix(JNIEnv *env, jobject obj)
-    {
-
-      jfloatArray result;
-      result = env->NewFloatArray(16);
-      if (result == NULL)
-        {
-          return NULL; /* out of memory error thrown */
-        }
-
-      jfloat array1[16];
-
-      for (int i = 0; i < 16; ++i)
-        {
-          array1[i] = glMatrixTest.data[i];
-        }
-
-      env->SetFloatArrayRegion(result, 0, 16, array1);
-
-      return result;
-    }
-  void
-   buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix)
+  void buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix)
    {
      float nearPlane = 0.01f; // Near clipping distance
      float farPlane = 100.0f; // Far clipping distance
@@ -362,8 +246,164 @@ extern "C"
      projectionMatrix.data[15] = 0.0f;
 
    }
+
+  JNIEXPORT void JNICALL
+  Java_com_appmunki_miragemobile_ar_ARActivity_addPattern(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv)
+  {
+    jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
+    int* _rgba = new int[width * height];
+
+    Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
+    Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
+    Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
+
+    //resize(mgray, mgray, Size(ceil(((float)mgray.cols / (float)mgray.rows) * 640), 640), 0, 0, INTER_LINEAR);
+    //resize(mrgba, mrgba, Size(ceil(((float)mrgba.cols / (float)mrgba.rows) * 640), 640), 0, 0, INTER_LINEAR);
+
+    LOG("adding Pattern");
+    Pattern pattern(mrgba,mgray);
+    patterns.push_back(pattern);
+
+    vector<Mat> descriptors;
+    descriptors.push_back(pattern.descriptor);
+
+    matcher_->add(descriptors);
+    matcher_->train();
+
+    __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int) patterns.size());
+    env->ReleaseByteArrayElements(yuv, _yuv, 0);
+  }
+
+  JNIEXPORT jint JNICALL
+  Java_com_appmunki_miragemobile_ar_Matcher_matchDebugDiego(JNIEnv* env, jobject obj, long addrGray)
+    {
+      Mat& mgray = *(Mat*) addrGray;
+      if(!mgray.data)
+        LOGE("FRAME ERROR");
+      vector<pair<int, PatternTrackingInfo> > result;
+      vector<Pattern> resultPatterns;
+      //Setting timers
+      struct timespec tstart={0,0}, tend={0,0};
+
+      Pattern scenePattern(mgray,mgray);
+
+
+      //Calls Matching
+      LOG("Matching begin");
+      clock_gettime(CLOCK_MONOTONIC, &tstart);
+      testMatcher(scenePattern,resultPatterns);
+      clock_gettime(CLOCK_MONOTONIC, &tend);
+      LOG("It took %.5f seconds\n",
+                     ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                     ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+
+
+      LOG("Computing Homography");
+      clock_gettime(CLOCK_MONOTONIC, &tstart);
+      computeHomography(scenePattern,resultPatterns,result);
+      clock_gettime(CLOCK_MONOTONIC, &tend);
+      LOG("It took %.5f seconds\n",
+                          ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                          ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+      LOG("Results size %d", resultPatterns.size());
+
+
+
+      resultPatterns.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
+
+      return resultPatterns.size();
+    }
+
+  JNIEXPORT jint JNICALL
+  Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv,jstring jstr)
+    {
+      LOG("------------------MatchDebug----------------");
+
+      jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
+      const char * path = env->GetStringUTFChars( jstr,0 ) ;
+
+      LOGE("path %s",path);
+      //Conversion of frame
+      int* _rgba = new int[width * height];
+      Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
+      Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
+      Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
+
+      // read image from file
+      vector<pair<int, PatternTrackingInfo> > result;
+      vector<Pattern> resultPatterns;
+      struct timespec tstart={0,0}, tend={0,0};
+
+      //Changed trainkeys to framepattern
+      Pattern scenePattern(mrgba,mgray);
+
+
+
+      //Calls Matching
+      LOG("Matching begin");
+      clock_gettime(CLOCK_MONOTONIC, &tstart);
+      testMatcher(scenePattern,resultPatterns);
+      clock_gettime(CLOCK_MONOTONIC, &tend);
+      LOG("It took %.5f seconds\n",
+                     ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                     ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+
+
+      LOG("Computing Homography");
+      clock_gettime(CLOCK_MONOTONIC, &tstart);
+      computeHomography(scenePattern,resultPatterns,result);
+      clock_gettime(CLOCK_MONOTONIC, &tend);
+      LOG("It took %.5f seconds\n",
+                          ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                          ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+      LOG("Results size %d", resultPatterns.size());
+
+      resultPatterns.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
+
+      // save image
+      /*if (!imwrite(path, scenePattern.gray))
+      {
+          LOGE("saveImage() -> Error saving image!");
+      }*/
+
+      env->ReleaseByteArrayElements(yuv, _yuv, 0);
+      env->ReleaseStringUTFChars(jstr,path);
+      return resultPatterns.size();
+    }
+
+
+  JNIEXPORT jboolean JNICALL
+  Java_com_appmunki_miragemobile_ar_Matcher_isPatternPresent(JNIEnv *env, jobject obj)
+    {
+      jboolean isPresent = isPatternPresent;
+      return isPatternPresent;
+    }
+
   JNIEXPORT jfloatArray JNICALL
-Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env, jobject obj)
+  Java_com_appmunki_miragemobile_ar_Matcher_getMatrix(JNIEnv *env, jobject obj)
+    {
+
+      jfloatArray result;
+      result = env->NewFloatArray(16);
+      if (result == NULL)
+        {
+          return NULL; /* out of memory error thrown */
+        }
+
+      jfloat array1[16];
+
+      for (int i = 0; i < 16; ++i)
+        {
+          array1[i] = glMatrixTest.data[i];
+        }
+
+      env->SetFloatArrayRegion(result, 0, 16, array1);
+
+      return result;
+    }
+
+  JNIEXPORT jfloatArray JNICALL
+  Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env, jobject obj)
   {
 
     buildProjectionMatrix(480, 640, glProjectionMatrix);

@@ -18,7 +18,7 @@ public class Matcher {
 			int[] rgba);
 	public static native int[] match(Bitmap bitmap);
 
-	public static native int matchDebug(int width, int height, byte[] pixels,float[] modelviewMatrix,float[] projectionMatrix);
+	public static native int matchDebug(int width, int height, byte[] pixels,String path);
 	
 	public static native int matchDebugDiego(long mGray);
 	

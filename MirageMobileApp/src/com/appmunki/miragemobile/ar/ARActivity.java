@@ -1,6 +1,10 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,13 +25,17 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
@@ -148,7 +156,10 @@ public abstract class ARActivity extends Activity {
 		float[] modelviewMatrix = new float[16];
 		float[] projectionMatrix = new float[9];
 
-		int result = Matcher.matchDebug(width, height, pixels, modelviewMatrix, projectionMatrix);
+		
+		String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"test.bmp";
+
+		int result = Matcher.matchDebug(width, height, pixels,baseDir);
 
 		/*
 		 * int[] result = Matcher.matchDebug(width, height, pixels);
@@ -188,7 +199,9 @@ public abstract class ARActivity extends Activity {
 		float[] modelviewMatrix = new float[16];
 		float[] projectionMatrix = new float[9];
 
-		int res = Matcher.matchDebug(width, height, pixels, modelviewMatrix, projectionMatrix);
+		String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"test.bmp";
+
+		int res = Matcher.matchDebug(width, height, pixels,baseDir);
 
 		return res;
 
@@ -561,14 +574,38 @@ public abstract class ARActivity extends Activity {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
 				if (counter == 0) {
+					Log.i("Frame","Size "+camera.getParameters().getPreviewSize().width+"x"+camera.getParameters().getPreviewSize().height);
 					Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
 					src.put(0, 0, data);
 					Mat dst = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
 
 					Core.transpose(src, dst);
 					Core.flip(dst, dst, 1);
+					
+					Camera.Parameters parameters = camera.getParameters();
+			        Size size = parameters.getPreviewSize();
+			        YuvImage im = new YuvImage(data, ImageFormat.NV21, size.width,
+	                        size.height, null);
+					Rect r = new Rect(0,0,size.width,size.height);
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					im.compressToJpeg(r, parameters.getJpegQuality(), baos);
+				
+					try{
+					   FileOutputStream output = new FileOutputStream(String.format(
+					        "/sdcard/%s_%d.jpg", "out", System.currentTimeMillis()));
+					   output.write(baos.toByteArray());
+					   output.flush();
+					   output.close();
+					}catch(FileNotFoundException e){
+					}catch(IOException e){
+					}
 					Matcher.matchDebugDiego(dst.getNativeObjAddr());
+					String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
+					//Matcher.matchDebug(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, data,baseDir);
+
+					
+					
 					counter++;
 				} else {
 					counter = 0;
