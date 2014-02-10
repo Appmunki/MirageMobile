@@ -19,12 +19,20 @@ using namespace cv;
 /*
  * Store the image data
  */
+static cv::Ptr<cv::FeatureDetector> dbDetector = new cv::OrbFeatureDetector(300);
+static cv::Ptr<cv::DescriptorExtractor> dbExtractor= new cv::BRISK();
+
+
+static cv::Ptr<cv::FeatureDetector> sceneDetector = new cv::OrbFeatureDetector(500);
+static cv::Ptr<cv::DescriptorExtractor> sceneExtractor= new cv::BRISK();
+
 struct Pattern
 {
 
-  Pattern(cv::Mat& frame, const cv::Mat& mgray){
+  Pattern(cv::Mat& frame, const cv::Mat& mgray,bool pScene=false){
     frame = frame.clone();
     gray = mgray.clone();
+    isScene=pScene;
     // Store original image in pattern structure
     size = cv::Size(mgray.cols, mgray.rows);
 
@@ -60,15 +68,38 @@ struct Pattern
   void extractFeatures(const Mat& img, Mat& des, vector<KeyPoint>& keys)
   {
     // detect image keypoints
+    struct timespec tstart={0,0}, tend={0,0};
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    cv::Ptr<FeatureDetector> sfd1;
+    cv::Ptr<cv::DescriptorExtractor> sde;
+    if(isScene){
+        sfd1=sceneDetector;
+        sde=sceneExtractor;
 
-    cv::ORB sfd1(1000);
-    //cv::FREAK sde;
-    cv::BRISK sde;
+    }else{
+        sfd1=dbDetector;
+        sde=dbExtractor;
 
-    sfd1.detect(img, keys);
+    }
 
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    LOG("Creation took %.5f seconds\n",
+                              ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                              ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    sfd1->detect(img, keys);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    LOG("Detection took %.5f seconds\n",
+                                  ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                                  ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
     // compute image descriptor
-    sde.compute(img, keys, des);
+    sde->compute(img, keys, des);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    LOG("Extraction took %.5f seconds\n",
+                                      ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                                      ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+
   }
   int ID;
   vector<cv::KeyPoint> keypoints;
@@ -78,6 +109,7 @@ struct Pattern
   std::vector<cv::Point3f>  points3d;
   Mat frame;
   Mat gray;
+  bool isScene;
 };
 
 /**

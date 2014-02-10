@@ -10,8 +10,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -85,6 +87,7 @@ public abstract class ARActivity extends Activity {
 	private int mPictureHeight;
 
 	private int counter = 0;
+	public ReentrantLock mPreviewBufferLock = new ReentrantLock();
 
 	// private Preview mPreview;
 
@@ -95,8 +98,6 @@ public abstract class ARActivity extends Activity {
 		setOrientation();
 		super.onCreate(savedInstanceState);
 		this.main = new RelativeLayout(this);
-
-		
 
 	}
 
@@ -156,10 +157,10 @@ public abstract class ARActivity extends Activity {
 		float[] modelviewMatrix = new float[16];
 		float[] projectionMatrix = new float[9];
 
-		
-		String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"test.bmp";
+		String baseDir = Environment.getExternalStorageDirectory()
+				.getAbsolutePath() + File.separator + "test.bmp";
 
-		int result = Matcher.matchDebug(width, height, pixels,baseDir);
+		int result = Matcher.matchDebug(width, height, pixels, baseDir);
 
 		/*
 		 * int[] result = Matcher.matchDebug(width, height, pixels);
@@ -199,9 +200,10 @@ public abstract class ARActivity extends Activity {
 		float[] modelviewMatrix = new float[16];
 		float[] projectionMatrix = new float[9];
 
-		String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"test.bmp";
+		String baseDir = Environment.getExternalStorageDirectory()
+				.getAbsolutePath() + File.separator + "test.bmp";
 
-		int res = Matcher.matchDebug(width, height, pixels,baseDir);
+		int res = Matcher.matchDebug(width, height, pixels, baseDir);
 
 		return res;
 
@@ -216,9 +218,11 @@ public abstract class ARActivity extends Activity {
 		mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		mGLView.setZOrderOnTop(true);
-		setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT));
 		mGLView.setRenderer(new TestRender());
-		addContentView(mGLView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		addContentView(mGLView, new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT));
 
 		// mCameraViewBase = new CameraViewBase(this, isDebugging);
 		// main.addView(mCameraViewBase);
@@ -249,7 +253,8 @@ public abstract class ARActivity extends Activity {
 		// main.addView(mGLView);
 		// setContentView(main);
 
-		Bitmap bitmap = Util.getBitmapFromAsset(this,"posters/Movie Poster 1.jpg");
+		Bitmap bitmap = Util.getBitmapFromAsset(this,
+				"posters/Movie Poster 1.jpg");
 		addPattern(bitmap);
 
 	}
@@ -267,7 +272,9 @@ public abstract class ARActivity extends Activity {
 		// Adding Logo
 		ImageView logoLayout = new ImageView(this);
 		logoLayout.setImageResource(R.drawable.miragelogo);
-		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.WRAP_CONTENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
 
 		content.addView(logoLayout, lp1);
 
@@ -277,15 +284,20 @@ public abstract class ARActivity extends Activity {
 		loadingText.setText("Loading AR ...");
 		loadingText.setTypeface(null, Typeface.BOLD);
 		loadingText.setGravity(Gravity.CENTER);
-		lp1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		lp1 = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
 		content.addView(loadingText, lp1);
 
 		// Adding progress bar
-		ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
+		ProgressBar progressBar = new ProgressBar(this, null,
+				android.R.attr.progressBarStyleLarge);
 
 		content.addView(progressBar);
 
-		LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		LayoutParams lp = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
 		lp.addRule(RelativeLayout.CENTER_IN_PARENT, content.getId());
 		splashmain.addView(content, lp);
 
@@ -296,7 +308,8 @@ public abstract class ARActivity extends Activity {
 	 * Avoid that the screen get's turned off by the system.
 	 */
 	public void disableScreenTurnOff() {
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+				WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	/**
@@ -304,7 +317,8 @@ public abstract class ARActivity extends Activity {
 	 */
 	public void setFullscreen() {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	}
 
 	/**
@@ -330,13 +344,14 @@ public abstract class ARActivity extends Activity {
 			AlertDialog ad = new AlertDialog.Builder(this).create();
 			ad.setCancelable(false); // This blocks the 'BACK' button
 			ad.setMessage("Fatal error: can't open camera!");
-			ad.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.dismiss();
-					finish();
-				}
-			});
+			ad.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							finish();
+						}
+					});
 			ad.show();
 		}
 	}
@@ -361,8 +376,10 @@ public abstract class ARActivity extends Activity {
 
 	private void parseJson(String json) {
 		System.out.print(json);
-		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>().use("values", TargetImageResponse.class).use("values.dess", Mat.class)
-				.use("values.keys", Vector.class).use("values.keys.values", KeyPoint.class).deserialize(json);
+		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>()
+				.use("values", TargetImageResponse.class)
+				.use("values.dess", Mat.class).use("values.keys", Vector.class)
+				.use("values.keys.values", KeyPoint.class).deserialize(json);
 		for (TargetImageResponse item : items) {
 
 			new TargetImage(item).save(this);
@@ -388,14 +405,16 @@ public abstract class ARActivity extends Activity {
 	protected void setDisplayOrientation(Camera camera, int angle) {
 		Method downPolymorphic;
 		try {
-			downPolymorphic = camera.getClass().getMethod("setDisplayOrientation", new Class[] { int.class });
+			downPolymorphic = camera.getClass().getMethod(
+					"setDisplayOrientation", new Class[] { int.class });
 			if (downPolymorphic != null)
 				downPolymorphic.invoke(camera, new Object[] { angle });
 		} catch (Exception e1) {
 		}
 	}
 
-	class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
+	class Preview extends SurfaceView implements SurfaceHolder.Callback,
+			Camera.PreviewCallback {
 
 		private static final String TAG = "Preview";
 		private SurfaceHolder mHolder;
@@ -415,7 +434,8 @@ public abstract class ARActivity extends Activity {
 
 		}
 
-		private void initCamera(SurfaceHolder holder) throws InterruptedException {
+		private void initCamera(SurfaceHolder holder)
+				throws InterruptedException {
 			if (mCamera == null) {
 				// The Surface has been created, acquire the camera and tell it
 				// where
@@ -442,7 +462,8 @@ public abstract class ARActivity extends Activity {
 		}
 
 		@Override
-		public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
+		public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2,
+				int arg3) {
 			try {
 				initCamera(mHolder);
 			} catch (InterruptedException e) {
@@ -455,7 +476,8 @@ public abstract class ARActivity extends Activity {
 			// the preview.
 
 			Camera.Parameters parameters = mCamera.getParameters();
-			List<Camera.Size> pvsizes = mCamera.getParameters().getSupportedPreviewSizes();
+			List<Camera.Size> pvsizes = mCamera.getParameters()
+					.getSupportedPreviewSizes();
 			int best_width = 1000000;
 			int best_height = 1000000;
 			int bdist = 100000;
@@ -469,9 +491,11 @@ public abstract class ARActivity extends Activity {
 			preview_width = best_width;
 			preview_height = best_height;
 
-			Log.d("NativePreviewer", "Determined compatible preview size is: (" + preview_width + "," + preview_height + ")");
+			Log.d("NativePreviewer", "Determined compatible preview size is: ("
+					+ preview_width + "," + preview_height + ")");
 
-			Log.d("NativePreviewer", "Supported params: " + mCamera.getParameters().flatten());
+			Log.d("NativePreviewer", "Supported params: "
+					+ mCamera.getParameters().flatten());
 
 			// this is available in 8+
 			// parameters.setExposureCompensation(0);
@@ -483,7 +507,8 @@ public abstract class ARActivity extends Activity {
 			// parameters.setAntibanding(Camera.Parameters.ANTIBANDING_OFF);
 			// }
 
-			List<String> fmodes = mCamera.getParameters().getSupportedFocusModes();
+			List<String> fmodes = mCamera.getParameters()
+					.getSupportedFocusModes();
 			// for(String x: fmodes){
 
 			// }
@@ -501,10 +526,12 @@ public abstract class ARActivity extends Activity {
 			// hasAutoFocus = true;
 			// }
 
-			List<String> scenemodes = mCamera.getParameters().getSupportedSceneModes();
+			List<String> scenemodes = mCamera.getParameters()
+					.getSupportedSceneModes();
 			if (scenemodes != null)
 				if (scenemodes.indexOf(Camera.Parameters.SCENE_MODE_ACTION) != -1) {
-					parameters.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION);
+					parameters
+							.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION);
 					Log.d("NativePreviewer", "set scenemode to action");
 				}
 
@@ -548,12 +575,15 @@ public abstract class ARActivity extends Activity {
 			p.setPictureSize(mPictureWidth, mPictureHeight);
 
 			for (Size size : p.getSupportedPreviewSizes())
-				Log.e(TAG, "Preview size choosen: " + size.width + "x" + size.height);
+				Log.e(TAG, "Preview size choosen: " + size.width + "x"
+						+ size.height);
 
 			for (Size size : p.getSupportedPictureSizes())
-				Log.e(TAG, "Picture size choosen: " + size.width + "x" + size.height);
+				Log.e(TAG, "Picture size choosen: " + size.width + "x"
+						+ size.height);
 
-			Log.e(TAG, "Fps choosen: " + p.getSupportedPreviewFpsRange().get(0).length);
+			Log.e(TAG, "Fps choosen: "
+					+ p.getSupportedPreviewFpsRange().get(0).length);
 			mCamera.setParameters(p);
 			mCamera.setPreviewCallback(previewCallback);
 
@@ -568,48 +598,55 @@ public abstract class ARActivity extends Activity {
 			}
 
 		}
+		private Date start;
+        int fcount = 0;
 
 		Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
 
+
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
-				if (counter == 0) {
-					Log.i("Frame","Size "+camera.getParameters().getPreviewSize().width+"x"+camera.getParameters().getPreviewSize().height);
-					Mat src = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
+				if (start == null) {
+                    start = new Date();
+				}
+				mPreviewBufferLock.lock();
+				try {
+					Log.i("Frame", "Size "
+							+ camera.getParameters().getPreviewSize().width
+							+ "x"
+							+ camera.getParameters().getPreviewSize().height);
+					Mat src = new Mat(
+							camera.getParameters().getPreviewSize().height,
+							camera.getParameters().getPreviewSize().width,
+							CvType.CV_8U, new Scalar(255));
 					src.put(0, 0, data);
-					Mat dst = new Mat(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, CvType.CV_8U, new Scalar(255));
+					Mat dst = new Mat(
+							camera.getParameters().getPreviewSize().height,
+							camera.getParameters().getPreviewSize().width,
+							CvType.CV_8U, new Scalar(255));
 
 					Core.transpose(src, dst);
 					Core.flip(dst, dst, 1);
-					
-					Camera.Parameters parameters = camera.getParameters();
-			        Size size = parameters.getPreviewSize();
-			        YuvImage im = new YuvImage(data, ImageFormat.NV21, size.width,
-	                        size.height, null);
-					Rect r = new Rect(0,0,size.width,size.height);
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					im.compressToJpeg(r, parameters.getJpegQuality(), baos);
-				
-					try{
-					   FileOutputStream output = new FileOutputStream(String.format(
-					        "/sdcard/%s_%d.jpg", "out", System.currentTimeMillis()));
-					   output.write(baos.toByteArray());
-					   output.flush();
-					   output.close();
-					}catch(FileNotFoundException e){
-					}catch(IOException e){
-					}
+
 					Matcher.matchDebugDiego(dst.getNativeObjAddr());
-					String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
-					//Matcher.matchDebug(camera.getParameters().getPreviewSize().height, camera.getParameters().getPreviewSize().width, data,baseDir);
-
-					
-					
-					counter++;
-				} else {
-					counter = 0;
+					// Matcher.matchDebug(camera.getParameters().getPreviewSize().height,
+					// camera.getParameters().getPreviewSize().width,
+					// data,baseDir);
+				} finally {
+					mPreviewBufferLock.unlock();
+					if (mCamera != null)
+						mCamera.addCallbackBuffer(data);
 				}
+				
+				fcount++;
+                if (fcount % 100 == 0) {
+                        double ms = (new Date()).getTime() - start.getTime();
+                        Log.i("NativePreviewer", "fps:" + fcount / (ms / 1000.0));
+                        start = new Date();
+                        fcount = 0;
+                }
+
 			}
 
 		};
@@ -630,6 +667,5 @@ public abstract class ARActivity extends Activity {
 		}
 
 	}
-	
 
 }

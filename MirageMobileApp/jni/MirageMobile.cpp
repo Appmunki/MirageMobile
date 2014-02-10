@@ -43,13 +43,13 @@ extern "C"
   static Mat mProjectionMatrix;
 
   //function prototypes
-  void testMatcher(Pattern& scenePattern,  vector<Pattern>& results);
-  void computeHomography(Pattern& scenePattern,  vector<Pattern>& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results);
+  void testMatcher(Pattern& scenePattern,  vector<pair<int,Pattern> >& results);
+  void computeHomography(Pattern& scenePattern,  vector<pair<int,Pattern> >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results);
   void buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix);
 
 
 
-  void testMatcher(Pattern& scenePattern,  vector<Pattern>& results){
+  void testMatcher(Pattern& scenePattern,  vector<pair<int,Pattern> >& results){
           vector<DMatch > matches;
           vector<vector<DMatch> > matches_by_id(patterns.size());
 
@@ -121,33 +121,29 @@ extern "C"
 
               LOG("%d inlier for %d\n",(int)inliers.size(),i);
 
-
-              results.push_back(pattern);
+              pair<int, Pattern> p(i, pattern);
+              results.push_back(p);
           }
           LOG("Prediction %d",results.size());
   }
 
-  void computeHomography(Pattern& scenePattern,  vector<Pattern>& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results){
+  void computeHomography(Pattern& scenePattern,  vector<pair<int,Pattern> >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results){
     struct timespec tstart={0,0}, tend={0,0};
 
     for(int j=0;j<resultsPatterns.size();j++){
       LOG("No Homo Extract");
       clock_gettime(CLOCK_MONOTONIC, &tstart);
 
-      Pattern pattern = resultsPatterns[j];
+      Pattern pattern = resultsPatterns[j].second;
 
       Mat img_object = pattern.gray;
       Mat img_scene = scenePattern.gray;
-
-
 
       std::vector<KeyPoint> keypoints_object, keypoints_scene;
 
 
       Mat descriptors_object, descriptors_scene;
 
-      //extractor.compute( img_object, keypoints_object, descriptors_object );
-      //extractor.compute( img_scene, keypoints_scene, descriptors_scene );
       keypoints_object = pattern.keypoints;
       keypoints_scene = scenePattern.keypoints;
 
@@ -257,8 +253,8 @@ extern "C"
     Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
     Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
 
-    //resize(mgray, mgray, Size(ceil(((float)mgray.cols / (float)mgray.rows) * 640), 640), 0, 0, INTER_LINEAR);
-    //resize(mrgba, mrgba, Size(ceil(((float)mrgba.cols / (float)mrgba.rows) * 640), 640), 0, 0, INTER_LINEAR);
+    resize(mgray, mgray, Size(ceil(((float)mgray.cols / (float)mgray.rows) * 640), 640), 0, 0, INTER_LINEAR);
+    resize(mrgba, mrgba, Size(ceil(((float)mrgba.cols / (float)mrgba.rows) * 640), 640), 0, 0, INTER_LINEAR);
 
     LOG("adding Pattern");
     Pattern pattern(mrgba,mgray);
@@ -281,11 +277,11 @@ extern "C"
       if(!mgray.data)
         LOGE("FRAME ERROR");
       vector<pair<int, PatternTrackingInfo> > result;
-      vector<Pattern> resultPatterns;
+      vector<pair<int, Pattern> > resultPatterns;
       //Setting timers
       struct timespec tstart={0,0}, tend={0,0};
 
-      Pattern scenePattern(mgray,mgray);
+      Pattern scenePattern(mgray,mgray,true);
 
 
       //Calls Matching
@@ -317,6 +313,9 @@ extern "C"
   JNIEXPORT jint JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebug(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv,jstring jstr)
     {
+      struct timespec tstart={0,0}, tend={0,0};
+      struct timespec totalstart={0,0}, totalend={0,0};
+      clock_gettime(CLOCK_MONOTONIC, &totalstart);
       LOG("------------------MatchDebug----------------");
 
       jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
@@ -331,12 +330,16 @@ extern "C"
 
       // read image from file
       vector<pair<int, PatternTrackingInfo> > result;
-      vector<Pattern> resultPatterns;
-      struct timespec tstart={0,0}, tend={0,0};
+      vector<pair<int, Pattern> > resultPatterns;
 
       //Changed trainkeys to framepattern
-      Pattern scenePattern(mrgba,mgray);
-
+      LOG("Scene Extraction begin");
+      clock_gettime(CLOCK_MONOTONIC, &tstart);
+      Pattern scenePattern(mrgba,mgray,true);
+      clock_gettime(CLOCK_MONOTONIC, &tend);
+      LOG("It took %.5f seconds\n",
+                          ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                          ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
 
       //Calls Matching
@@ -360,14 +363,13 @@ extern "C"
 
       resultPatterns.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
 
-      // save image
-      /*if (!imwrite(path, scenePattern.gray))
-      {
-          LOGE("saveImage() -> Error saving image!");
-      }*/
 
       env->ReleaseByteArrayElements(yuv, _yuv, 0);
       env->ReleaseStringUTFChars(jstr,path);
+      clock_gettime(CLOCK_MONOTONIC, &totalend);
+      LOG("Match took %.5f seconds in total\n",
+                                ((double)totalend.tv_sec + 1.0e-9*totalend.tv_nsec) -
+                                ((double)totalstart.tv_sec + 1.0e-9*totalstart.tv_nsec));
       return resultPatterns.size();
     }
 
@@ -401,6 +403,7 @@ extern "C"
 
       return result;
     }
+
 
   JNIEXPORT jfloatArray JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env, jobject obj)

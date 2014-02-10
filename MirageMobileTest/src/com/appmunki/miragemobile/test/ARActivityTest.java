@@ -15,21 +15,21 @@ import android.os.Environment;
 import android.test.SingleLaunchActivityTestCase;
 import android.util.Log;
 
-import com.appmunki.miragemobile.TestARActivity;
+import com.appmunki.miragemobile.MainARActivity;
 
 public class ARActivityTest extends
-		SingleLaunchActivityTestCase<TestARActivity> {
+		SingleLaunchActivityTestCase<MainARActivity> {
 
-	public ARActivityTest(Class<TestARActivity> activityClass) {
+	public ARActivityTest(Class<MainARActivity> activityClass) {
 		super("com.appmunki.miragemobile", activityClass);
 	}
 
 	public ARActivityTest() {
-		super("com.appmunki.miragemobile", TestARActivity.class);
+		super("com.appmunki.miragemobile", MainARActivity.class);
 	}
 
 	public void test1AddPattern() {
-		TestARActivity activity = getActivity();
+		MainARActivity activity = getActivity();
 		// Test that the images were loaded
 		List<Bitmap> bitmapList = new ArrayList<Bitmap>();
 		for (int i = 1; i < 8; i++) {
@@ -46,7 +46,7 @@ public class ARActivityTest extends
 	 * matching versus a testimage
 	 */
 	public void test3RightMatching() {
-		TestARActivity activity = getActivity();
+		MainARActivity activity = getActivity();
 		assertTrue(activity.match(getBitmapFromAsset("query4.jpg")) > 0);
 	}
 
@@ -55,15 +55,11 @@ public class ARActivityTest extends
 	 * for match, but the matche is not in the db
 	 */
 	public void test2WrongMatching() {
-		TestARActivity activity = getActivity();
+		MainARActivity activity = getActivity();
 
 		assertEquals(0, activity.match(getBitmapFromAsset("query2.jpg")));
 	}
 
-	public void test4MatricesProjections() {
-		TestARActivity activity = getActivity();
-		activity.drawSquare();
-	}
 
 	/**
 	 * @param strName
