@@ -284,7 +284,7 @@ extern "C"
 
    }
   JNIEXPORT void JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_addPatternMat(JNIEnv* env, jobject obj, long addrGray)
+  Java_com_appmunki_miragemobile_ar_Matcher_addPattern(JNIEnv* env, jobject obj, long addrGray)
   {
     Mat& mgray = *(Mat*) addrGray;
     if(!mgray.data)
@@ -306,30 +306,7 @@ extern "C"
     __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int) patterns.size());
   }
 
-  JNIEXPORT void JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_addPattern(JNIEnv* env, jobject obj, jint width, jint height, jbyteArray yuv)
-  {
-    jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
-    int* _rgba = new int[width * height];
 
-    Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
-    Mat mrgba(height, width, CV_8UC4, (unsigned char *) _rgba);
-    Mat mgray(height, width, CV_8UC1, (unsigned char *) _yuv);
-
-
-    LOG("adding Pattern");
-    Pattern pattern(mrgba,mgray);
-    patterns.push_back(pattern);
-
-    vector<Mat> descriptors;
-    descriptors.push_back(pattern.descriptor);
-
-    matcher_->add(descriptors);
-    matcher_->train();
-    matcher_-
-    __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int) patterns.size());
-    env->ReleaseByteArrayElements(yuv, _yuv, 0);
-  }
 
   JNIEXPORT jint JNICALL
   Java_com_appmunki_miragemobile_ar_Matcher_matchDebugDiego(JNIEnv* env, jobject obj, long addrGray)

@@ -37,8 +37,7 @@ public class Matcher {
 
 	public static native void addPattern(String imageFilePath);
 
-	public static native void addPattern(int width, int height, byte yuv[]);
-	public static native void addPatternMat(long mGray);
+	public static native void addPattern(long mGray);
 
 	public static native int getNumpatternResults();
 
