@@ -142,7 +142,7 @@ public abstract class ARActivity extends Activity {
 		Utils.bitmapToMat(bitmap, mat);
 		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 
-		Matcher.addPatternMat(mat.getNativeObjAddr());
+		Matcher.addPattern(mat.getNativeObjAddr());
 		File dir = new File(Environment.getExternalStorageDirectory()
 				.getAbsolutePath()+ File.separator+"miragemobile/");
 		dir.mkdirs();
@@ -174,8 +174,13 @@ public abstract class ARActivity extends Activity {
 			int index = 0;
 			for (int j = 0; j < 4; j++)
 			{
-			    Log.i(TAG,"Point "+result[j]+","+result[j+1]);
+				float x = result[index];
+				index++;
+				float y = result[index];
+				index++;
+			    Log.i(TAG,"Point "+x+","+y);
 			}
+			
 			 Core.line(test, new Point(result[0], result[1]), new Point(result[2],result[3]), new Scalar(0, 255, 0, 255), 10);
 			 Core.line(test, new Point(result[2], result[3]), new Point(result[4], result[5]), new Scalar(0, 255, 0, 255), 10); 
 			 Core.line(test, new Point(result[4], result[5]), new Point(result[6], result[7]), new Scalar(0, 255, 0, 255), 10); 

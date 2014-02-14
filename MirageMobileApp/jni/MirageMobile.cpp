@@ -419,7 +419,11 @@ extern "C"
     PatternTrackingInfo info = patternResults[pos];
     jfloatArray newArray = env->NewFloatArray(8);
     jfloat *narr = env->GetFloatArrayElements(newArray, NULL);
-
+    if (newArray == NULL)
+    {
+      LOGE("ERROR GET HOMOGRAPHY");
+      return NULL; /* out of memory error thrown */
+    }
     int index = 0;
     for (int i = 0; i < 4; i++)
     {

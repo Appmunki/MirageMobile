@@ -19,11 +19,11 @@ using namespace cv;
 /*
  * Store the image data
  */
-static cv::Ptr<cv::FeatureDetector> dbDetector = new cv::OrbFeatureDetector(300);
+static cv::Ptr<cv::FeatureDetector> dbDetector = new cv::OrbFeatureDetector(500);
 static cv::Ptr<cv::DescriptorExtractor> dbExtractor= new cv::BRISK();
 
 
-static cv::Ptr<cv::FeatureDetector> sceneDetector = new cv::OrbFeatureDetector(500);
+static cv::Ptr<cv::FeatureDetector> sceneDetector = new cv::OrbFeatureDetector(700);
 static cv::Ptr<cv::DescriptorExtractor> sceneExtractor= new cv::BRISK();
 
 struct Pattern
