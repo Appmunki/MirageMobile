@@ -300,7 +300,7 @@ public class Util {
 
 		encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
 
-		// scaled.recycle();
+		//scaled.recycle();
 
 		return yuv;
 	}
@@ -456,49 +456,71 @@ public class Util {
 			}
 		}
 	}
-	/*static void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width,
-			int height) {
-		Log.i("Util","yuv size "+yuv420sp.length);
 
-		final int frameSize = width * height;
+	public static Bitmap decodeSampledBitmapFromStream(InputStream res) {
 
-		int yIndex = 0;
-		int uvIndex = frameSize;
+	    // First decode with inJustDecodeBounds=true to check dimensions
+	    final BitmapFactory.Options options = new BitmapFactory.Options();
+	    options.inJustDecodeBounds = true;
+	    BitmapFactory.decodeStream(res, null, options);
 
-		int a, R, G, B, Y, U, V;
-		int index = 0;
-		for (int j = 0; j < height; j++) {
-			for (int i = 0; i < width; i++) {
+	    final int height = options.outHeight;
+	    final int width = options.outWidth;
+	    Log.i("Old","old "+width+"x"+height);
+	    int reqWidth = 640;
+	    int reqHeight = 480;
+	    
+	    
+	    
+	    // Calculate inSampleSize
+	    options.inSampleSize = Util.calculateInSampleSize(options, reqWidth, reqHeight);
 
-				a = (argb[index] & 0xff000000) >> 24; // a is not used obviously
-				R = (argb[index] & 0xff0000) >> 16;
-				G = (argb[index] & 0xff00) >> 8;
-				B = (argb[index] & 0xff) >> 0;
+	    // Decode bitmap with inSampleSize set
+	    options.inJustDecodeBounds = false;
+		options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+		Bitmap bitmap = BitmapFactory.decodeStream(res, null, options);
+	    Log.i("New","new "+bitmap.getWidth()+"x"+bitmap.getHeight());
 
-				// well known RGB to YUV algorithm
-				Y = ((66 * R + 129 * G + 25 * B + 128) >> 8) + 16;
-				U = ((-38 * R - 74 * G + 112 * B + 128) >> 8) + 128;
-				V = ((112 * R - 94 * G - 18 * B + 128) >> 8) + 128;
+	    return bitmap;
+	}
+	public static int calculateInSampleSize(
+	            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+	    // Raw height and width of image
+	    final int height = options.outHeight;
+	    final int width = options.outWidth;
+	    int inSampleSize = 1;
+	    Log.i("reg", width+"x"+height);
+	    Log.i("req", reqWidth+"x"+reqHeight);
+	    Log.i("r", "r:"+(height > reqHeight) );
+	    Log.i("r", "r:"+(width > reqWidth) );
 
-				// NV21 has a plane of Y and interleaved planes of VU each
-				// sampled by a factor of 2
-				// meaning for every 4 Y pixels there are 1 V and 1 U. Note the
-				// sampling is every other
-				// pixel AND every other scanline.
-				yuv420sp[yIndex++] = (byte) ((Y < 0) ? 0
-						: ((Y > 255) ? 255 : Y));
-				if (j % 2 == 0 && index % 2 == 0) {
-					yuv420sp[uvIndex++] = (byte) ((V < 0) ? 0
-							: ((V > 255) ? 255 : V));
-					yuv420sp[uvIndex++] = (byte) ((U < 0) ? 0
-							: ((U > 255) ? 255 : U));
-				}
-
-				index++;
-			}
-		}
-	}*/
+	    if (height > reqHeight || width > reqWidth) {
 	
+	        final int halfHeight = height/2;
+	        final int halfWidth = width/2;
+	
+	        // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+	        // height and width larger than the requested height and width.
+	        while ((halfHeight / inSampleSize) > reqHeight
+	                || (halfWidth / inSampleSize) > reqWidth) {
+	            inSampleSize *= 2;
+	        }
+	    }
+	
+	    return inSampleSize;
+	}
+	public static InputStream getStreamFromAsset(Context context,String strName) {
+		AssetManager assetManager = context.getResources().getAssets();
+
+		InputStream istr = null;
+		try {
+			istr = assetManager.open(strName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return istr;
+	}
 	public static Bitmap getBitmapFromAsset(Context context,String strName) {
 		AssetManager assetManager = context.getResources().getAssets();
 

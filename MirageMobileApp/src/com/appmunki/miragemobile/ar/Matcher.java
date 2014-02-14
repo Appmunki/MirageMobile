@@ -18,11 +18,10 @@ public class Matcher {
 			int[] rgba);
 	public static native int[] match(Bitmap bitmap);
 
-	public static native int matchDebug(int width, int height, byte[] pixels,String path);
+	public static native int matchDebug(long mGray);
 	
 	public static native int matchDebugDiego(long mGray);
 	
-	public static native int[] matchDebug(Bitmap bitmap);
 
 	public static native void FindFeatures(int width, int height, byte yuv[],
 			int[] rgba, int[] gray);
@@ -39,5 +38,9 @@ public class Matcher {
 	public static native void addPattern(String imageFilePath);
 
 	public static native void addPattern(int width, int height, byte yuv[]);
+	public static native void addPatternMat(long mGray);
 
+	public static native int getNumpatternResults();
+
+	public static native float[] getHomography(int i);
 }

@@ -16,6 +16,7 @@ import android.test.SingleLaunchActivityTestCase;
 import android.util.Log;
 
 import com.appmunki.miragemobile.MainARActivity;
+import com.appmunki.miragemobile.utils.Util;
 
 public class ARActivityTest extends
 		SingleLaunchActivityTestCase<MainARActivity> {
@@ -31,14 +32,15 @@ public class ARActivityTest extends
 	public void test1AddPattern() {
 		MainARActivity activity = getActivity();
 		// Test that the images were loaded
-		List<Bitmap> bitmapList = new ArrayList<Bitmap>();
 		for (int i = 1; i < 8; i++) {
 			Log.i(getName(), "posters/Movie Poster " + i + ".jpg");
-			Bitmap bitmap = getBitmapFromAsset("posters/Movie Poster " + i
+			String name = "Movie Poster " + i+ ".jpg";
+			InputStream stream = Util.getStreamFromAsset(getInstrumentation().getTargetContext(), "posters/Movie Poster " + i
 					+ ".jpg");
-			bitmapList.add(bitmap);
-			activity.addPattern(bitmap);
+			
+			activity.addPatternDebug(name,stream);
 		}
+		//System.gc();
 	}
 
 	/**
@@ -47,7 +49,7 @@ public class ARActivityTest extends
 	 */
 	public void test3RightMatching() {
 		MainARActivity activity = getActivity();
-		assertTrue(activity.match(getBitmapFromAsset("query4.jpg")) > 0);
+		assertTrue(activity.matchDebug(getBitmapFromAsset("query3.jpg")) > 0);
 	}
 
 	/**
@@ -57,10 +59,18 @@ public class ARActivityTest extends
 	public void test2WrongMatching() {
 		MainARActivity activity = getActivity();
 
-		assertEquals(0, activity.match(getBitmapFromAsset("query2.jpg")));
+		assertEquals(0, activity.matchDebug(getBitmapFromAsset("query2.jpg")));
 	}
 
-
+	public void test4Performance() throws InterruptedException{
+		MainARActivity activity = getActivity();
+		Bitmap bmp = getBitmapFromAsset("query4.jpg");
+		for(int i=0;i<10;i++){
+			activity.matchDebug(bmp);
+			assertTrue(activity.getNumPatternResults() == 1);
+		}
+	}
+	
 	/**
 	 * @param strName
 	 * @return
@@ -75,8 +85,9 @@ public class ARActivityTest extends
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Bitmap bitmap = BitmapFactory.decodeStream(istr);
-
+		BitmapFactory.Options op = new BitmapFactory.Options();
+		op.inPreferredConfig = Bitmap.Config.ARGB_8888;
+		Bitmap bitmap = BitmapFactory.decodeStream(istr,null,op);
 		return bitmap;
 	}
 

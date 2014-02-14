@@ -1,24 +1,26 @@
 package com.appmunki.miragemobile.ar;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.highgui.Highgui;
+import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -27,11 +29,8 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
-import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.opengl.GLSurfaceView;
@@ -131,83 +130,76 @@ public abstract class ARActivity extends Activity {
 
 	}
 
-	public void addPattern(String imageFilePath) {
-		Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
-		addPattern(bitmap);
-	}
+	
 
-	public void addPattern(Bitmap bitmap) {
-		int width = bitmap.getWidth();
-		int height = bitmap.getHeight();
-		byte[] pixels = Util.getNV21(width, height, bitmap);
-		addPattern(width, height, pixels);
+	public void addPatternDebug(String name, InputStream res) {
+		Bitmap bitmap = Util.decodeSampledBitmapFromStream(res);
+		addPatternDebug(name, bitmap);
+	}
+	private void addPatternDebug(String name, Bitmap bitmap) {
+		Log.i(TAG,bitmap.getWidth()+"x"+bitmap.getHeight());
+	    Mat mat = new Mat (bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
+		Utils.bitmapToMat(bitmap, mat);
+		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+
+		Matcher.addPatternMat(mat.getNativeObjAddr());
+		File dir = new File(Environment.getExternalStorageDirectory()
+				.getAbsolutePath()+ File.separator+"miragemobile/");
+		dir.mkdirs();
+		Highgui.imwrite(Environment.getExternalStorageDirectory()
+				.getAbsolutePath() + File.separator+"miragemobile/"+name,mat);
 		bitmap.recycle();
+		mat.release();
 	}
 
-	public native void addPattern(int width, int height, byte yuv[]);
 
-	public void matchDebug(Bitmap bitmap) {
-		int width = bitmap.getWidth();
-		int height = bitmap.getHeight();
-
-		Log.i("Match", "Scene size " + width + "x" + height);
-		byte[] pixels = Util.getNV21(width, height, bitmap);
-
-		// Result of the amount of found markers
-		float[] modelviewMatrix = new float[16];
-		float[] projectionMatrix = new float[9];
-
-		String baseDir = Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + File.separator + "test.bmp";
-
-		int result = Matcher.matchDebug(width, height, pixels, baseDir);
-
-		/*
-		 * int[] result = Matcher.matchDebug(width, height, pixels);
-		 * 
-		 * org.opencv.core.Mat test = new org.opencv.core.Mat();
-		 * Utils.bitmapToMat(bitmap, test);
-		 * 
-		 * Core.line(test, new Point(result[0], result[1]), new Point(result[2],
-		 * result[3]), new Scalar(0, 255, 0, 255), 10); Core.line(test, new
-		 * Point(result[2], result[3]), new Point(result[4], result[5]), new
-		 * Scalar(0, 255, 0, 255), 10); Core.line(test, new Point(result[4],
-		 * result[5]), new Point(result[6], result[7]), new Scalar(0, 255, 0,
-		 * 255), 10); Core.line(test, new Point(result[6], result[7]), new
-		 * Point(result[0], result[1]), new Scalar(0, 255, 0, 255), 10);
-		 * 
-		 * Core.circle(test, new Point(result[0], result[1]), 10, new Scalar(0,
-		 * 0, 255, 255), 5); Core.circle(test, new Point(result[2], result[3]),
-		 * 10, new Scalar(0, 0, 255, 255), 5); Core.circle(test, new
-		 * Point(result[4], result[5]), 10, new Scalar(0, 0, 255, 255), 5);
-		 * Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0,
-		 * 0, 255, 255), 5);
-		 * 
-		 * Highgui.imwrite("/mnt/sdcard/outputDebug.jpg", test); Log.e("Result",
-		 * "results: "+result.length);
-		 */
-	}
-
-	public int match(Bitmap bitmap) {
+	public int matchDebug(Bitmap bitmap) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
 
 		Log.i("Match", "Scene size " + width + "x" + height);
 
-		byte[] pixels = Util.getNV21(width, height, bitmap);
-
 		// Result of the amount of found markers
-		float[] modelviewMatrix = new float[16];
-		float[] projectionMatrix = new float[9];
+	    Mat mat = new Mat (bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
+		Utils.bitmapToMat(bitmap, mat);
+		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 
-		String baseDir = Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + File.separator + "test.bmp";
+		int resultSize = Matcher.matchDebug(mat.getNativeObjAddr());
 
-		int res = Matcher.matchDebug(width, height, pixels, baseDir);
+		
+		 for(int i =0; i<Matcher.getNumpatternResults();i++){
+			org.opencv.core.Mat test = new org.opencv.core.Mat();
+			mat.copyTo(test);
+			float[] result =  Matcher.getHomography(i);
+			int index = 0;
+			for (int j = 0; j < 4; j++)
+			{
+			    Log.i(TAG,"Point "+result[j]+","+result[j+1]);
+			}
+			 Core.line(test, new Point(result[0], result[1]), new Point(result[2],result[3]), new Scalar(0, 255, 0, 255), 10);
+			 Core.line(test, new Point(result[2], result[3]), new Point(result[4], result[5]), new Scalar(0, 255, 0, 255), 10); 
+			 Core.line(test, new Point(result[4], result[5]), new Point(result[6], result[7]), new Scalar(0, 255, 0, 255), 10); 
+			 Core.line(test, new Point(result[6], result[7]), new Point(result[0], result[1]), new Scalar(0, 255, 0, 255), 10);
+			 
+			 Core.circle(test, new Point(result[0], result[1]), 10, new Scalar(0,
+			 0, 255, 255), 5); Core.circle(test, new Point(result[2], result[3]),
+			 10, new Scalar(0, 0, 255, 255), 5); Core.circle(test, new
+			 Point(result[4], result[5]), 10, new Scalar(0, 0, 255, 255), 5);
+			 Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0,
+			 0, 255, 255), 5);
+			 String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
 
-		return res;
+			 if(!Highgui.imwrite(Environment.getExternalStorageDirectory()
+						.getAbsolutePath() + File.separator +"miragemobile/"+currentDateTimeString+".jpg", test)){
 
+				 Log.e(TAG, "Error imwrite");
+			 }
+		 }
+		 return resultSize;
+		
 	}
+
+
 
 	public void setupGLSurfaceViewLayout() {
 
@@ -253,15 +245,14 @@ public abstract class ARActivity extends Activity {
 		// main.addView(mGLView);
 		// setContentView(main);
 
-		Bitmap bitmap = Util.getBitmapFromAsset(this,
-				"posters/Movie Poster 1.jpg");
-		addPattern(bitmap);
+		
+		InputStream stream = Util.getStreamFromAsset(this, "posters/Movie Poster 1.jpg");
+		addPatternDebug("Movie Poster 1.jpg",stream);
 
 	}
 
-	public void drawSquare() {
-		// mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		// mGLView.requestRender();
+	public int getNumPatternResults() {
+		return Matcher.getNumpatternResults();
 	}
 
 	private void loadSplashScreen() {
@@ -627,9 +618,10 @@ public abstract class ARActivity extends Activity {
 
 					Core.transpose(src, dst);
 					Core.flip(dst, dst, 1);
-
-					Matcher.matchDebugDiego(dst.getNativeObjAddr());
-
+					
+					Matcher.matchDebugDiego(src.getNativeObjAddr());
+					Highgui.imwrite(Environment.getExternalStorageDirectory()
+							.getAbsolutePath() + File.separator+"miragemobile/"+fcount+".jpg",src);
 					// Matcher.matchDebug(camera.getParameters().getPreviewSize().height,
 					// camera.getParameters().getPreviewSize().width,
 					// data,baseDir);

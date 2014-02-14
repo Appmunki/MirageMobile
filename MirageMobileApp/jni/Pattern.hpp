@@ -101,7 +101,6 @@ struct Pattern
                                       ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
   }
-  int ID;
   vector<cv::KeyPoint> keypoints;
   Mat descriptor;
   Size size;
