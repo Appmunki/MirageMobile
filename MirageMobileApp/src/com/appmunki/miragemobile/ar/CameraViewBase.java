@@ -47,7 +47,6 @@ public class CameraViewBase extends SurfaceView implements
 
 	private boolean isDebugging;
 
-	private MarkerFoundListener m_markerfoundListener;
 	private CVFunction mFunc = CVFunction.Features;
 
 	private Bitmap testbmp;
@@ -293,12 +292,7 @@ public class CameraViewBase extends SurfaceView implements
 		return mBitmap;
 	}
 
-	/**
-	 * Adding Listener
-	 */
-	public void addMarkerFoundListener(MarkerFoundListener markerfoundListener) {
-		this.m_markerfoundListener = markerfoundListener;
-	}
+	
 
 	/**
 	 * This method is called when the preview process is being started. It is
@@ -371,7 +365,6 @@ public class CameraViewBase extends SurfaceView implements
 			// TODO change back to bmp
 			if (bmp != null) {
 				Log.i(TAG, "testbmp Not Null");
-				this.m_markerfoundListener.found(bmp);
 			} else {
 				Log.i(TAG, "testbmp Null");
 			}

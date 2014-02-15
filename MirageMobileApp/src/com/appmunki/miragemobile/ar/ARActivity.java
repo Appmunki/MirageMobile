@@ -28,7 +28,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.hardware.Camera;
@@ -424,8 +427,7 @@ public abstract class ARActivity extends Activity {
 		}
 	}
 
-	class Preview extends SurfaceView implements SurfaceHolder.Callback,
-			Camera.PreviewCallback {
+	class Preview extends SurfaceView implements SurfaceHolder.Callback{
 
 		private static final String TAG = "Preview";
 		private SurfaceHolder mHolder;
@@ -674,8 +676,14 @@ public abstract class ARActivity extends Activity {
 		}
 
 		@Override
-		public void onPreviewFrame(byte[] arg0, Camera arg1) {
-			// TODO Auto-generated method stub
+		protected void onDraw(Canvas canvas) {
+			Paint paint = new Paint(); 
+			paint.setColor(Color.BLACK); 
+			paint.setTextSize(28); 
+			paint.setTypeface(Typeface.DEFAULT); 
+			paint.setTextAlign(Align.CENTER);
+			canvas.drawText("CENTERED TEXT", canvas.getWidth()/2, canvas.getHeight()/2, paint);
+			super.onDraw(canvas);
 		}
 
 	}

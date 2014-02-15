@@ -31,10 +31,7 @@ public class TestRender implements Renderer {
 	private float[] modelViewMatrix = { 0.998621f, -0.013804f, -0.050645f, 0.000000f, 0.015006f, 0.999613f, 0.023417f, 0.000000f, 0.050302f, -0.024144f, 0.998442f, 0.000000f,
 			0.079442f, -0.180562f, -3.755618f, 1.000000f };
 
-	// private float[] modelViewMatrix = { 1.000000f, 0.000000f, 0.000000f,
-	// 0.000000f, 0.000000f, 1.000000f, 0.000000f, 0.000000f, -0.000000f,
-	// -0.000000f, 1.000000f, 0.000000f, -0.276621f, 0.087513f,
-	// -2.621431f, 1.000000f };
+	
 
 	private float[] mProjectionMatrix = { -3.276789f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.457592f, 0.000000f, 0.000000f, -0.095777f, -0.027332f, -1.000200f, -1.000000f,
 			0.000000f, 0.000000f, -0.020002f, 0.000000f };
@@ -53,7 +50,7 @@ public class TestRender implements Renderer {
 		mProjectionMatrix = Matcher.getProjectionMatrix();
 
 	}
-
+	
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);

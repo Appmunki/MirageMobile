@@ -11,7 +11,7 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 
-public class CameraOverlayView extends View implements MarkerFoundListener {
+public class CameraOverlayView extends View{
 
 	private static final String TAG = "CameraOverlayView";
 	private Paint paint;
@@ -27,13 +27,7 @@ public class CameraOverlayView extends View implements MarkerFoundListener {
 		paint.setStrokeWidth(5f);
 	}
 
-	@Override
-	public void found(Bitmap mbitmap) {
-		Log.i(TAG, "Displaying Camera Overlay");
-		this.mbitmap = mbitmap;
-		postInvalidate();
-
-	}
+	
 
 	private Canvas canvas;
 	private Bitmap bitmap;
