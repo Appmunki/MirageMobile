@@ -42,13 +42,13 @@ extern "C"
   static Mat mProjectionMatrix;
 
   //function prototypes
-  void testMatcher(Pattern& scenePattern,  vector<pair<int,Pattern> >& results);
-  void computeHomography(Pattern& scenePattern,  vector<pair<int,Pattern> >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results);
+  void testMatcher(Pattern& scenePattern, vector<Pattern*>& matchresults);
+  void computeHomography(Pattern& scenePattern,  vector<Pattern* >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results);
   void buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix);
 
 
 
-  void testMatcher(Pattern& scenePattern,  vector<pair<int,Pattern> >& results){
+  void testMatcher(Pattern& scenePattern,  vector<Pattern*>& matchresults){
           vector<DMatch > matches;
           vector<vector<DMatch> > matches_by_id(patterns.size());
 
@@ -90,19 +90,19 @@ extern "C"
                       continue;
               vector<DMatch> matches = matches_by_id[i];
 
-              Pattern pattern = patterns[i];
+              Pattern* pattern = &patterns[i];
 
               //-- Localize the object
               std::vector < Point2f > obj;
               std::vector < Point2f > scene;
-              LOG("key %d",pattern.keypoints.size());
+              LOG("key %d",pattern->keypoints.size());
 
               for (size_t j = 0; j < matches.size(); j++)
               {
                      //-- Get the keypoints from the good matches
                       LOG("obj %d %d",j,matches[j].queryIdx);
 
-                      obj.push_back(pattern.keypoints[matches[j].queryIdx].pt);
+                      obj.push_back(pattern->keypoints[matches[j].queryIdx].pt);
                       scene.push_back(scenePattern.keypoints[matches[j].trainIdx].pt);
               }
 
@@ -122,20 +122,19 @@ extern "C"
 
               LOG("%d inlier for %d\n",(int)inliers.size(),i);
 
-              pair<int, Pattern> p(i, pattern);
-              results.push_back(p);
+              matchresults.push_back(pattern);
           }
-          LOG("Prediction %d",results.size());
+          LOG("Prediction %d",matchresults.size());
   }
 
-  void computeHomography(Pattern& scenePattern,  vector<pair<int,Pattern> >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results){
+  void computeHomography(Pattern& scenePattern,  vector<Pattern* >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results){
     struct timespec tstart={0,0}, tend={0,0};
 
     for(int j=0;j<resultsPatterns.size();j++){
       LOG("No Homo Extract");
       clock_gettime(CLOCK_MONOTONIC, &tstart);
 
-      Pattern pattern = resultsPatterns[j].second;
+      Pattern pattern = *resultsPatterns[j];
 
       Mat img_object = pattern.gray;
       Mat img_scene = scenePattern.gray;
@@ -189,7 +188,8 @@ extern "C"
         obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
         scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
       }
-
+      if(good_matches.size()<4)
+        continue;
       Mat homography = findHomography( obj, scene, CV_RANSAC,10.0f );
 
       Mat warpedImg;
@@ -315,7 +315,7 @@ extern "C"
       if(!mgray.data)
         LOGE("FRAME ERROR");
       vector<pair<int, PatternTrackingInfo> > result;
-      vector<pair<int, Pattern> > resultPatterns;
+      vector<Pattern*> resultPatterns;
       //Setting timers
       struct timespec tstart={0,0}, tend={0,0};
 
@@ -364,8 +364,8 @@ extern "C"
 
 
       // read image from file
-      vector<pair<int, PatternTrackingInfo> > result;
-      vector<pair<int, Pattern> > resultPatterns;
+      vector<pair<int, PatternTrackingInfo> > trackingResults;
+      vector<Pattern*> matchPatternResults;
 
       //Changed trainkeys to framepattern
       LOG("Scene Extraction begin");
@@ -380,7 +380,7 @@ extern "C"
       //Calls Matching
       LOG("Matching begin");
       clock_gettime(CLOCK_MONOTONIC, &tstart);
-      testMatcher(scenePattern,resultPatterns);
+      testMatcher(scenePattern,matchPatternResults);
       clock_gettime(CLOCK_MONOTONIC, &tend);
       LOG("It took %.5f seconds\n",
                      ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
@@ -389,14 +389,14 @@ extern "C"
 
       LOG("Computing Homography");
       clock_gettime(CLOCK_MONOTONIC, &tstart);
-      computeHomography(scenePattern,resultPatterns,result);
+      computeHomography(scenePattern,matchPatternResults,trackingResults);
       clock_gettime(CLOCK_MONOTONIC, &tend);
       LOG("It took %.5f seconds\n",
                           ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                           ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
-      LOG("Results size %d", resultPatterns.size());
+      LOG("Results size %d", trackingResults.size());
 
-      resultPatterns.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
+      trackingResults.size() > 0 ? isPatternPresent = true : isPatternPresent = false;
 
 
       clock_gettime(CLOCK_MONOTONIC, &totalend);
@@ -405,12 +405,12 @@ extern "C"
                                 ((double)totalstart.tv_sec + 1.0e-9*totalstart.tv_nsec));
       patternResults.clear();
 
-      for(int i=0;i<result.size();i++)
+      for(int i=0;i<trackingResults.size();i++)
       {
-          patternResults.push_back(result[i].second);
+          patternResults.push_back(trackingResults[i].second);
       }
 
-      return resultPatterns.size();
+      return trackingResults.size();
   }
 
   JNIEXPORT jfloatArray JNICALL

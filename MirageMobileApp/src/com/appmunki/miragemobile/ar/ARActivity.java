@@ -36,6 +36,7 @@ import android.hardware.Camera.Size;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Gravity;
@@ -132,9 +133,16 @@ public abstract class ARActivity extends Activity {
 
 	
 
-	public void addPatternDebug(String name, InputStream res) {
+	public void addPatternDebug(String name, InputStream res) throws IOException {
 		Bitmap bitmap = Util.decodeSampledBitmapFromStream(res);
 		addPatternDebug(name, bitmap);
+		
+		
+	}
+	public void dumpHpof() throws IOException{
+		String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+		Debug.dumpHprofData(Environment.getExternalStorageDirectory()
+				.getAbsolutePath() + File.separator +"miragemobile/"+currentDateTimeString+".hprof");
 	}
 	private void addPatternDebug(String name, Bitmap bitmap) {
 		Log.i(TAG,bitmap.getWidth()+"x"+bitmap.getHeight());
@@ -153,7 +161,7 @@ public abstract class ARActivity extends Activity {
 	}
 
 
-	public int matchDebug(Bitmap bitmap) {
+	public int matchDebug(Bitmap bitmap) throws Exception {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
 
@@ -165,7 +173,9 @@ public abstract class ARActivity extends Activity {
 		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 
 		int resultSize = Matcher.matchDebug(mat.getNativeObjAddr());
+		String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
 
+		
 		
 		 for(int i =0; i<Matcher.getNumpatternResults();i++){
 			org.opencv.core.Mat test = new org.opencv.core.Mat();
@@ -192,7 +202,7 @@ public abstract class ARActivity extends Activity {
 			 Point(result[4], result[5]), 10, new Scalar(0, 0, 255, 255), 5);
 			 Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0,
 			 0, 255, 255), 5);
-			 String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+			 currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
 
 			 if(!Highgui.imwrite(Environment.getExternalStorageDirectory()
 						.getAbsolutePath() + File.separator +"miragemobile/"+currentDateTimeString+".jpg", test)){
@@ -252,7 +262,12 @@ public abstract class ARActivity extends Activity {
 
 		
 		InputStream stream = Util.getStreamFromAsset(this, "posters/Movie Poster 1.jpg");
-		addPatternDebug("Movie Poster 1.jpg",stream);
+		try {
+			addPatternDebug("Movie Poster 1.jpg",stream);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

@@ -4,13 +4,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Debug;
 import android.os.Environment;
 import android.test.SingleLaunchActivityTestCase;
 import android.util.Log;
@@ -29,7 +28,7 @@ public class ARActivityTest extends
 		super("com.appmunki.miragemobile", MainARActivity.class);
 	}
 
-	public void test1AddPattern() {
+	public void test1AddPattern() throws IOException {
 		MainARActivity activity = getActivity();
 		// Test that the images were loaded
 		for (int i = 1; i < 8; i++) {
@@ -37,7 +36,7 @@ public class ARActivityTest extends
 			String name = "Movie Poster " + i+ ".jpg";
 			InputStream stream = Util.getStreamFromAsset(getInstrumentation().getTargetContext(), "posters/Movie Poster " + i
 					+ ".jpg");
-			
+
 			activity.addPatternDebug(name,stream);
 		}
 		//System.gc();
@@ -46,23 +45,26 @@ public class ARActivityTest extends
 	/**
 	 * Tests the matching code Loads in a list of bitmaps Then, checks the
 	 * matching versus a testimage
+	 * @throws Exception 
 	 */
-	public void test3RightMatching() {
+	public void test3RightMatching() throws Exception {
 		MainARActivity activity = getActivity();
 		assertTrue(activity.matchDebug(getBitmapFromAsset("query3.jpg")) > 0);
+		//activity.dumpHpof();
 	}
 
 	/**
 	 * Tests the matching code Loads in a list of bitmaps Then tries and check
 	 * for match, but the matche is not in the db
+	 * @throws Exception 
 	 */
-	public void test2WrongMatching() {
+	public void test2WrongMatching() throws Exception {
 		MainARActivity activity = getActivity();
 
 		assertEquals(0, activity.matchDebug(getBitmapFromAsset("query2.jpg")));
 	}
 
-	public void test4Performance() throws InterruptedException{
+	public void test4Performance() throws Exception{
 		MainARActivity activity = getActivity();
 		Bitmap bmp = getBitmapFromAsset("query4.jpg");
 		for(int i=0;i<10;i++){
