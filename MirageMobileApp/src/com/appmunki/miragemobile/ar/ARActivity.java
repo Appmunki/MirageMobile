@@ -56,9 +56,7 @@ import android.widget.TextView;
 
 import com.appmunki.miragemobile.R;
 import com.appmunki.miragemobile.utils.Util;
-import com.entity.KeyPoint;
-import com.entity.TargetImage;
-import com.entity.TargetImageResponse;
+
 import com.orm.androrm.DatabaseAdapter;
 import com.orm.androrm.Model;
 
@@ -79,7 +77,6 @@ public abstract class ARActivity extends Activity {
 	private CameraViewBase mCameraViewBase;
 	private RelativeLayout splashmain;
 	private CameraOverlayView mCameraOverlayView;
-	private boolean isDebugging = false;
 	private RelativeLayout main;
 	private GLSurfaceView mGLView;
 
@@ -91,6 +88,8 @@ public abstract class ARActivity extends Activity {
 
 	private int counter = 0;
 	public ReentrantLock mPreviewBufferLock = new ReentrantLock();
+	public static boolean debug = false;
+	public static boolean debugcamera = true;
 
 	// private Preview mPreview;
 
@@ -114,7 +113,6 @@ public abstract class ARActivity extends Activity {
 			@Override
 			protected Void doInBackground(Void... params) {
 				// Create the db
-				syncDB();
 				Matcher.load(true);
 				return null;
 			}
@@ -134,35 +132,62 @@ public abstract class ARActivity extends Activity {
 
 	}
 
-	
-
-	public void addPatternDebug(String name, InputStream res) throws IOException {
+	public void addPatternDebug(String name, InputStream res)
+			throws IOException {
 		Bitmap bitmap = Util.decodeSampledBitmapFromStream(res);
 		addPatternDebug(name, bitmap);
-		
-		
+
 	}
-	public void dumpHpof() throws IOException{
-		String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+
+	public void dumpHpof() throws IOException {
+		String currentDateTimeString = DateFormat.getDateTimeInstance().format(
+				new Date());
 		Debug.dumpHprofData(Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + File.separator +"miragemobile/"+currentDateTimeString+".hprof");
+				.getAbsolutePath()
+				+ File.separator
+				+ "miragemobile/"
+				+ currentDateTimeString + ".hprof");
 	}
+
 	private void addPatternDebug(String name, Bitmap bitmap) {
-		Log.i(TAG,bitmap.getWidth()+"x"+bitmap.getHeight());
-	    Mat mat = new Mat (bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
+		Log.i(TAG, bitmap.getWidth() + "x" + bitmap.getHeight());
+		Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
 		Utils.bitmapToMat(bitmap, mat);
 		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 
 		Matcher.addPattern(mat.getNativeObjAddr());
 		File dir = new File(Environment.getExternalStorageDirectory()
-				.getAbsolutePath()+ File.separator+"miragemobile/");
+				.getAbsolutePath() + File.separator + "miragemobile/");
 		dir.mkdirs();
 		Highgui.imwrite(Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + File.separator+"miragemobile/"+name,mat);
+				.getAbsolutePath() + File.separator + "miragemobile/" + name,
+				mat);
 		bitmap.recycle();
 		mat.release();
 	}
 
+	public int matchDebug(Mat mat) throws Exception {
+		int resultSize = Matcher.matchDebug(mat.getNativeObjAddr());
+		String currentDateTimeString = DateFormat.getDateTimeInstance().format(
+				new Date());
+
+		for (int i = 0; i < Matcher.getNumpatternResults(); i++) {
+			org.opencv.core.Mat test = new org.opencv.core.Mat();
+			mat.copyTo(test);
+			Matcher.debugHomography(i, test.getNativeObjAddr());
+			
+
+			if (!Highgui.imwrite(Environment.getExternalStorageDirectory()
+					.getAbsolutePath()
+					+ File.separator
+					+ "miragemobile/"
+					+ currentDateTimeString + ".jpg", test)) {
+
+				Log.e(TAG, "Error imwrite");
+			}
+		}
+		return resultSize;
+	}
 
 	public int matchDebug(Bitmap bitmap) throws Exception {
 		int width = bitmap.getWidth();
@@ -171,53 +196,11 @@ public abstract class ARActivity extends Activity {
 		Log.i("Match", "Scene size " + width + "x" + height);
 
 		// Result of the amount of found markers
-	    Mat mat = new Mat (bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
+		Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
 		Utils.bitmapToMat(bitmap, mat);
 		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-
-		int resultSize = Matcher.matchDebug(mat.getNativeObjAddr());
-		String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-
-		
-		
-		 for(int i =0; i<Matcher.getNumpatternResults();i++){
-			org.opencv.core.Mat test = new org.opencv.core.Mat();
-			mat.copyTo(test);
-			float[] result =  Matcher.getHomography(i);
-			int index = 0;
-			for (int j = 0; j < 4; j++)
-			{
-				float x = result[index];
-				index++;
-				float y = result[index];
-				index++;
-			    Log.i(TAG,"Point "+x+","+y);
-			}
-			
-			 Core.line(test, new Point(result[0], result[1]), new Point(result[2],result[3]), new Scalar(0, 255, 0, 255), 10);
-			 Core.line(test, new Point(result[2], result[3]), new Point(result[4], result[5]), new Scalar(0, 255, 0, 255), 10); 
-			 Core.line(test, new Point(result[4], result[5]), new Point(result[6], result[7]), new Scalar(0, 255, 0, 255), 10); 
-			 Core.line(test, new Point(result[6], result[7]), new Point(result[0], result[1]), new Scalar(0, 255, 0, 255), 10);
-			 
-			 Core.circle(test, new Point(result[0], result[1]), 10, new Scalar(0,
-			 0, 255, 255), 5); Core.circle(test, new Point(result[2], result[3]),
-			 10, new Scalar(0, 0, 255, 255), 5); Core.circle(test, new
-			 Point(result[4], result[5]), 10, new Scalar(0, 0, 255, 255), 5);
-			 Core.circle(test, new Point(result[6], result[7]), 10, new Scalar(0,
-			 0, 255, 255), 5);
-			 currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-
-			 if(!Highgui.imwrite(Environment.getExternalStorageDirectory()
-						.getAbsolutePath() + File.separator +"miragemobile/"+currentDateTimeString+".jpg", test)){
-
-				 Log.e(TAG, "Error imwrite");
-			 }
-		 }
-		 return resultSize;
-		
+		return matchDebug(mat);
 	}
-
-
 
 	public void setupGLSurfaceViewLayout() {
 
@@ -263,10 +246,10 @@ public abstract class ARActivity extends Activity {
 		// main.addView(mGLView);
 		// setContentView(main);
 
-		
-		InputStream stream = Util.getStreamFromAsset(this, "posters/Movie Poster 1.jpg");
+		InputStream stream = Util.getStreamFromAsset(this,
+				"posters/Movie Poster 1.jpg");
 		try {
-			addPatternDebug("Movie Poster 1.jpg",stream);
+			addPatternDebug("Movie Poster 1.jpg", stream);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -370,47 +353,9 @@ public abstract class ARActivity extends Activity {
 		}
 	}
 
-	private void testJson() {
-		try {
-			InputStream in = getAssets().open("json.txt");
-			BufferedReader r = new BufferedReader(new InputStreamReader(in));
-			StringBuilder total = new StringBuilder();
-			String line;
-			while ((line = r.readLine()) != null) {
-				total.append(line);
-			}
-			String json = total.toString().split("Response")[1].trim();
-			parseJson(json);
 
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
-	private void parseJson(String json) {
-		System.out.print(json);
-		List<TargetImageResponse> items = new JSONDeserializer<List<TargetImageResponse>>()
-				.use("values", TargetImageResponse.class)
-				.use("values.dess", Mat.class).use("values.keys", Vector.class)
-				.use("values.keys.values", KeyPoint.class).deserialize(json);
-		for (TargetImageResponse item : items) {
-
-			new TargetImage(item).save(this);
-		}
-	}
-
-	/** Will set up the database definition **/
-	private void syncDB() {
-		DatabaseAdapter.setDatabaseName("miragedb");
-
-		List<Class<? extends Model>> models = new ArrayList<Class<? extends Model>>();
-		models.add(TargetImage.class);
-
-		DatabaseAdapter adapter = DatabaseAdapter.getInstance(this);
-		adapter.setModels(models);
-	}
-
+	
 	static {
 		System.loadLibrary("opencv_java");
 		System.loadLibrary("MirageMobile");
@@ -427,7 +372,7 @@ public abstract class ARActivity extends Activity {
 		}
 	}
 
-	class Preview extends SurfaceView implements SurfaceHolder.Callback{
+	class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
 		private static final String TAG = "Preview";
 		private SurfaceHolder mHolder;
@@ -611,16 +556,16 @@ public abstract class ARActivity extends Activity {
 			}
 
 		}
+
 		private Date start;
-        int fcount = 0;
+		int fcount = 0;
 
 		Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
-
 
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
 				if (start == null) {
-                    start = new Date();
+					start = new Date();
 				}
 				mPreviewBufferLock.lock();
 				try {
@@ -633,33 +578,30 @@ public abstract class ARActivity extends Activity {
 							camera.getParameters().getPreviewSize().width,
 							CvType.CV_8U, new Scalar(255));
 					src.put(0, 0, data);
-					Mat dst = new Mat(
-							camera.getParameters().getPreviewSize().height,
-							camera.getParameters().getPreviewSize().width,
-							CvType.CV_8U, new Scalar(255));
-
-					Core.transpose(src, dst);
-					Core.flip(dst, dst, 1);
+					if(debugcamera){
+						try {
+							matchDebug(src);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}else{
+						Matcher.matchDebug(src.getNativeObjAddr());
+					}
 					
-					Matcher.matchDebugDiego(src.getNativeObjAddr());
-					Highgui.imwrite(Environment.getExternalStorageDirectory()
-							.getAbsolutePath() + File.separator+"miragemobile/"+fcount+".jpg",src);
-					// Matcher.matchDebug(camera.getParameters().getPreviewSize().height,
-					// camera.getParameters().getPreviewSize().width,
-					// data,baseDir);
 				} finally {
 					mPreviewBufferLock.unlock();
 					if (mCamera != null)
 						mCamera.addCallbackBuffer(data);
 				}
-				
+
 				fcount++;
-                if (fcount % 100 == 0) {
-                        double ms = (new Date()).getTime() - start.getTime();
-                        Log.i("NativePreviewer", "fps:" + fcount / (ms / 1000.0));
-                        start = new Date();
-                        fcount = 0;
-                }
+				if (fcount % 100 == 0) {
+					double ms = (new Date()).getTime() - start.getTime();
+					Log.i("NativePreviewer", "fps:" + fcount / (ms / 1000.0));
+					start = new Date();
+					fcount = 0;
+				}
 
 			}
 
@@ -677,12 +619,13 @@ public abstract class ARActivity extends Activity {
 
 		@Override
 		protected void onDraw(Canvas canvas) {
-			Paint paint = new Paint(); 
-			paint.setColor(Color.BLACK); 
-			paint.setTextSize(28); 
-			paint.setTypeface(Typeface.DEFAULT); 
+			Paint paint = new Paint();
+			paint.setColor(Color.BLACK);
+			paint.setTextSize(28);
+			paint.setTypeface(Typeface.DEFAULT);
 			paint.setTextAlign(Align.CENTER);
-			canvas.drawText("CENTERED TEXT", canvas.getWidth()/2, canvas.getHeight()/2, paint);
+			canvas.drawText("CENTERED TEXT", canvas.getWidth() / 2,
+					canvas.getHeight() / 2, paint);
 			super.onDraw(canvas);
 		}
 

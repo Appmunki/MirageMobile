@@ -466,7 +466,6 @@ public class Util {
 
 	    final int height = options.outHeight;
 	    final int width = options.outWidth;
-	    Log.i("Old","old "+width+"x"+height);
 	    int reqWidth = 640;
 	    int reqHeight = 480;
 	    
@@ -479,7 +478,6 @@ public class Util {
 	    options.inJustDecodeBounds = false;
 		options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 		Bitmap bitmap = BitmapFactory.decodeStream(res, null, options);
-	    Log.i("New","new "+bitmap.getWidth()+"x"+bitmap.getHeight());
 
 	    return bitmap;
 	}
@@ -489,10 +487,6 @@ public class Util {
 	    final int height = options.outHeight;
 	    final int width = options.outWidth;
 	    int inSampleSize = 1;
-	    Log.i("reg", width+"x"+height);
-	    Log.i("req", reqWidth+"x"+reqHeight);
-	    Log.i("r", "r:"+(height > reqHeight) );
-	    Log.i("r", "r:"+(width > reqWidth) );
 
 	    if (height > reqHeight || width > reqWidth) {
 	

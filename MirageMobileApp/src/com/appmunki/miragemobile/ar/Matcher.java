@@ -42,4 +42,6 @@ public class Matcher {
 	public static native int getNumpatternResults();
 
 	public static native float[] getHomography(int i);
+	public static native void debugHomography(int i,long mGray);
+
 }

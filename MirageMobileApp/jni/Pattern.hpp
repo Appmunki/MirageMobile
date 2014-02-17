@@ -29,9 +29,8 @@ static cv::Ptr<cv::DescriptorExtractor> sceneExtractor= new cv::BRISK();
 struct Pattern
 {
 
-  Pattern(cv::Mat& frame, const cv::Mat& mgray,bool pScene=false){
-    frame = frame.clone();
-    gray = mgray.clone();
+  Pattern(const cv::Mat& mgray,bool pScene=false){
+    gray = mgray;
     isScene=pScene;
     // Store original image in pattern structure
     size = cv::Size(mgray.cols, mgray.rows);
@@ -41,18 +40,22 @@ struct Pattern
     points3d.resize(4);
 
     // Image dimensions
-    const float w = mgray.cols;
-    const float h = mgray.rows;
+    const int w = mgray.cols;
+    const int h = mgray.rows;
+    LOG("pattern1 %dx%d",w,h);
+    LOG("pattern2 %dx%d",mgray.cols, mgray.rows);
 
     // Normalized dimensions:
     const float maxSize = std::max(w, h);
     const float unitW = w / maxSize;
     const float unitH = h / maxSize;
 
-    points2d[0] = cv::Point2f(0, 0);
-    points2d[1] = cv::Point2f(w, 0);
-    points2d[2] = cv::Point2f(w, h);
-    points2d[3] = cv::Point2f(0, h);
+    LOG("unit %fx%f",unitW,unitH);
+
+    points2d[0] = cv::Point(0, 0);
+    points2d[1] = cv::Point(w, 0);
+    points2d[2] = cv::Point(w, h);
+    points2d[3] = cv::Point(0, h);
 
     points3d[0] = cv::Point3f(-unitW, -unitH, 0);
     points3d[1] = cv::Point3f(unitW, -unitH, 0);

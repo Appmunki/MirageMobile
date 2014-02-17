@@ -49,7 +49,8 @@ public class ARActivityTest extends
 	 */
 	public void test3RightMatching() throws Exception {
 		MainARActivity activity = getActivity();
-		assertTrue(activity.matchDebug(getBitmapFromAsset("query3.jpg")) > 0);
+		Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query3.jpg");
+		assertTrue(activity.matchDebug(bmp) > 0);
 		//activity.dumpHpof();
 	}
 
@@ -60,67 +61,28 @@ public class ARActivityTest extends
 	 */
 	public void test2WrongMatching() throws Exception {
 		MainARActivity activity = getActivity();
+		Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query2.jpg");
 
-		assertEquals(0, activity.matchDebug(getBitmapFromAsset("query2.jpg")));
+		assertEquals(0, activity.matchDebug(bmp));
 	}
 
 	public void test4Performance() throws Exception{
 		MainARActivity activity = getActivity();
-		Bitmap bmp = getBitmapFromAsset("query4.jpg");
+		Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query4.jpg");
+		//Bitmap bmp = getBitmapFromAsset("query4.jpg");
 		for(int i=0;i<10;i++){
 			activity.matchDebug(bmp);
 			assertTrue(activity.getNumPatternResults() == 1);
 		}
 	}
 	
-	/**
-	 * @param strName
-	 * @return
-	 */
-	private Bitmap getBitmapFromAsset(String strName) {
-		AssetManager assetManager = getInstrumentation().getTargetContext()
-				.getResources().getAssets();
+	
 
-		InputStream istr = null;
-		try {
-			istr = assetManager.open(strName);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		BitmapFactory.Options op = new BitmapFactory.Options();
-		op.inPreferredConfig = Bitmap.Config.ARGB_8888;
-		Bitmap bitmap = BitmapFactory.decodeStream(istr,null,op);
-		return bitmap;
-	}
-
-	/**
-	 * Saves the nitmap in a file for testing
-	 * 
-	 * @param finalBitmap
-	 */
-	private void saveImage(Bitmap finalBitmap) {
-
-		String root = Environment.getExternalStorageDirectory().toString();
-		Log.e("Testing", root);
-		File myDir = new File(root + "/miragetest_images");
-		myDir.mkdirs();
-		Random generator = new Random();
-		int n = 10000;
-		n = generator.nextInt(n);
-		String fname = "Image-" + n + ".jpg";
-		File file = new File(myDir, fname);
-		if (file.exists())
-			file.delete();
-		try {
-			FileOutputStream out = new FileOutputStream(file);
-			finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-			out.flush();
-			out.close();
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-		}
+	@Override
+	protected void setUp() throws Exception {
+		MainARActivity activity = getActivity();
+		activity.debug=true;
+		super.setUp();
 	}
 	@Override
 	protected void tearDown() throws Exception {

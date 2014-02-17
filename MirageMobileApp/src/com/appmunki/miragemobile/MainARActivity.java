@@ -9,13 +9,17 @@ import com.appmunki.miragemobile.ar.ARActivity;
 public class MainARActivity extends ARActivity {
 	
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_test_ar);
 		//initLayout();
-		//setupGLSurfaceViewLayout();
+		debugcamera=false;
+		if(!debug){
+			setupGLSurfaceViewLayout();
+		}
 	}
 
 	
