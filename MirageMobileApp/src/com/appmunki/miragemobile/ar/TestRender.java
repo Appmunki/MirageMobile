@@ -64,9 +64,9 @@ public class TestRender implements Renderer {
 
 		if (Matcher.isPatternPresent()) {
 			gl.glMatrixMode(GL10.GL_MODELVIEW);
-			gl.glLoadIdentity();
+			//gl.glLoadIdentity();
 			modelViewMatrix = Matcher.getMatrix();
-			gl.glLoadMatrixf(modelViewMatrix, 0);
+			//gl.glLoadMatrixf(modelViewMatrix, 0);
 
 			gl.glColor4f(0.2f, 0.35f, 0.3f, 0.75f);
 			gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);

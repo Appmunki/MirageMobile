@@ -574,8 +574,8 @@ public abstract class ARActivity extends Activity {
 							+ "x"
 							+ camera.getParameters().getPreviewSize().height);
 					Mat src = new Mat(
-							camera.getParameters().getPreviewSize().height,
-							camera.getParameters().getPreviewSize().width,
+							mFrameWidth,
+							mFrameHeight,
 							CvType.CV_8U, new Scalar(255));
 					src.put(0, 0, data);
 					if(debugcamera){
@@ -588,6 +588,11 @@ public abstract class ARActivity extends Activity {
 					}else{
 						Matcher.matchDebug(src.getNativeObjAddr());
 					}
+					Highgui.imwrite(Environment.getExternalStorageDirectory()
+							.getAbsolutePath()
+							+ File.separator
+							+ "miragemobile/"
+							+ (new Date()).getTime() + "D.jpg", src);
 					
 				} finally {
 					mPreviewBufferLock.unlock();

@@ -40,17 +40,14 @@ struct Pattern
     points3d.resize(4);
 
     // Image dimensions
-    const int w = mgray.cols;
-    const int h = mgray.rows;
-    LOG("pattern1 %dx%d",w,h);
-    LOG("pattern2 %dx%d",mgray.cols, mgray.rows);
+    const float w = mgray.cols;
+    const float h = mgray.rows;
 
     // Normalized dimensions:
     const float maxSize = std::max(w, h);
     const float unitW = w / maxSize;
     const float unitH = h / maxSize;
 
-    LOG("unit %fx%f",unitW,unitH);
 
     points2d[0] = cv::Point(0, 0);
     points2d[1] = cv::Point(w, 0);
