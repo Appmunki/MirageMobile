@@ -83,15 +83,15 @@ struct Pattern
     }
 
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    LOG("Creation took %.5f seconds\n",
-                              ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
-                              ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+//    LOG("Creation took %.5f seconds\n",
+//                              ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+//                              ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     sfd1->detect(img, keys);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    LOG("Detection took %.5f seconds\n",
-                                  ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
-                                  ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+//    LOG("Detection took %.5f seconds\n",
+//                                  ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+//                                  ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     // compute image descriptor
     sde->compute(img, keys, des);

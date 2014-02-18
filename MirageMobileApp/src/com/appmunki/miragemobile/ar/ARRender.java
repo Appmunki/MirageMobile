@@ -19,10 +19,12 @@ package com.appmunki.miragemobile.ar;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.appmunki.miragemobile.ar.entity.Square;
+
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
-public class TestRender implements Renderer {
+public class ARRender implements Renderer {
 
 	Square square;
 
@@ -35,8 +37,10 @@ public class TestRender implements Renderer {
 
 	private float[] mProjectionMatrix = { -3.276789f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.457592f, 0.000000f, 0.000000f, -0.095777f, -0.027332f, -1.000200f, -1.000000f,
 			0.000000f, 0.000000f, -0.020002f, 0.000000f };
-
-	public TestRender() {
+	/**
+	 * Render for the AR
+	 */
+	public ARRender() {
 
 		square = new Square();
 	}
@@ -47,7 +51,7 @@ public class TestRender implements Renderer {
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 
-		mProjectionMatrix = Matcher.getProjectionMatrix();
+		//mProjectionMatrix = Matcher.getProjectionMatrix();
 
 	}
 	
@@ -65,12 +69,12 @@ public class TestRender implements Renderer {
 		if (Matcher.isPatternPresent()) {
 			gl.glMatrixMode(GL10.GL_MODELVIEW);
 			//gl.glLoadIdentity();
-			modelViewMatrix = Matcher.getMatrix();
-			//gl.glLoadMatrixf(modelViewMatrix, 0);
+			//modelViewMatrix = Matcher.getMatrix();
+			gl.glLoadMatrixf(modelViewMatrix, 0);
 
-			gl.glColor4f(0.2f, 0.35f, 0.3f, 0.75f);
-			gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
-			gl.glEnable(GL10.GL_BLEND);
+			gl.glColor4f(0.2f, 0.35f, 0.3f,1f);
+			//gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
+//			/gl.glEnable(GL10.GL_BLEND);
 			square.draw(gl);
 		}
 	}

@@ -151,15 +151,12 @@ extern "C"
       descriptors_scene = scenePattern.descriptor;
 
       clock_gettime(CLOCK_MONOTONIC, &tend);
-      LOG("Extraction took %.5f seconds\n",
-                           ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
-                           ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+
       if(!descriptors_object.isContinuous() ||!descriptors_scene.isContinuous())
       {
           LOG("Non continuous");
       }
       //-- Step 3: Matching descriptor vectors using FLANN matcher
-      //FlannBasedMatcher matcherp(new cv::flann::LshIndexParams(5, 10, 1));
       std::vector< DMatch > matches;
       matcher_->match(descriptors_object, descriptors_scene, matches);
 
@@ -196,52 +193,56 @@ extern "C"
       }
       if(good_matches.size()<4)
         continue;
-      Mat homography = findHomography( obj, scene, CV_RANSAC,6.0f );
-
-      Mat warpedImg;
-      cv::warpPerspective(scenePattern.gray, warpedImg, homography, pattern.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
-
-      Pattern warppattern(warpedImg,true);
-
-      matches.clear();
-      matcher_->match( descriptors_object, warppattern.descriptor, matches );
-
-
-
-      max_dist = 0; min_dist = 100;
-
-      //-- Quick calculation of max and min distances between keypoints
-      for( int i = 0; i < descriptors_object.rows; i++ )
-      { double dist = matches[i].distance;
-            if( dist < min_dist ) min_dist = dist;
-            if( dist > max_dist ) max_dist = dist;
-      }
-
-
-      //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
-      good_matches.clear();
-
-      for( int i = 0; i < descriptors_object.rows; i++ )
-      { if( matches[i].distance < 3*min_dist )
-             { good_matches.push_back( matches[i]); }
-      }
-
-      //-- Localize the object
-      obj.clear();
-      scene.clear();
-
-      for( int i = 0; i < good_matches.size(); i++ )
-      {
-            //-- Get the keypoints from the good matches
-            obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
-            scene.push_back( warppattern.keypoints[ good_matches[i].trainIdx ].pt );
-      }
-      Mat refinedHomography = findHomography( obj, scene, CV_RANSAC,3.0f );
-
+      Mat roughhomography = findHomography( obj, scene, CV_RANSAC,8.0f );
+      bool refinehomography=false;
       PatternTrackingInfo info;
-      info.homography = homography*refinedHomography;
+      info.homography = roughhomography;
+
+      if(refinehomography)
+      {
+        Mat warpedImg;
+        cv::warpPerspective(scenePattern.gray, warpedImg, roughhomography, pattern.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
+
+        Pattern warppattern(warpedImg,true);
+
+        matches.clear();
+        matcher_->match( descriptors_object, warppattern.descriptor, matches );
+
+
+
+        max_dist = 0; min_dist = 100;
+
+        //-- Quick calculation of max and min distances between keypoints
+        for( int i = 0; i < descriptors_object.rows; i++ )
+        { double dist = matches[i].distance;
+              if( dist < min_dist ) min_dist = dist;
+              if( dist > max_dist ) max_dist = dist;
+        }
+
+
+        //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
+        good_matches.clear();
+
+        for( int i = 0; i < descriptors_object.rows; i++ )
+        { if( matches[i].distance < 3*min_dist )
+               { good_matches.push_back( matches[i]); }
+        }
+
+        //-- Localize the object
+        obj.clear();
+        scene.clear();
+
+        for( int i = 0; i < good_matches.size(); i++ )
+        {
+              //-- Get the keypoints from the good matches
+              obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+              scene.push_back( warppattern.keypoints[ good_matches[i].trainIdx ].pt );
+        }
+        Mat refinedHomography = findHomography( obj, scene, CV_RANSAC,4.0f );
+        info.homography*=refinedHomography;
+      }
       cv::perspectiveTransform(pattern.points2d, info.points2d, info.homography);
-      info.computePose(scenePattern, m_calibration);
+      info.computePose(pattern, m_calibration);
 
       Transformation patternPose;
       patternPose = info.pose3d;
@@ -310,27 +311,6 @@ extern "C"
 
     __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int) patterns.size());
   }
-  JNIEXPORT void JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_addPatternTest(JNIEnv* env, jobject obj, jint width, jint height, long addrGray)
-  {
-    Mat& mgray = *(Mat*) addrGray;
-    if(!mgray.data)
-      LOGE("FRAME ERROR");
-
-
-
-    LOG("adding Pattern");
-    Pattern pattern(mgray);
-    patterns.push_back(pattern);
-
-    vector<Mat> descriptors;
-    descriptors.push_back(pattern.descriptor);
-
-    matcher_->add(descriptors);
-    matcher_->train();
-
-    __android_log_print(ANDROID_LOG_INFO, "MirageMobile", "Pattern size %d", (int) patterns.size());
-  }
 
 
 
@@ -360,26 +340,24 @@ extern "C"
       clock_gettime(CLOCK_MONOTONIC, &tstart);
       Pattern scenePattern(mgray,true);
       clock_gettime(CLOCK_MONOTONIC, &tend);
-      LOG("It took %.5f seconds\n",
+      LOG("SeneExtraction took %.5f seconds\n",
                           ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                           ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
 
       //Calls Matching
-      LOG("Matching begin");
       clock_gettime(CLOCK_MONOTONIC, &tstart);
       testMatcher(scenePattern,matchPatternResults);
       clock_gettime(CLOCK_MONOTONIC, &tend);
-      LOG("It took %.5f seconds\n",
+      LOG("Matching took %.5f seconds\n",
                      ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                      ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
 
-      LOG("Computing Homography");
       clock_gettime(CLOCK_MONOTONIC, &tstart);
       computeHomography(scenePattern,matchPatternResults,trackingResults);
       clock_gettime(CLOCK_MONOTONIC, &tend);
-      LOG("It took %.5f seconds\n",
+      LOG("ComputingHomography took %.5f seconds\n",
                           ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                           ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
       LOG("Results size %d", trackingResults.size());
@@ -388,7 +366,7 @@ extern "C"
 
 
       clock_gettime(CLOCK_MONOTONIC, &totalend);
-      LOG("Match took %.5f seconds in total\n",
+      LOG("Total took %.5f seconds in total\n",
                                 ((double)totalend.tv_sec + 1.0e-9*totalend.tv_nsec) -
                                 ((double)totalstart.tv_sec + 1.0e-9*totalstart.tv_nsec));
       patternResults.clear();

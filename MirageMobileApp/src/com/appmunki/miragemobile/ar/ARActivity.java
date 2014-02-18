@@ -77,6 +77,7 @@ public abstract class ARActivity extends Activity {
 	private CameraViewBase mCameraViewBase;
 	private RelativeLayout splashmain;
 	private CameraOverlayView mCameraOverlayView;
+	@SuppressWarnings("unused")
 	private RelativeLayout main;
 	private GLSurfaceView mGLView;
 
@@ -86,12 +87,10 @@ public abstract class ARActivity extends Activity {
 	private int mPictureWidth;
 	private int mPictureHeight;
 
-	private int counter = 0;
 	public ReentrantLock mPreviewBufferLock = new ReentrantLock();
 	public static boolean debug = false;
 	public static boolean debugcamera = true;
 
-	// private Preview mPreview;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -103,42 +102,45 @@ public abstract class ARActivity extends Activity {
 
 	}
 
-	private void checkTestData() {
-		Log.d(TAG, "checkTestData");
-		// Load the splashscreen
-
-		loadSplashScreen();
-		new AsyncTask<Void, Void, Void>() {
-
-			@Override
-			protected Void doInBackground(Void... params) {
-				// Create the db
-				Matcher.load(true);
-				return null;
-			}
-
-			@Override
-			protected void onPostExecute(Void result) {
-				// Remove splash
-				splashmain.setVisibility(RelativeLayout.GONE);
-				// Set up Camera
-				setupGLSurfaceViewLayout();
-
-				// Start the camera
-				mCameraViewBase.openCamera();
-			};
-
-		}.execute();
-
-	}
-
-	public void addPatternDebug(String name, InputStream res)
+	/**
+	 * Debugging version of the add Pattern code
+	 * @param name the name of the pattern that will be saved
+	 * @param in the inputstream containing the image to be saved
+	 */
+	public void addPattern(String name, InputStream in)
 			throws IOException {
-		Bitmap bitmap = Util.decodeSampledBitmapFromStream(res);
-		addPatternDebug(name, bitmap);
-
+		Bitmap bitmap = Util.decodeSampledBitmapFromStream(in);
+		addPattern(name, bitmap);
 	}
 
+	
+	/**
+	 * Debugging version of the add Pattern code
+	 * @param name the name of the pattern that will be saved
+	 * @param bitmap the bitmap containing the image to be saved
+	 */
+	private void addPattern(String name, Bitmap bitmap) {
+		Log.i(TAG, bitmap.getWidth() + "x" + bitmap.getHeight());
+		Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
+		Utils.bitmapToMat(bitmap, mat);
+		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+
+		Matcher.addPattern(mat.getNativeObjAddr());
+		if(debug){
+			File dir = new File(Environment.getExternalStorageDirectory()
+					.getAbsolutePath() + File.separator + "miragemobile/");
+			dir.mkdirs();
+			Highgui.imwrite(Environment.getExternalStorageDirectory()
+					.getAbsolutePath() + File.separator + "miragemobile/" + name,
+					mat);
+		}
+		bitmap.recycle();
+		mat.release();
+	}
+	/**
+	 * Dumps the Hpof so you can check the heap during a process
+	 * @throws IOException
+	 */
 	public void dumpHpof() throws IOException {
 		String currentDateTimeString = DateFormat.getDateTimeInstance().format(
 				new Date());
@@ -148,25 +150,12 @@ public abstract class ARActivity extends Activity {
 				+ "miragemobile/"
 				+ currentDateTimeString + ".hprof");
 	}
-
-	private void addPatternDebug(String name, Bitmap bitmap) {
-		Log.i(TAG, bitmap.getWidth() + "x" + bitmap.getHeight());
-		Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC4);
-		Utils.bitmapToMat(bitmap, mat);
-		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-
-		Matcher.addPattern(mat.getNativeObjAddr());
-		File dir = new File(Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + File.separator + "miragemobile/");
-		dir.mkdirs();
-		Highgui.imwrite(Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + File.separator + "miragemobile/" + name,
-				mat);
-		bitmap.recycle();
-		mat.release();
-	}
-
-	public int matchDebug(Mat mat) throws Exception {
+	/**
+	 * Match debug call used to help debug the homographies in a image
+	 * @param mat of the image being matched
+	 * @return number of patterns found in the scene
+	 */
+	public int matchDebug(Mat mat) {
 		int resultSize = Matcher.matchDebug(mat.getNativeObjAddr());
 		String currentDateTimeString = DateFormat.getDateTimeInstance().format(
 				new Date());
@@ -189,7 +178,7 @@ public abstract class ARActivity extends Activity {
 		return resultSize;
 	}
 
-	public int matchDebug(Bitmap bitmap) throws Exception {
+	public int matchDebug(Bitmap bitmap){
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
 
@@ -201,8 +190,10 @@ public abstract class ARActivity extends Activity {
 		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 		return matchDebug(mat);
 	}
-
-	public void setupGLSurfaceViewLayout() {
+	/**
+	 * Sets up the ARSurfaceView which does the matching and displaying
+	 */
+	public void setupARSurfaceViewLayout() {
 
 		final Preview preview = new Preview(this);
 
@@ -213,93 +204,29 @@ public abstract class ARActivity extends Activity {
 		mGLView.setZOrderOnTop(true);
 		setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT));
-		mGLView.setRenderer(new TestRender());
+		mGLView.setRenderer(new ARRender());
 		addContentView(mGLView, new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT));
-
-		// mCameraViewBase = new CameraViewBase(this, isDebugging);
-		// main.addView(mCameraViewBase);
-		// mCameraViewBase.setVisibility(SurfaceView.VISIBLE);
-		// // Add canvas overlay
-		// mCameraOverlayView = new CameraOverlayView(this);
-		// mCameraOverlayView.setVisibility(View.VISIBLE);
-		// mCameraViewBase.addMarkerFoundListener(mCameraOverlayView);
-
-		// main.addView(mCameraOverlayView);
-
-		// RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
-		// RelativeLayout.LayoutParams.MATCH_PARENT,
-		// RelativeLayout.LayoutParams.MATCH_PARENT);
-		// // Add in GLView
-		// mGLView = new GLSurfaceView(this);
-		// // mGLView.setEGLContextClientVersion(2);
-		// mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-		// mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-		// mGLView.setZOrderOnTop(true);
-		//
-		// mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-		// mGLView. setZOrderMediaOverlay(true);
-		// mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-
-		// mGLView.setRenderer(new TestRender());
-		// main.addView(mCameraOverlayView);
-		// main.addView(mGLView);
-		// setContentView(main);
 
 		InputStream stream = Util.getStreamFromAsset(this,
 				"posters/Movie Poster 1.jpg");
 		try {
-			addPatternDebug("Movie Poster 1.jpg", stream);
+			addPattern("Movie Poster 1.jpg", stream);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
-
+	/**
+	 * Method for junit to get the number of pattern results
+	 * @return number of pattern results
+	 */
 	public int getNumPatternResults() {
 		return Matcher.getNumpatternResults();
 	}
 
-	private void loadSplashScreen() {
-		splashmain = new RelativeLayout(this);
-		LinearLayout content = new LinearLayout(this);
-		content.setOrientation(LinearLayout.VERTICAL);
 
-		// Adding Logo
-		ImageView logoLayout = new ImageView(this);
-		logoLayout.setImageResource(R.drawable.miragelogo);
-		android.widget.LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.WRAP_CONTENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT);
-
-		content.addView(logoLayout, lp1);
-
-		// Adding Text
-		TextView loadingText = new TextView(this);
-
-		loadingText.setText("Loading AR ...");
-		loadingText.setTypeface(null, Typeface.BOLD);
-		loadingText.setGravity(Gravity.CENTER);
-		lp1 = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT);
-		content.addView(loadingText, lp1);
-
-		// Adding progress bar
-		ProgressBar progressBar = new ProgressBar(this, null,
-				android.R.attr.progressBarStyleLarge);
-
-		content.addView(progressBar);
-
-		LayoutParams lp = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		lp.addRule(RelativeLayout.CENTER_IN_PARENT, content.getId());
-		splashmain.addView(content, lp);
-
-		setContentView(splashmain);
-	}
 
 	/**
 	 * Avoid that the screen get's turned off by the system.
@@ -361,16 +288,7 @@ public abstract class ARActivity extends Activity {
 		System.loadLibrary("MirageMobile");
 	}
 
-	protected void setDisplayOrientation(Camera camera, int angle) {
-		Method downPolymorphic;
-		try {
-			downPolymorphic = camera.getClass().getMethod(
-					"setDisplayOrientation", new Class[] { int.class });
-			if (downPolymorphic != null)
-				downPolymorphic.invoke(camera, new Object[] { angle });
-		} catch (Exception e1) {
-		}
-	}
+	
 
 	class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -557,11 +475,11 @@ public abstract class ARActivity extends Activity {
 
 		}
 
-		private Date start;
-		int fcount = 0;
+		
 
 		Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
-
+			private Date start;
+			int fcount = 0;
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
 				if (start == null) {
@@ -569,15 +487,13 @@ public abstract class ARActivity extends Activity {
 				}
 				mPreviewBufferLock.lock();
 				try {
-					Log.i("Frame", "Size "
-							+ camera.getParameters().getPreviewSize().width
-							+ "x"
-							+ camera.getParameters().getPreviewSize().height);
+					
 					Mat src = new Mat(
 							mFrameWidth,
 							mFrameHeight,
 							CvType.CV_8U, new Scalar(255));
 					src.put(0, 0, data);
+					
 					if(debugcamera){
 						try {
 							matchDebug(src);
@@ -588,11 +504,6 @@ public abstract class ARActivity extends Activity {
 					}else{
 						Matcher.matchDebug(src.getNativeObjAddr());
 					}
-					Highgui.imwrite(Environment.getExternalStorageDirectory()
-							.getAbsolutePath()
-							+ File.separator
-							+ "miragemobile/"
-							+ (new Date()).getTime() + "D.jpg", src);
 					
 				} finally {
 					mPreviewBufferLock.unlock();
@@ -622,17 +533,18 @@ public abstract class ARActivity extends Activity {
 
 		}
 
-		@Override
-		protected void onDraw(Canvas canvas) {
-			Paint paint = new Paint();
-			paint.setColor(Color.BLACK);
-			paint.setTextSize(28);
-			paint.setTypeface(Typeface.DEFAULT);
-			paint.setTextAlign(Align.CENTER);
-			canvas.drawText("CENTERED TEXT", canvas.getWidth() / 2,
-					canvas.getHeight() / 2, paint);
-			super.onDraw(canvas);
+		
+		private void setDisplayOrientation(Camera camera, int angle) {
+			Method downPolymorphic;
+			try {
+				downPolymorphic = camera.getClass().getMethod(
+						"setDisplayOrientation", new Class[] { int.class });
+				if (downPolymorphic != null)
+					downPolymorphic.invoke(camera, new Object[] { angle });
+			} catch (Exception e1) {
+			}
 		}
+		
 
 	}
 

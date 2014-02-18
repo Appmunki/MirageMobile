@@ -1,4 +1,4 @@
-package com.appmunki.miragemobile.ar;
+package com.appmunki.miragemobile.ar.entity;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
