@@ -43,11 +43,15 @@ extern "C"
 
   //function prototypes
   void testMatcher(Pattern& scenePattern, vector<Pattern*>& matchresults);
-  void computeHomography(Pattern& scenePattern,  vector<Pattern* >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results);
+  void computeHomography(Pattern& scenePattern,  vector<Pattern* >& resultsPatterns,vector<PatternTrackingInfo>& results);
   void buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix);
 
 
-
+  /**
+   * Runs matching code for a frame against the pattern index
+   * @param patternScene camera frame being matched to
+   * @param resulting patterns found in the scene.
+   */
   void testMatcher(Pattern& scenePattern,  vector<Pattern*>& matchresults){
           vector<DMatch > matches;
           vector<vector<DMatch> > matches_by_id(patterns.size());
@@ -64,7 +68,7 @@ extern "C"
                   } else if(knnmatches[i].size()>1) {
                           // 2 neighbors â check how close they are
                           double ratio = knnmatches[i][0].distance / knnmatches[i][1].distance;
-                          if(ratio < 0.8) { // not too close
+                          if(ratio < 0.7) { // not too close
                                   // take the closest (first) one
                                   _m = knnmatches[i][0];
                           } else { // too close â we cannot tell which is better
@@ -80,9 +84,7 @@ extern "C"
 
 
           for(unsigned int i=0;i<matches.size();i++){
-                  DMatch m = matches[i];
-                  matches_by_id[m.imgIdx].push_back(m);
-
+                  matches_by_id[matches[i].imgIdx].push_back(matches[i]);
           }
           for(unsigned int i=0;i<matches_by_id.size();i++){
 
@@ -97,13 +99,12 @@ extern "C"
               std::vector < Point2f > scene;
               LOG("key %d",pattern->keypoints.size());
 
-              for (size_t j = 0; j < matches.size(); j++)
+              for (size_t j = 0; j < matches_by_id[i].size(); j++)
               {
                      //-- Get the keypoints from the good matches
-                      //LOG("obj %d %d",j,matches[j].queryIdx);
 
-                      obj.push_back(pattern->keypoints[matches[j].queryIdx].pt);
-                      scene.push_back(scenePattern.keypoints[matches[j].trainIdx].pt);
+                      obj.push_back(pattern->keypoints[matches_by_id[i][j].queryIdx].pt);
+                      scene.push_back(scenePattern.keypoints[matches_by_id[i][j].trainIdx].pt);
               }
 
               // Find homography matrix and get inliers mask
@@ -113,7 +114,7 @@ extern "C"
               for (size_t j = 0; j < inliersMask.size(); j++)
               {
                       if (inliersMask[j])
-                              inliers.push_back(matches[j]);
+                              inliers.push_back(matches_by_id[i][j]);
               }
               int sum = std::accumulate(inliersMask.begin(), inliersMask.end(), 0);
               LOG("inlier sum: %d\n",sum);
@@ -126,8 +127,13 @@ extern "C"
           }
           LOG("Prediction %d",matchresults.size());
   }
-
-  void computeHomography(Pattern& scenePattern,  vector<Pattern* >& resultsPatterns,vector<pair<int,PatternTrackingInfo> >& results){
+  /**
+   * Computes the homography and the tracking information for a specific element.
+   * @param patternScene camera frame being tracked
+   * @param list of patterns found in scene
+   * @param Tracking information for patterns found in the scene
+   */
+  void computeHomography(Pattern& scenePattern,  vector<Pattern* >& resultsPatterns,vector<PatternTrackingInfo>& results){
     struct timespec tstart={0,0}, tend={0,0};
 
     for(int j=0;j<resultsPatterns.size();j++){
@@ -182,19 +188,19 @@ extern "C"
       }
 
       //-- Localize the object
-      std::vector<Point2f> obj;
-      std::vector<Point2f> scene;
 
+      std::vector<Point2f>* obj = new std::vector<Point2f>();
+      std::vector<Point2f>* scene = new std::vector<Point2f>();
       for( int i = 0; i < good_matches.size(); i++ )
       {
         //-- Get the keypoints from the good matches
-        obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
-        scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+        obj->push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+        scene->push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
       }
       if(good_matches.size()<4)
         continue;
-      Mat roughhomography = findHomography( obj, scene, CV_RANSAC,8.0f );
-      bool refinehomography=false;
+      Mat roughhomography = findHomography( *obj, *scene, CV_RANSAC,8.0f );
+      bool refinehomography=true;
       PatternTrackingInfo info;
       info.homography = roughhomography;
 
@@ -229,16 +235,16 @@ extern "C"
         }
 
         //-- Localize the object
-        obj.clear();
-        scene.clear();
+        obj->clear();
+        scene->clear();
 
         for( int i = 0; i < good_matches.size(); i++ )
         {
               //-- Get the keypoints from the good matches
-              obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
-              scene.push_back( warppattern.keypoints[ good_matches[i].trainIdx ].pt );
+              obj->push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+              scene->push_back( warppattern.keypoints[ good_matches[i].trainIdx ].pt );
         }
-        Mat refinedHomography = findHomography( obj, scene, CV_RANSAC,4.0f );
+        Mat refinedHomography = findHomography( *obj, *scene, CV_RANSAC,4.0f );
         info.homography*=refinedHomography;
       }
       cv::perspectiveTransform(pattern.points2d, info.points2d, info.homography);
@@ -249,9 +255,10 @@ extern "C"
 
       glMatrixTest = patternPose.getMat44();
 
-      pair<int, PatternTrackingInfo> p(j, info);
-      results.push_back(p);
+      results.push_back(info);
 
+      delete obj;
+      delete scene;
     }
 
   }
@@ -332,7 +339,7 @@ extern "C"
 
 
       // read image from file
-      vector<pair<int, PatternTrackingInfo> > trackingResults;
+      vector<PatternTrackingInfo> trackingResults;
       vector<Pattern*> matchPatternResults;
 
       //Changed trainkeys to framepattern
@@ -369,11 +376,12 @@ extern "C"
       LOG("Total took %.5f seconds in total\n",
                                 ((double)totalend.tv_sec + 1.0e-9*totalend.tv_nsec) -
                                 ((double)totalstart.tv_sec + 1.0e-9*totalstart.tv_nsec));
-      patternResults.clear();
+
+      vector<PatternTrackingInfo>().swap( patternResults );
 
       for(int i=0;i<trackingResults.size();i++)
       {
-          patternResults.push_back(trackingResults[i].second);
+          patternResults.push_back(trackingResults[i]);
       }
 
 

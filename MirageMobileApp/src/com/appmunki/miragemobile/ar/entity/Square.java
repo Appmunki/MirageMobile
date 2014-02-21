@@ -40,5 +40,6 @@ public class Square {
 		gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, vertices.length / 3);
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		
+		
 	}
 }

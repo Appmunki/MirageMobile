@@ -29,19 +29,22 @@ static cv::Ptr<cv::DescriptorExtractor> sceneExtractor= new cv::BRISK();
 struct Pattern
 {
 
-  Pattern(const cv::Mat& mgray,bool pScene=false){
-    gray = mgray;
+  Pattern(const cv::Mat& frame,bool pScene=false){
+
     isScene=pScene;
+    if(isScene){
+      gray=frame;
+    }
     // Store original image in pattern structure
-    size = cv::Size(mgray.cols, mgray.rows);
+    size = cv::Size(frame.cols, frame.rows);
 
     // Build 2d and 3d contours (3d contour lie in XY plane since it's planar)
     points2d.resize(4);
     points3d.resize(4);
 
     // Image dimensions
-    const float w = mgray.cols;
-    const float h = mgray.rows;
+    const float w = frame.cols;
+    const float h = frame.rows;
 
     // Normalized dimensions:
     const float maxSize = std::max(w, h);
@@ -59,7 +62,7 @@ struct Pattern
     points3d[2] = cv::Point3f(unitW, unitH, 0);
     points3d[3] = cv::Point3f(-unitW, unitH, 0);
 
-    extractFeatures(gray, descriptor, keypoints);
+    extractFeatures(frame, descriptor, keypoints);
   }
   Pattern();
   /**
@@ -106,7 +109,6 @@ struct Pattern
   Size size;
   std::vector<cv::Point2f>  points2d;
   std::vector<cv::Point3f>  points3d;
-  Mat frame;
   Mat gray;
   bool isScene;
 };

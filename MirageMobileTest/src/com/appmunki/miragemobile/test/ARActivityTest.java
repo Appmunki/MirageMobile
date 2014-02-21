@@ -1,16 +1,10 @@
 package com.appmunki.miragemobile.test;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Random;
 
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Debug;
-import android.os.Environment;
+import android.graphics.Matrix;
 import android.test.SingleLaunchActivityTestCase;
 import android.util.Log;
 
@@ -37,9 +31,8 @@ public class ARActivityTest extends
 			InputStream stream = Util.getStreamFromAsset(getInstrumentation().getTargetContext(), "posters/Movie Poster " + i
 					+ ".jpg");
 
-			activity.addPatternDebug(name,stream);
+			activity.addPattern(name,stream);
 		}
-		//System.gc();
 	}
 
 	/**
@@ -48,10 +41,21 @@ public class ARActivityTest extends
 	 * @throws Exception 
 	 */
 	public void test3RightMatching() throws Exception {
-		MainARActivity activity = getActivity();
-		Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query3.jpg");
+		final MainARActivity activity = getActivity();
+		final Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query4.jpg");
+		activity.runOnUiThread(new Runnable() {
+		  @Override
+		  public void run() {
+			  Matrix matrix = new Matrix();
+
+			  matrix.postRotate(90); 
+
+
+			  Bitmap rotated =  Bitmap.createBitmap(bmp,0,0,bmp.getWidth(),bmp.getHeight(),matrix,true);
+			  Log.i("JUNIT", rotated.getWidth()+"x"+rotated.getHeight());
+			  activity.mImageView.setImageBitmap(rotated);		  }
+		});
 		assertTrue(activity.matchDebug(bmp) > 0);
-		//activity.dumpHpof();
 	}
 
 	/**
@@ -67,10 +71,24 @@ public class ARActivityTest extends
 	}
 
 	public void test4Performance() throws Exception{
-		MainARActivity activity = getActivity();
-		Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query4.jpg");
+		final MainARActivity activity = getActivity();
+		final Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query3.jpg");
+		activity.runOnUiThread(new Runnable() {
+		  @Override
+		  public void run() {
+			  Matrix matrix = new Matrix();
+
+			  matrix.postRotate(90); 
+
+
+			  Bitmap rotated =  Bitmap.createBitmap(bmp,0,0,bmp.getWidth(),bmp.getHeight(),matrix,true);
+			  Log.i("JUNIT", rotated.getWidth()+"x"+rotated.getHeight());
+
+			  activity.mImageView.setImageBitmap(rotated);
+		  }
+		});
 		//Bitmap bmp = getBitmapFromAsset("query4.jpg");
-		for(int i=0;i<10;i++){
+		for(int i=0;i<50;i++){
 			activity.matchDebug(bmp);
 			assertTrue(activity.getNumPatternResults() == 1);
 		}

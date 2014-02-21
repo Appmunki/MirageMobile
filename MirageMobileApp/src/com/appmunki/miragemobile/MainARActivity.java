@@ -1,10 +1,11 @@
 package com.appmunki.miragemobile;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import java.io.InputStream;
+
 import android.os.Bundle;
 
 import com.appmunki.miragemobile.ar.ARActivity;
+import com.appmunki.miragemobile.utils.Util;
 
 public class MainARActivity extends ARActivity {
 	
@@ -17,14 +18,23 @@ public class MainARActivity extends ARActivity {
 		setContentView(R.layout.activity_test_ar);
 		debugcamera=false;
 		if(!debug){
-			setupARSurfaceViewLayout();
+			loadPatterns();
+			setupCameraViewLayout();
+		}
+		setupARSurfaceViewLayout();
+		if(debug){
+			addImageView();
 		}
 	}
+	/**
+	 * Loads initial patterns into the db
+	 */
+	private void loadPatterns() {
+		InputStream stream = Util.getStreamFromAsset(this, "posters/Movie Poster " + 1
+				+ ".jpg");
 
-	
-
-	
-
+		addPattern("test",stream);
+	}
 	
 
 	

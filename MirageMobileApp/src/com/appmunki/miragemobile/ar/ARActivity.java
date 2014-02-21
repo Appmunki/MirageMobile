@@ -45,6 +45,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -88,6 +89,7 @@ public abstract class ARActivity extends Activity {
 	private int mPictureHeight;
 
 	public ReentrantLock mPreviewBufferLock = new ReentrantLock();
+	public ImageView mImageView;
 	public static boolean debug = false;
 	public static boolean debugcamera = true;
 
@@ -98,7 +100,7 @@ public abstract class ARActivity extends Activity {
 		disableScreenTurnOff();
 		setOrientation();
 		super.onCreate(savedInstanceState);
-		this.main = new RelativeLayout(this);
+		//this.main = new RelativeLayout(this);
 
 	}
 
@@ -108,7 +110,7 @@ public abstract class ARActivity extends Activity {
 	 * @param in the inputstream containing the image to be saved
 	 */
 	public void addPattern(String name, InputStream in)
-			throws IOException {
+			 {
 		Bitmap bitmap = Util.decodeSampledBitmapFromStream(in);
 		addPattern(name, bitmap);
 	}
@@ -190,33 +192,39 @@ public abstract class ARActivity extends Activity {
 		Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 		return matchDebug(mat);
 	}
+	
+	/**
+	 * Sets up cameraview in layout
+	 */
+	public void setupCameraViewLayout() {
+		final Preview preview = new Preview(this);
+		setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT));
+	}
 	/**
 	 * Sets up the ARSurfaceView which does the matching and displaying
 	 */
 	public void setupARSurfaceViewLayout() {
 
-		final Preview preview = new Preview(this);
-
+		
 		mGLView = new GLSurfaceView(this);
-		// mGLView.setEGLContextClientVersion(2);
 		mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		mGLView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		mGLView.setZOrderOnTop(true);
-		setContentView(preview, new LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.MATCH_PARENT));
 		mGLView.setRenderer(new ARRender());
+		
+		
 		addContentView(mGLView, new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT));
 
-		InputStream stream = Util.getStreamFromAsset(this,
+		/*InputStream stream = Util.getStreamFromAsset(this,
 				"posters/Movie Poster 1.jpg");
-		try {
-			addPattern("Movie Poster 1.jpg", stream);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+		addPattern("Movie Poster 1.jpg", stream);*/
+	}
+	public void addImageView(){
+		mImageView = new ImageView(this);
+		addContentView(mImageView, new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT));
 	}
 	/**
 	 * Method for junit to get the number of pattern results
