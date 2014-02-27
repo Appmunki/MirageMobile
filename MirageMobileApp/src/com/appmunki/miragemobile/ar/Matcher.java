@@ -30,7 +30,7 @@ public class Matcher {
 
 	public static native float[] getMatrix();
 
-	public static native float[] getProjectionMatrix();
+	public static native float[] getProjectionMatrix(int width, int height);
 
 	public static native void convertFrame(int frameWidth, int frameHeight,
 			byte[] data, int[] rgba);

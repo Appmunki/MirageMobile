@@ -20,29 +20,41 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView.Renderer;
+import android.util.Log;
 
+import com.appmunki.miragemobile.ar.entity.Cube;
+import com.appmunki.miragemobile.ar.entity.Grid;
+import com.appmunki.miragemobile.ar.entity.Plane;
 import com.appmunki.miragemobile.ar.entity.Square;
+import com.appmunki.miragemobile.ar.entity.Square2;
 
 public class ARRender implements Renderer {
 
-	Square square;
+	private final String TAG = this.getClass().getSimpleName();
+
+	Square2 square;
 
 	float positionY = 0;
 
-	private float[] modelViewMatrix = { 0.998621f, -0.013804f, -0.050645f, 0.000000f, 0.015006f, 0.999613f, 0.023417f, 0.000000f, 0.050302f, -0.024144f, 0.998442f, 0.000000f,
-			0.079442f, -0.180562f, -3.755618f, 1.000000f };
+	
 
-	// private float[] modelViewMatrix = { 1.000000f, 0.000000f, 0.000000f,
-	// 0.000000f, 0.000000f, 1.000000f, 0.000000f, 0.000000f, -0.000000f,
-	// -0.000000f, 1.000000f, 0.000000f, -0.276621f, 0.087513f,
-	// -2.621431f, 1.000000f };
+	
 
-	private float[] mProjectionMatrix = { -3.276789f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.457592f, 0.000000f, 0.000000f, -0.095777f, -0.027332f, -1.000200f, -1.000000f,
-			0.000000f, 0.000000f, -0.020002f, 0.000000f };
+	private float[] mProjectionMatrix = { 1f,0,0,0,0,1f,0,0,0,0,1,0,0,0,0,1 };
 
+
+	private Cube cube;
+
+	private float angle=0.0f;
+	private float scalewidth=1;
+	private float scaleheight=1;
+
+	private Plane plane;
 	public ARRender() {
 
-		square = new Square();
+		cube = new Cube();
+		square = new Square2();
+		plane = new Plane(1,1);
 	}
 
 	@Override
@@ -51,7 +63,6 @@ public class ARRender implements Renderer {
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 
-		mProjectionMatrix = Matcher.getProjectionMatrix();
 
 	}
 
@@ -59,32 +70,46 @@ public class ARRender implements Renderer {
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
-		gl.glTranslatef(0.0f, 0.0f, -20.0f);
-
-		gl.glLoadIdentity();
 
 		gl.glMatrixMode(GL10.GL_PROJECTION);
+		gl.glLoadIdentity();
 		gl.glLoadMatrixf(mProjectionMatrix, 0);
-
 		if (Matcher.isPatternPresent()) {
 			gl.glMatrixMode(GL10.GL_MODELVIEW);
+			float[] modelViewMatrix = Matcher.getMatrix();
 			gl.glLoadIdentity();
-			modelViewMatrix = Matcher.getMatrix();
 			gl.glLoadMatrixf(modelViewMatrix, 0);
+			gl.glScalef(scalewidth, scaleheight, 1f);
+			gl.glRotatef(90f, 0, 0, 1.0f);
 
-			gl.glColor4f(0.2f, 0.35f, 0.3f, 0.75f);
-			gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
-			gl.glEnable(GL10.GL_BLEND);
-			square.draw(gl);
+			// Save the current matrixHe wears hoop earrings on his ears, and a baseball cap with horns comin
+			gl.glPushMatrix();
+			gl.glTranslatef(0f, 0, 0);
+
+			// Rotate square B before moving it, making it rotate around A.
+			// Draw square B.
+	    	gl.glColor4f(1f, 0.5f, 0.5f, 1.0f); // 0x8080FFFF
+			//square.draw(gl);
+			//cube.draw(gl);
+			plane.draw(gl);
+
+			// Restore to the matrix as it was before C.
+			gl.glPopMatrix();
+
+			
 		}
 	}
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 		gl.glViewport(0, 0, width, height);
-		float ratio = (float) width / height;
+		Log.i(TAG, (width/480f)+"x"+(height/640f));
+		scalewidth=(width/480f);
+		scaleheight=(height/640f);
+		mProjectionMatrix = Matcher.getProjectionMatrix(width,height);
 		gl.glMatrixMode(GL10.GL_PROJECTION);
 		gl.glLoadIdentity();
-		gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7);
+		gl.glLoadMatrixf(mProjectionMatrix, 0);
+
 	}
 }

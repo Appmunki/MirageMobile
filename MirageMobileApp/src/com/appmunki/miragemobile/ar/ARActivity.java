@@ -72,7 +72,7 @@ import flexjson.JSONDeserializer;
  */
 public abstract class ARActivity extends Activity {
 
-	protected static final String TAG = "Aractivity";
+	private final String TAG = this.getClass().getSimpleName();
 	static int countOnCreate = 0;
 
 	private CameraViewBase mCameraViewBase;
@@ -348,6 +348,8 @@ public abstract class ARActivity extends Activity {
 		@Override
 		public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2,
 				int arg3) {
+			Log.i(TAG, "Preview SurfaceChanged");
+
 			try {
 				initCamera(mHolder);
 			} catch (InterruptedException e) {
@@ -439,6 +441,7 @@ public abstract class ARActivity extends Activity {
 
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
+			Log.i(TAG, "Preview SurfaceCreated");
 			mCamera = Camera.open();
 			Camera.Parameters p = mCamera.getParameters();
 			List<String> focusModes = p.getSupportedFocusModes();
@@ -496,6 +499,7 @@ public abstract class ARActivity extends Activity {
 				mPreviewBufferLock.lock();
 				try {
 					
+					Log.i(TAG, "frame: "+mFrameWidth+"x"+mFrameHeight);
 					Mat src = new Mat(
 							mFrameWidth,
 							mFrameHeight,

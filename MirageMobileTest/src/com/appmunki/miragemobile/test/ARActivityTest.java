@@ -7,13 +7,14 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.test.SingleLaunchActivityTestCase;
 import android.util.Log;
+import android.widget.ImageView.ScaleType;
 
 import com.appmunki.miragemobile.MainARActivity;
 import com.appmunki.miragemobile.utils.Util;
 
-public class ARActivityTest extends
-		SingleLaunchActivityTestCase<MainARActivity> {
+public class ARActivityTest extends SingleLaunchActivityTestCase<MainARActivity> {
 
+	private final String TAG = "ARActivityTest";
 	public ARActivityTest(Class<MainARActivity> activityClass) {
 		super("com.appmunki.miragemobile", activityClass);
 	}
@@ -42,20 +43,29 @@ public class ARActivityTest extends
 	 */
 	public void test3RightMatching() throws Exception {
 		final MainARActivity activity = getActivity();
-		final Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query4.jpg");
+		final Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query1.jpg");
+		final Bitmap previewbmp=Util.resizedBitmap(bmp, 640, 480);
+		final Bitmap picturebmp=Util.resizedBitmap(bmp, 1600, 1200);
+		Log.i(TAG, "bmp's "+bmp.getWidth()+"x"+bmp.getHeight());
+		Log.i(TAG, "preview's "+previewbmp.getWidth()+"x"+previewbmp.getHeight());
+		Log.i(TAG, "picture's "+picturebmp.getWidth()+"x"+picturebmp.getHeight());
+
 		activity.runOnUiThread(new Runnable() {
 		  @Override
 		  public void run() {
-			  Matrix matrix = new Matrix();
-
-			  matrix.postRotate(90); 
-
-
-			  Bitmap rotated =  Bitmap.createBitmap(bmp,0,0,bmp.getWidth(),bmp.getHeight(),matrix,true);
-			  Log.i("JUNIT", rotated.getWidth()+"x"+rotated.getHeight());
-			  activity.mImageView.setImageBitmap(rotated);		  }
+				  Matrix matrix = new Matrix();
+	
+				  matrix.postRotate(90); 
+	
+	
+				  Bitmap rotated =  Bitmap.createBitmap(picturebmp,0,0,picturebmp.getWidth(),picturebmp.getHeight(),matrix,true);
+				  Log.i(TAG, "rotated: "+rotated.getWidth()+"x"+rotated.getHeight());
+	
+				  activity.mImageView.setImageBitmap(rotated);	
+				  activity.mImageView.setScaleType(ScaleType.FIT_XY);
+			  }
 		});
-		assertTrue(activity.matchDebug(bmp) > 0);
+		assertTrue(activity.matchDebug(previewbmp) > 0);
 	}
 
 	/**
@@ -72,7 +82,13 @@ public class ARActivityTest extends
 
 	public void test4Performance() throws Exception{
 		final MainARActivity activity = getActivity();
-		final Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query3.jpg");
+		final Bitmap bmp=Util.getBitmapFromAsset(getInstrumentation().getTargetContext(), "query1.jpg");
+		final Bitmap previewbmp=Util.resizedBitmap(bmp, 640, 480);
+		final Bitmap picturebmp=Util.resizedBitmap(bmp, 1600, 1200);
+		Log.i(TAG, "bmp's "+bmp.getWidth()+"x"+bmp.getHeight());
+		Log.i(TAG, "preview's "+previewbmp.getWidth()+"x"+previewbmp.getHeight());
+		Log.i(TAG, "picture's "+picturebmp.getWidth()+"x"+picturebmp.getHeight());
+
 		activity.runOnUiThread(new Runnable() {
 		  @Override
 		  public void run() {
@@ -81,21 +97,21 @@ public class ARActivityTest extends
 			  matrix.postRotate(90); 
 
 
-			  Bitmap rotated =  Bitmap.createBitmap(bmp,0,0,bmp.getWidth(),bmp.getHeight(),matrix,true);
-			  Log.i("JUNIT", rotated.getWidth()+"x"+rotated.getHeight());
-
-			  activity.mImageView.setImageBitmap(rotated);
+			  Bitmap rotated =  Bitmap.createBitmap(picturebmp,0,0,picturebmp.getWidth(),picturebmp.getHeight(),matrix,true);
+			  Log.i(TAG, "rotated: "+rotated.getWidth()+"x"+rotated.getHeight());
+			  activity.mImageView.setImageBitmap(rotated);	
+			  activity.mImageView.setScaleType(ScaleType.FIT_XY);
 		  }
 		});
-		//Bitmap bmp = getBitmapFromAsset("query4.jpg");
-		for(int i=0;i<50;i++){
-			activity.matchDebug(bmp);
+		for(int i=0;i<25;i++){
+			activity.matchDebug(previewbmp);
 			assertTrue(activity.getNumPatternResults() == 1);
 		}
 	}
 	
 	
 
+	@SuppressWarnings("static-access")
 	@Override
 	protected void setUp() throws Exception {
 		MainARActivity activity = getActivity();

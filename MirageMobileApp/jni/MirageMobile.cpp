@@ -137,39 +137,20 @@ extern "C"
     struct timespec tstart={0,0}, tend={0,0};
 
     for(int j=0;j<resultsPatterns.size();j++){
-      LOG("No Homo Extract");
-      clock_gettime(CLOCK_MONOTONIC, &tstart);
+      LOG("Computing Homography %d",j);
 
       Pattern pattern = *resultsPatterns[j];
 
-      Mat img_object = pattern.gray;
-      Mat img_scene = scenePattern.gray;
-
-      std::vector<KeyPoint> keypoints_object, keypoints_scene;
 
 
-      Mat descriptors_object, descriptors_scene;
-
-      keypoints_object = pattern.keypoints;
-      keypoints_scene = scenePattern.keypoints;
-
-      descriptors_object = pattern.descriptor;
-      descriptors_scene = scenePattern.descriptor;
-
-      clock_gettime(CLOCK_MONOTONIC, &tend);
-
-      if(!descriptors_object.isContinuous() ||!descriptors_scene.isContinuous())
-      {
-          LOG("Non continuous");
-      }
       //-- Step 3: Matching descriptor vectors using FLANN matcher
       std::vector< DMatch > matches;
-      matcher_->match(descriptors_object, descriptors_scene, matches);
+      matcher_->match(pattern.descriptor, scenePattern.descriptor, matches);
 
       double max_dist = 0; double min_dist = 100;
 
       //-- Quick calculation of max and min distances between keypoints
-      for( int i = 0; i < descriptors_object.rows; i++ )
+      for( int i = 0; i < pattern.descriptor.rows; i++ )
       { double dist = matches[i].distance;
           //LOG("dist %f",dist);
           if( dist < min_dist ) min_dist = dist;
@@ -182,7 +163,7 @@ extern "C"
       //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
       std::vector< DMatch > good_matches;
 
-      for( int i = 0; i < descriptors_object.rows; i++ )
+      for( int i = 0; i < pattern.descriptor.rows; i++ )
       { if( matches[i].distance < 3*min_dist )
          { good_matches.push_back( matches[i]); }
       }
@@ -194,8 +175,8 @@ extern "C"
       for( int i = 0; i < good_matches.size(); i++ )
       {
         //-- Get the keypoints from the good matches
-        obj->push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
-        scene->push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+        obj->push_back( pattern.keypoints[ good_matches[i].queryIdx ].pt );
+        scene->push_back( scenePattern.keypoints[ good_matches[i].trainIdx ].pt );
       }
       if(good_matches.size()<4)
         continue;
@@ -212,14 +193,14 @@ extern "C"
         Pattern warppattern(warpedImg,true);
 
         matches.clear();
-        matcher_->match( descriptors_object, warppattern.descriptor, matches );
+        matcher_->match(pattern.descriptor, warppattern.descriptor, matches );
 
 
 
         max_dist = 0; min_dist = 100;
 
         //-- Quick calculation of max and min distances between keypoints
-        for( int i = 0; i < descriptors_object.rows; i++ )
+        for( int i = 0; i < pattern.descriptor.rows; i++ )
         { double dist = matches[i].distance;
               if( dist < min_dist ) min_dist = dist;
               if( dist > max_dist ) max_dist = dist;
@@ -229,7 +210,7 @@ extern "C"
         //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
         good_matches.clear();
 
-        for( int i = 0; i < descriptors_object.rows; i++ )
+        for( int i = 0; i < pattern.descriptor.rows; i++ )
         { if( matches[i].distance < 3*min_dist )
                { good_matches.push_back( matches[i]); }
         }
@@ -241,7 +222,7 @@ extern "C"
         for( int i = 0; i < good_matches.size(); i++ )
         {
               //-- Get the keypoints from the good matches
-              obj->push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+              obj->push_back( pattern.keypoints[ good_matches[i].queryIdx ].pt );
               scene->push_back( warppattern.keypoints[ good_matches[i].trainIdx ].pt );
         }
         Mat refinedHomography = findHomography( *obj, *scene, CV_RANSAC,4.0f );
@@ -465,10 +446,10 @@ extern "C"
 
 
   JNIEXPORT jfloatArray JNICALL
-  Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env, jobject obj)
+  Java_com_appmunki_miragemobile_ar_Matcher_getProjectionMatrix(JNIEnv *env, jobject obj,jint screenwidth,jint screenheight)
   {
 
-    buildProjectionMatrix(480, 640, glProjectionMatrix);
+    buildProjectionMatrix(screenwidth, screenheight, glProjectionMatrix);
 
     jfloatArray result;
     result = env->NewFloatArray(16);
