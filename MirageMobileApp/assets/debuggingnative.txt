@@ -1,0 +1,3 @@
+export PROJECT_PATH=/home/radzell/workspace/MirageMobile/MirageMobileApp
+export NDK=/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b
+adb logcat | $NDK/ndk-stack -sym $PROJECT_PATH/obj/local/armeabi-v7a
