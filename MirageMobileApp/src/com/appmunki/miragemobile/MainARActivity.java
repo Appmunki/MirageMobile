@@ -16,7 +16,7 @@ public class MainARActivity extends ARActivity {
 		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_test_ar);
-		debugcamera=false;
+		debugcamera=true;
 		if(!debug){
 			loadPatterns();
 			setupCameraViewLayout();

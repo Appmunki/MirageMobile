@@ -223,7 +223,16 @@ obj/local/armeabi/objs-debug/MirageMobile/MirageMobile.o: \
  jni/Utils.h jni/Pattern.hpp jni/CameraCalibration.hpp \
  jni/GeometryTypes.hpp jni/Utils.h \
  /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/legacy/legacy.hpp \
- /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/iosfwd
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/iosfwd \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/hash_map \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_hash_map.h \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_hashtable.h \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist.h \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist_base.h \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist_base.c \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist.c \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_hashtable.c \
+ /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_relops_hash_cont.h
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/platforms/android-9/arch-arm/usr/include/jni.h:
 
@@ -678,3 +687,21 @@ jni/Utils.h:
 /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/sdk/native/jni/include/opencv2/legacy/legacy.hpp:
 
 /home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/iosfwd:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/hash_map:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_hash_map.h:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_hashtable.h:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist.h:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist_base.h:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist_base.c:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_slist.c:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_hashtable.c:
+
+/home/radzell/adt-bundle-linux-x86_64-20130917/android-ndk-r9b/sources/cxx-stl/stlport/stlport/stl/_relops_hash_cont.h:

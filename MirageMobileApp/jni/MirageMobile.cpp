@@ -19,7 +19,7 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include <hash_map>
 using namespace std;
 using namespace cv;
 
@@ -53,24 +53,25 @@ extern "C"
    * @param resulting patterns found in the scene.
    */
   void testMatcher(Pattern& scenePattern,  vector<Pattern*>& matchresults){
-          vector<DMatch > matches;
-          vector<vector<DMatch> > matches_by_id(patterns.size());
+          LOG("-------------------testMatcher---------------");
+          vector<DMatch*> matches;
+          vector<vector<DMatch*> > matches_by_id(patterns.size());
 
           vector<vector<DMatch> > knnmatches;
           matcher_->knnMatch(scenePattern.descriptor,knnmatches,2);
-          LOG("%d KNN Matches\n",(int)knnmatches.size());\
+          LOG("%d KNN Matches\n",(int)knnmatches.size());
           for (size_t i=0; i<knnmatches.size(); i++)
           {
 
-                  DMatch _m;
+                  DMatch* _m;
                   if(knnmatches[i].size()==1) {
-                          _m = knnmatches[i][0]; // only one neighbor
+                          _m = &knnmatches[i][0]; // only one neighbor
                   } else if(knnmatches[i].size()>1) {
                           // 2 neighbors â check how close they are
                           double ratio = knnmatches[i][0].distance / knnmatches[i][1].distance;
                           if(ratio < 0.7) { // not too close
                                   // take the closest (first) one
-                                  _m = knnmatches[i][0];
+                                  _m = &knnmatches[i][0];
                           } else { // too close â we cannot tell which is better
                                           continue; // did not pass ratio test â throw away
                           }
@@ -84,48 +85,50 @@ extern "C"
 
 
           for(unsigned int i=0;i<matches.size();i++){
-                  matches_by_id[matches[i].imgIdx].push_back(matches[i]);
+                  matches_by_id[matches[i]->imgIdx].push_back(matches[i]);
           }
           for(unsigned int i=0;i<matches_by_id.size();i++){
 
               if(matches_by_id[i].size()<4)
                       continue;
-              vector<DMatch> matches = matches_by_id[i];
+              vector<DMatch*> matches = matches_by_id[i];
 
               Pattern* pattern = &patterns[i];
 
               //-- Localize the object
               std::vector < Point2f > obj;
               std::vector < Point2f > scene;
-              LOG("key %d",pattern->keypoints.size());
+
+
+              LOG("Localizing the object");
 
               for (size_t j = 0; j < matches_by_id[i].size(); j++)
               {
                      //-- Get the keypoints from the good matches
-
-                      obj.push_back(pattern->keypoints[matches_by_id[i][j].queryIdx].pt);
-                      scene.push_back(scenePattern.keypoints[matches_by_id[i][j].trainIdx].pt);
+                      obj.push_back(pattern->keypoints[matches_by_id[i][j]->queryIdx].pt);
+                      scene.push_back(scenePattern.keypoints[matches_by_id[i][j]->trainIdx].pt);
               }
 
               // Find homography matrix and get inliers mask
               std::vector<unsigned char> inliersMask(obj.size());
+              int inliersum=0;
               Mat homography = cv::findHomography(obj, scene, CV_RANSAC, 3.0f, inliersMask);
-              std::vector < cv::DMatch > inliers;
               for (size_t j = 0; j < inliersMask.size(); j++)
               {
                       if (inliersMask[j])
-                              inliers.push_back(matches_by_id[i][j]);
+                              inliersum++;
               }
-              int sum = std::accumulate(inliersMask.begin(), inliersMask.end(), 0);
-              LOG("inlier sum: %d\n",sum);
-              if(inliers.size()<4)
+              LOG("inlier sum: %d\n",inliersum);
+              if(inliersum<4)
                       continue;
 
-              LOG("%d inlier for %d\n",(int)inliers.size(),i);
+              LOG("%d inlier for %d\n",inliersum,i);
 
               matchresults.push_back(pattern);
           }
           LOG("Prediction %d",matchresults.size());
+          LOG("-------------------testMatcher End---------------");
+
   }
   /**
    * Computes the homography and the tracking information for a specific element.
@@ -135,22 +138,22 @@ extern "C"
    */
   void computeHomography(Pattern& scenePattern,  vector<Pattern* >& resultsPatterns,vector<PatternTrackingInfo>& results){
     struct timespec tstart={0,0}, tend={0,0};
+    LOG("------------Computing Homography-----------");
 
     for(int j=0;j<resultsPatterns.size();j++){
-      LOG("Computing Homography %d",j);
 
-      Pattern pattern = *resultsPatterns[j];
+      Pattern* pattern = resultsPatterns[j];
 
 
 
       //-- Step 3: Matching descriptor vectors using FLANN matcher
       std::vector< DMatch > matches;
-      matcher_->match(pattern.descriptor, scenePattern.descriptor, matches);
+      matcher_->match(pattern->descriptor, scenePattern.descriptor, matches);
 
       double max_dist = 0; double min_dist = 100;
 
       //-- Quick calculation of max and min distances between keypoints
-      for( int i = 0; i < pattern.descriptor.rows; i++ )
+      for( int i = 0; i < pattern->descriptor.rows; i++ )
       { double dist = matches[i].distance;
           //LOG("dist %f",dist);
           if( dist < min_dist ) min_dist = dist;
@@ -161,11 +164,11 @@ extern "C"
       printf("-- Min dist : %f \n", min_dist );
 
       //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
-      std::vector< DMatch > good_matches;
+      std::vector< DMatch* > good_matches;
 
-      for( int i = 0; i < pattern.descriptor.rows; i++ )
+      for( int i = 0; i < pattern->descriptor.rows; i++ )
       { if( matches[i].distance < 3*min_dist )
-         { good_matches.push_back( matches[i]); }
+         { good_matches.push_back( &matches[i]); }
       }
 
       //-- Localize the object
@@ -175,8 +178,8 @@ extern "C"
       for( int i = 0; i < good_matches.size(); i++ )
       {
         //-- Get the keypoints from the good matches
-        obj->push_back( pattern.keypoints[ good_matches[i].queryIdx ].pt );
-        scene->push_back( scenePattern.keypoints[ good_matches[i].trainIdx ].pt );
+        obj->push_back( pattern->keypoints[ good_matches[i]->queryIdx ].pt );
+        scene->push_back( scenePattern.keypoints[ good_matches[i]->trainIdx ].pt );
       }
       if(good_matches.size()<4)
         continue;
@@ -188,19 +191,19 @@ extern "C"
       if(refinehomography)
       {
         Mat warpedImg;
-        cv::warpPerspective(scenePattern.gray, warpedImg, roughhomography, pattern.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
+        cv::warpPerspective(scenePattern.gray, warpedImg, roughhomography, pattern->size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
 
         Pattern warppattern(warpedImg,true);
 
         matches.clear();
-        matcher_->match(pattern.descriptor, warppattern.descriptor, matches );
+        matcher_->match(pattern->descriptor, warppattern.descriptor, matches );
 
 
 
         max_dist = 0; min_dist = 100;
 
         //-- Quick calculation of max and min distances between keypoints
-        for( int i = 0; i < pattern.descriptor.rows; i++ )
+        for( int i = 0; i < pattern->descriptor.rows; i++ )
         { double dist = matches[i].distance;
               if( dist < min_dist ) min_dist = dist;
               if( dist > max_dist ) max_dist = dist;
@@ -210,9 +213,9 @@ extern "C"
         //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
         good_matches.clear();
 
-        for( int i = 0; i < pattern.descriptor.rows; i++ )
+        for( int i = 0; i < pattern->descriptor.rows; i++ )
         { if( matches[i].distance < 3*min_dist )
-               { good_matches.push_back( matches[i]); }
+               { good_matches.push_back( &matches[i]); }
         }
 
         //-- Localize the object
@@ -222,14 +225,14 @@ extern "C"
         for( int i = 0; i < good_matches.size(); i++ )
         {
               //-- Get the keypoints from the good matches
-              obj->push_back( pattern.keypoints[ good_matches[i].queryIdx ].pt );
-              scene->push_back( warppattern.keypoints[ good_matches[i].trainIdx ].pt );
+              obj->push_back( pattern->keypoints[ good_matches[i]->queryIdx ].pt );
+              scene->push_back( warppattern.keypoints[ good_matches[i]->trainIdx ].pt );
         }
         Mat refinedHomography = findHomography( *obj, *scene, CV_RANSAC,4.0f );
         info.homography*=refinedHomography;
       }
-      cv::perspectiveTransform(pattern.points2d, info.points2d, info.homography);
-      info.computePose(pattern, m_calibration);
+      cv::perspectiveTransform(pattern->points2d, info.points2d, info.homography);
+      info.computePose(*pattern, m_calibration);
 
       Transformation patternPose;
       patternPose = info.pose3d;
@@ -241,6 +244,8 @@ extern "C"
       delete obj;
       delete scene;
     }
+    LOG("------------End Computing Homography-----------");
+
 
   }
   void buildProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix)
@@ -357,7 +362,7 @@ extern "C"
       LOG("Total took %.5f seconds in total\n",
                                 ((double)totalend.tv_sec + 1.0e-9*totalend.tv_nsec) -
                                 ((double)totalstart.tv_sec + 1.0e-9*totalstart.tv_nsec));
-
+      LOGE("Deleting %d Tracking Infos",patternResults.size());
       vector<PatternTrackingInfo>().swap( patternResults );
 
       for(int i=0;i<trackingResults.size();i++)

@@ -25,18 +25,18 @@ public class Mesh {
        private FloatBuffer colorBuffer = null;
 
        // Translate params.
-       public float x = 0;
+       private float x = 0;
 
-       public float y = 0;
+       private float y = 0;
 
-       public float z = 0;
+       private float z = 0;
 
        // Rotate params.
-       public float rx = 0;
+       private float rx = 0;
 
-       public float ry = 0;
+       private float ry = 0;
 
-       public float rz = 0;
+       private float rz = 0;
 
        public void draw(GL10 gl) {
                
@@ -67,7 +67,8 @@ public class Mesh {
                gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
        }
 
-       protected void setVertices(float[] vertices) {
+       @SuppressWarnings("unused")
+	protected void setVertices(float[] vertices) {
                // a float is 4 bytes, therefore we multiply the number if
                // vertices with 4.
                ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
@@ -77,7 +78,8 @@ public class Mesh {
                verticesBuffer.position(0);
        }
 
-       protected void setIndices(short[] indices) {
+       @SuppressWarnings("unused")
+	protected void setIndices(short[] indices) {
                // short is 2 bytes, therefore we multiply the number if
                // vertices with 2.
                ByteBuffer ibb = ByteBuffer.allocateDirect(indices.length * 2);
@@ -88,7 +90,7 @@ public class Mesh {
                numOfIndices = indices.length;
        }
 
-       protected void setColor(float red, float green, float blue, float alpha) {
+       public void setColor(float red, float green, float blue, float alpha) {
                // Setting the flat color.
                rgba[0] = red;
                rgba[1] = green;
@@ -96,12 +98,17 @@ public class Mesh {
                rgba[3] = alpha;
        }
 
-       protected void setColors(float[] colors) {
+       public void setColors(float[] colors) {
                // float has 4 bytes.
                ByteBuffer cbb = ByteBuffer.allocateDirect(colors.length * 4);
                cbb.order(ByteOrder.nativeOrder());
                colorBuffer = cbb.asFloatBuffer();
                colorBuffer.put(colors);
                colorBuffer.position(0);
+       }
+       public void setPosition(float x,float y,float z){
+    	   this.x=x;
+    	   this.y=y;
+    	   this.z=z;
        }
 }

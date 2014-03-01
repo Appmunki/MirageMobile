@@ -161,8 +161,8 @@ public abstract class ARActivity extends Activity {
 		int resultSize = Matcher.matchDebug(mat.getNativeObjAddr());
 		String currentDateTimeString = DateFormat.getDateTimeInstance().format(
 				new Date());
-
-		for (int i = 0; i < Matcher.getNumpatternResults(); i++) {
+		
+		/*for (int i = 0; i < Matcher.getNumpatternResults(); i++) {
 			org.opencv.core.Mat test = new org.opencv.core.Mat();
 			mat.copyTo(test);
 			Matcher.debugHomography(i, test.getNativeObjAddr());
@@ -176,6 +176,19 @@ public abstract class ARActivity extends Activity {
 
 				Log.e(TAG, "Error imwrite");
 			}
+		}*/
+		//Mat matGray = new Mat(rows, cols, type)
+	    //Imgproc.cvtColor(mat, matGray, Imgproc.COLOR_YUV420sp2GRAY, 4);
+		File dir = new File(Environment.getExternalStorageDirectory()
+				.getAbsolutePath() + File.separator + "miragemobile/");
+		dir.mkdirs();
+		if (!Highgui.imwrite(Environment.getExternalStorageDirectory()
+				.getAbsolutePath()
+				+ File.separator
+				+ "miragemobile/"
+				+ currentDateTimeString + ".jpg", mat)) {
+
+			Log.e(TAG, "Error imwrite");
 		}
 		return resultSize;
 	}
@@ -499,22 +512,39 @@ public abstract class ARActivity extends Activity {
 				mPreviewBufferLock.lock();
 				try {
 					
-					Log.i(TAG, "frame: "+mFrameWidth+"x"+mFrameHeight);
-					Mat src = new Mat(
-							mFrameWidth,
-							mFrameHeight,
-							CvType.CV_8U, new Scalar(255));
-					src.put(0, 0, data);
+					Log.i(TAG, "frame: "+
+							camera.getParameters().getPreviewSize().width+"x"+camera.getParameters().getPreviewSize().height);
+				
+					Mat yuv3 = new Mat(mFrameHeight+mFrameHeight/2,mFrameWidth, CvType.CV_8UC1);
+
 					
+					yuv3.put(0, 0, data);
+
+					
+					
+					Mat src3 = new Mat(
+							camera.getParameters().getPreviewSize().width,
+							camera.getParameters().getPreviewSize().height,
+							CvType.CV_8U, new Scalar(255));
+					
+					Imgproc.cvtColor(yuv3,src3,Imgproc.COLOR_YUV420p2GRAY);
+
+					Highgui.imwrite(Environment.getExternalStorageDirectory()
+							.getAbsolutePath() + File.separator + "miragemobile/" + "yuv3.jpg",
+							yuv3);
+				
+					Highgui.imwrite(Environment.getExternalStorageDirectory()
+							.getAbsolutePath() + File.separator + "miragemobile/" + "src3.jpg",
+							src3);
 					if(debugcamera){
 						try {
-							matchDebug(src);
+							matchDebug(src3);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}else{
-						Matcher.matchDebug(src.getNativeObjAddr());
+						Matcher.matchDebug(src3.getNativeObjAddr());
 					}
 					
 				} finally {

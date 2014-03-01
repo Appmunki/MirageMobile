@@ -23,6 +23,7 @@ import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
 import com.appmunki.miragemobile.ar.entity.Cube;
+import com.appmunki.miragemobile.ar.entity.Cube2;
 import com.appmunki.miragemobile.ar.entity.Grid;
 import com.appmunki.miragemobile.ar.entity.Plane;
 import com.appmunki.miragemobile.ar.entity.Square;
@@ -41,9 +42,12 @@ public class ARRender implements Renderer {
 	
 
 	private float[] mProjectionMatrix = { 1f,0,0,0,0,1f,0,0,0,0,1,0,0,0,0,1 };
+	float[] colors = { 1f, 0f, 0f, 1f, // point 0 red
+            0f, 1f, 0f, 1f, // point 1 green
+            0f, 0f, 1f, 1f, // point 2 blue
+            1f, 0f, 1f, 1f, };
 
-
-	private Cube cube;
+	private Cube2 cube;
 
 	private float angle=0.0f;
 	private float scalewidth=1;
@@ -52,9 +56,14 @@ public class ARRender implements Renderer {
 	private Plane plane;
 	public ARRender() {
 
-		cube = new Cube();
+		cube = new Cube2(.3f, .3f, .3f);
 		square = new Square2();
-		plane = new Plane(1,1);
+		plane = new Plane(.3f,.3f);
+		plane.setColor(.1f, .2f, .3f, 1f);
+		cube.setColor(.2f, .2f, .1f, 1f);
+		plane.setPosition(1f, 0f, 0f);
+		cube.setPosition(0f, 0f, 0f);
+		cube.setColors(colors);
 	}
 
 	@Override
@@ -84,13 +93,9 @@ public class ARRender implements Renderer {
 
 			// Save the current matrixHe wears hoop earrings on his ears, and a baseball cap with horns comin
 			gl.glPushMatrix();
-			gl.glTranslatef(0f, 0, 0);
-
-			// Rotate square B before moving it, making it rotate around A.
-			// Draw square B.
 	    	gl.glColor4f(1f, 0.5f, 0.5f, 1.0f); // 0x8080FFFF
 			//square.draw(gl);
-			//cube.draw(gl);
+			cube.draw(gl);
 			plane.draw(gl);
 
 			// Restore to the matrix as it was before C.

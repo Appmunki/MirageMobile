@@ -8,7 +8,7 @@ include /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/
 
 ifdef DEBUG
 CONFIG_DIR  := Debug
-LOCAL_CFLAGS    := -Werror -Wno-psabi -O0 -ggdb -D_DEBUG
+LOCAL_CFLAGS    := -Werror -Wno-psabi -O0 -ggdb -D_DEBUG -D_STLP_DEBUG 
 LOCAL_CXXFLAGS    := -Werror -Wno-psabi -O0 -ggdb -D_DEBUG -fexceptions
 LOCAL_LINK_FLAGS    := -ggdb
 else

@@ -65,6 +65,7 @@ public class ARActivityTest extends SingleLaunchActivityTestCase<MainARActivity>
 				  activity.mImageView.setScaleType(ScaleType.FIT_XY);
 			  }
 		});
+		bmp.recycle();
 		assertTrue(activity.matchDebug(previewbmp) > 0);
 	}
 
@@ -103,7 +104,8 @@ public class ARActivityTest extends SingleLaunchActivityTestCase<MainARActivity>
 			  activity.mImageView.setScaleType(ScaleType.FIT_XY);
 		  }
 		});
-		for(int i=0;i<25;i++){
+		bmp.recycle();
+		for(int i=0;i<200;i++){
 			activity.matchDebug(previewbmp);
 			assertTrue(activity.getNumPatternResults() == 1);
 		}

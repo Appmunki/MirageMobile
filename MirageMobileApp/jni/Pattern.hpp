@@ -65,6 +65,8 @@ struct Pattern
     extractFeatures(frame, descriptor, keypoints);
   }
   Pattern();
+  ~Pattern(){LOGE("Pattern is being destroyed");};
+
   /**
   * Extracts features from a image
   **/
@@ -128,5 +130,8 @@ struct PatternTrackingInfo
    * Compute pattern pose using PnP algorithm
    */
   void computePose(const Pattern& pattern, const CameraCalibration& calibration);
+
+  ~PatternTrackingInfo(){LOGE("PatternTrackingInfo is being destroyed");};
+
 };
 #endif /* PATTERN_H_ */
