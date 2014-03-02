@@ -23,17 +23,14 @@ import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
 import com.appmunki.miragemobile.ar.entity.Cube;
-import com.appmunki.miragemobile.ar.entity.Cube2;
-import com.appmunki.miragemobile.ar.entity.Grid;
 import com.appmunki.miragemobile.ar.entity.Plane;
 import com.appmunki.miragemobile.ar.entity.Square;
-import com.appmunki.miragemobile.ar.entity.Square2;
 
 public class ARRender implements Renderer {
 
 	private final String TAG = this.getClass().getSimpleName();
 
-	Square2 square;
+	Square square;
 
 	float positionY = 0;
 
@@ -47,23 +44,57 @@ public class ARRender implements Renderer {
             0f, 0f, 1f, 1f, // point 2 blue
             1f, 0f, 1f, 1f, };
 
-	private Cube2 cube;
+	private Cube cube;
 
 	private float angle=0.0f;
-	private float scalewidth=1;
-	private float scaleheight=1;
+	private float scale=1;
 
-	private Plane plane;
+	private Plane posX;
+	private Plane negX;
+	private Plane posY;
+	private Plane negY;
+
+	private Plane corner1;
+	private Plane corner2;
+	private Plane corner3;
+	private Plane corner4;
+
 	public ARRender() {
 
-		cube = new Cube2(.3f, .3f, .3f);
-		square = new Square2();
-		plane = new Plane(.3f,.3f);
-		plane.setColor(.1f, .2f, .3f, 1f);
+		cube = new Cube(.3f, .3f, .3f);//origin
+		posX = new Plane(.1f,.1f);
+		negX = new Plane(.1f,.1f);
+		posY = new Plane(.1f,.1f);
+		negY = new Plane(.1f,.1f);
+		
+		corner1 = new Plane(.1f,.1f);
+		corner2 = new Plane(.1f,.1f);
+		corner3 = new Plane(.1f,.1f);
+		corner4 = new Plane(.1f,.1f);
+
+		posX.setColor(.0f, .0f, 205f/255f, 1f);//posx
+		negX.setColor(0f, 191f/255f, 1f, 1f);//negx
+		posY.setColor(1f, 0f, 0f, 1f);//posy
+		negY.setColor(1f, 105f/255f, 180f/255f, 1f);//negy
+		
+		corner1.setColor(128f/255, 1f, 0f, 1f);
+		corner2.setColor(128f/255, 1f, 0f, 1f);
+		corner3.setColor(128f/255, 1f, 0f, 1f);
+		corner4.setColor(128f/255, 1f, 0f, 1f);
+
+
+		posX.setPosition(.5f, 0f, 0f);
+		negX.setPosition(-.5f, 0f, 0f);
+		posY.setPosition(0f, .5f, 0f);
+		negY.setPosition(0f, -.5f, 0f);
+
 		cube.setColor(.2f, .2f, .1f, 1f);
-		plane.setPosition(1f, 0f, 0f);
 		cube.setPosition(0f, 0f, 0f);
-		cube.setColors(colors);
+		
+		corner1.setPosition(0, 0, 0);//0,0
+		corner2.setPosition(1f, 0, 0);//1,0
+		corner3.setPosition(1f, -1f, 0);//1,1
+		corner4.setPosition(0, -1f, 0);//0,1
 	}
 
 	@Override
@@ -88,19 +119,45 @@ public class ARRender implements Renderer {
 			float[] modelViewMatrix = Matcher.getMatrix();
 			gl.glLoadIdentity();
 			gl.glLoadMatrixf(modelViewMatrix, 0);
-			gl.glScalef(scalewidth, scaleheight, 1f);
-			gl.glRotatef(90f, 0, 0, 1.0f);
+			//gl.glScalef(scale, scale, scale);
+			//gl.glRotatef(-90f, 0, 0, 1.0f);
 
 			// Save the current matrixHe wears hoop earrings on his ears, and a baseball cap with horns comin
 			gl.glPushMatrix();
-	    	gl.glColor4f(1f, 0.5f, 0.5f, 1.0f); // 0x8080FFFF
-			//square.draw(gl);
-			cube.draw(gl);
-			plane.draw(gl);
-
-			// Restore to the matrix as it was before C.
+			posX.draw(gl);
+			gl.glPopMatrix();
+			
+			gl.glPushMatrix();
+			negX.draw(gl);
 			gl.glPopMatrix();
 
+			gl.glPushMatrix();
+			posY.draw(gl);
+			gl.glPopMatrix();
+
+			gl.glPushMatrix();
+			negY.draw(gl);
+			gl.glPopMatrix();
+
+			gl.glPushMatrix();
+			cube.draw(gl);
+			gl.glPopMatrix();
+
+			gl.glPushMatrix();
+			corner1.draw(gl);
+			gl.glPopMatrix();
+
+			gl.glPushMatrix();
+			corner2.draw(gl);
+			gl.glPopMatrix();
+			
+			gl.glPushMatrix();
+			corner3.draw(gl);
+			gl.glPopMatrix();
+			
+			gl.glPushMatrix();
+			corner4.draw(gl);
+			gl.glPopMatrix();
 			
 		}
 	}
@@ -109,8 +166,8 @@ public class ARRender implements Renderer {
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 		gl.glViewport(0, 0, width, height);
 		Log.i(TAG, (width/480f)+"x"+(height/640f));
-		scalewidth=(width/480f);
-		scaleheight=(height/640f);
+		scale=(480f/width);
+		//scaleheight=(640f/height);
 		mProjectionMatrix = Matcher.getProjectionMatrix(width,height);
 		gl.glMatrixMode(GL10.GL_PROJECTION);
 		gl.glLoadIdentity();

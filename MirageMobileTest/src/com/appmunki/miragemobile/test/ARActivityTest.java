@@ -105,7 +105,7 @@ public class ARActivityTest extends SingleLaunchActivityTestCase<MainARActivity>
 		  }
 		});
 		bmp.recycle();
-		for(int i=0;i<200;i++){
+		for(int i=0;i<20;i++){
 			activity.matchDebug(previewbmp);
 			assertTrue(activity.getNumPatternResults() == 1);
 		}
