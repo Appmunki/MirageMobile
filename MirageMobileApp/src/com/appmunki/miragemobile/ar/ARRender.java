@@ -117,10 +117,15 @@ public class ARRender implements Renderer {
 		if (Matcher.isPatternPresent()) {
 			gl.glMatrixMode(GL10.GL_MODELVIEW);
 			float[] modelViewMatrix = Matcher.getMatrix();
+			if(modelViewMatrix==null) {
+				Log.w(TAG, "Modelview null");
+				return;
+			}
+			
 			gl.glLoadIdentity();
 			gl.glLoadMatrixf(modelViewMatrix, 0);
 			//gl.glScalef(scale, scale, scale);
-			//gl.glRotatef(-90f, 0, 0, 1.0f);
+			//gl.glRotatef(90f, 0, 0, 1.0f);
 
 			// Save the current matrixHe wears hoop earrings on his ears, and a baseball cap with horns comin
 			gl.glPushMatrix();
@@ -139,9 +144,7 @@ public class ARRender implements Renderer {
 			negY.draw(gl);
 			gl.glPopMatrix();
 
-			gl.glPushMatrix();
-			cube.draw(gl);
-			gl.glPopMatrix();
+			
 
 			gl.glPushMatrix();
 			corner1.draw(gl);

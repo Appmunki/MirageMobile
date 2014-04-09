@@ -457,7 +457,7 @@ public class Util {
 		}
 	}
 
-	public static Bitmap decodeSampledBitmapFromStream(InputStream res) {
+	public static Bitmap decodeSampledBitmapFromStream(InputStream res,int reqWidth,int reqHeight) {
 
 	    // First decode with inJustDecodeBounds=true to check dimensions
 	    final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -466,8 +466,8 @@ public class Util {
 
 	    final int height = options.outHeight;
 	    final int width = options.outWidth;
-	    int reqWidth = 640;
-	    int reqHeight = 480;
+	    reqWidth = 640;
+	    reqHeight = 480;
 	    
 	    
 	    

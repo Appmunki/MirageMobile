@@ -16,25 +16,10 @@ public class MainARActivity extends ARActivity {
 		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_test_ar);
-		debugcamera=true;
-		if(!debug){
-			loadPatterns();
-			setupCameraViewLayout();
-		}
+		
 		setupARSurfaceViewLayout();
-		if(debug){
-			addImageView();
-		}
 	}
-	/**
-	 * Loads initial patterns into the db
-	 */
-	private void loadPatterns() {
-		InputStream stream = Util.getStreamFromAsset(this, "posters/Movie Poster " + 1
-				+ ".jpg");
-
-		addPattern("test",stream);
-	}
+	
 	
 
 	

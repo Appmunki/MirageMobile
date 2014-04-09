@@ -5,6 +5,8 @@
 
 // File includes:
 #include <opencv2/opencv.hpp>
+#include "GeometryTypes.hpp"
+#include <Utils.h>
 
 /**
 * A camera calibration class that stores intrinsic matrix and distortion coefficients.
@@ -32,6 +34,7 @@ public:
 
     float cx() const;
     float cy() const;
+    void getProjectionMatrix(int screen_width, int screen_height, Matrix44& projectionMatrix);
 private:
     cv::Matx33f     m_intrinsic;
     cv::Mat_<float> m_distortion;

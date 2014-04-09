@@ -9,17 +9,17 @@ include /home/radzell/adt-bundle-linux-x86_64-20130917/OpenCV-2.4.6-android-sdk/
 ifdef DEBUG
 CONFIG_DIR  := Debug
 LOCAL_CFLAGS    := -Werror -Wno-psabi -O0 -ggdb -D_DEBUG -D_STLP_DEBUG 
-LOCAL_CXXFLAGS    := -Werror -Wno-psabi -O0 -ggdb -D_DEBUG -fexceptions
+LOCAL_CXXFLAGS    := -Werror -Wno-psabi -O0 -ggdb -D_DEBUG -fexceptions -std=c++11
 LOCAL_LINK_FLAGS    := -ggdb
 else
 CONFIG_DIR  := Release
 LOCAL_CFLAGS    := -Werror -Wno-psabi -O2 -DNDEBUG
-LOCAL_CXXFLAGS  := -Werror -Wno-psabi -O2 -DNDEBUG -fexceptions
+LOCAL_CXXFLAGS  := -Werror -Wno-psabi -O2 -DNDEBUG -fexceptions -std=c++11
 endif
 
 
 LOCAL_MODULE    := MirageMobile
-LOCAL_SRC_FILES := MirageMobile.cpp Pattern.cpp CameraCalibration.cpp GeometryTypes.cpp
+LOCAL_SRC_FILES := MirageMobile.cpp Pattern.cpp CameraCalibration.cpp GeometryTypes.cpp Utils.cpp
 LOCAL_LDLIBS    += -landroid -llog -ldl  -lz -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)
