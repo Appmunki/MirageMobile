@@ -20,7 +20,7 @@ import android.util.Log;
 public class DataClient extends AsyncTask<ArrayList, Void, Boolean> {
 	private static final String TAG = "DataClient";
 	/** Server Host */
-	private String HOST = "129.161.219.61";
+	private String HOST = "http://www.trymirage.com";
 	/** Server port */
 	private int PORT = 44693;
 	/** Socket object */
